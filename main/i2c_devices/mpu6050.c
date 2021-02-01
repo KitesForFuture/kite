@@ -1,5 +1,5 @@
 
-#include "freertos/FreeRTOS.h"
+
 #include "../helpers/math.h"
 #include "mpu6050.h"
 

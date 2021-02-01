@@ -1,6 +1,7 @@
 #ifndef I2C_DEVICES_MPU6050
 #define I2C_DEVICES_MPU6050
 
+#include "freertos/FreeRTOS.h"
 #include "interchip.h"
 
 struct position_data {

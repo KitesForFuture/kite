@@ -26,7 +26,7 @@ float current_smoothened_pressure = 0;
 int64_t last_update = 0;
 
 uint32_t getTemperature(){
-	printf("bmp280_bus = %d, %d\n", bmp280_bus.sda, bmp280_bus.scl);
+	//printf("bmp280_bus = %d, %d\n", bmp280_bus.sda, bmp280_bus.scl);
 	uint8_t highByte = i2c_receive(bmp280_bus, 0x76, 0xFA, 1);
 	uint8_t middleByte = i2c_receive(bmp280_bus, 0x76, 0xFB, 1);
 	uint8_t lowByte = i2c_receive(bmp280_bus, 0x76, 0xFC, 1);

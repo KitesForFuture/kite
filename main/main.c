@@ -7,6 +7,8 @@
 #include "i2c_devices/bmp280.h"
 #include "i2c_devices/mpu6050.h"
 
+#include "helpers/rotation_matrix.h"
+
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
 
@@ -37,18 +39,23 @@ void app_main(void)
         vTaskDelay(10);
 
         update_bmp280_if_necessary();
+        
+        updateRotationMatrix();
 		
-        printf("BMP280 Height: ");
+        /*printf("BMP280 Height: ");
         test = getHeight();
         printf("%f\n", test);
-        
-        struct position_data position = {
+        */
+        /*struct position_data position = {
             {0, 0, 0},
             {0, 0, 0}
         };
-        printf("MPU Data: \n");
-        readMPUData(&position);
-        printf("(%f, %f, %f), (%f, %f, %f)\n", position.accel[0], position.accel[1],position.accel[2],position.gyro[0], position.gyro[1], position.gyro[2]);
+        */
+        //printf("MPU Data: \n");
+        //readMPUData(&position);
+        //printf("(%f, %f, %f), (%f, %f, %f)\n", position.accel[0], position.accel[1],position.accel[2],position.gyro[0], position.gyro[1], position.gyro[2]);
+        
+        printf("rotation matrix:\n %f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
         
     }
 }
