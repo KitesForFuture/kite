@@ -77,6 +77,16 @@ void readMPURawData(struct position_data *out){
 	out->accel[2] = accel_precision_factor*(int16_t)((highByte << 8) | lowByte);
 }
 
+void readMPUData(struct position_data *position){
+	readMPURawData(position);
+	position->accel[0] -= mpu_pos_callibration.accel[0];
+	position->accel[1] -= mpu_pos_callibration.accel[1];
+	position->accel[2] -= mpu_pos_callibration.accel[2];
+	position->gyro[0] -= mpu_pos_callibration.gyro[0];
+	position->gyro[1] -= mpu_pos_callibration.gyro[1];
+	position->gyro[2] -= mpu_pos_callibration.gyro[2];
+}
+
 void initMPU6050(struct i2c_bus bus_arg, struct position_data callibration_data){
 	
   bus = bus_arg;

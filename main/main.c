@@ -41,14 +41,14 @@ void app_main(void)
         printf("BMP280 Height: ");
         test = getHeight();
         printf("%f\n", test);
-        /*
+        
         struct position_data position = {
             {0, 0, 0},
             {0, 0, 0}
         };
-        printf("MPU Data: ");
-        readMPURawData(&position);
+        printf("MPU Data: \n");
+        readMPUData(&position);
         printf("(%f, %f, %f), (%f, %f, %f)\n", position.accel[0], position.accel[1],position.accel[2],position.gyro[0], position.gyro[1], position.gyro[2]);
-        */
+        
     }
 }

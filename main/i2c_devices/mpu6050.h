@@ -10,6 +10,6 @@ struct position_data {
 
 void initMPU6050(struct i2c_bus bus_arg, struct position_data callibration_data);
 
-void readMPURawData(struct position_data *out);
+void readMPUData(struct position_data *out);
 
 #endif
