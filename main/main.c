@@ -20,7 +20,7 @@ void app_main(void)
         {readEEPROM(3), readEEPROM(4), readEEPROM(5)}
     };
 
-    init_bmp28(bus1, readEEPROM(6));
+    init_bmp280(bus1, readEEPROM(6));
     initMPU6050(bus0, mpu_callibration);
 
     float test;
@@ -29,19 +29,19 @@ void app_main(void)
     test = readEEPROM(0);
     printf("%f\n", test);
 
-    printf("BMP280 Pressure Diff: ");
-    test = getPressureDiff();
-    printf("%f\n", test);
+    //printf("BMP280 Pressure Diff: ");
+    //test = getPressureDiff();
+    //printf("%f\n", test);
 
     while(1) {
         vTaskDelay(10);
 
         update_bmp280_if_necessary();
-
+		
         printf("BMP280 Height: ");
         test = getHeight();
         printf("%f\n", test);
-        
+        /*
         struct position_data position = {
             {0, 0, 0},
             {0, 0, 0}
@@ -49,5 +49,6 @@ void app_main(void)
         printf("MPU Data: ");
         readMPURawData(&position);
         printf("(%f, %f, %f), (%f, %f, %f)\n", position.accel[0], position.accel[1],position.accel[2],position.gyro[0], position.gyro[1], position.gyro[2]);
+        */
     }
 }
