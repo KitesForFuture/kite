@@ -31,6 +31,7 @@ void mat_mult(float a[], float b[], float out[]){
 	
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
+			out[3*i+j] = 0;
 			for(int k = 0; k < 3; k++){
 				out[3*i+j] += a[3*i+k]*b[3*k+j];
 			}
@@ -42,6 +43,7 @@ void mat_mult_mat_transp(float a[], float b[], float out[]){
 	
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
+			out[3*i+j] = 0;
 			for(int k = 0; k < 3; k++){
 				out[3*i+j] += a[3*i+k]*b[3*j+k];
 			}

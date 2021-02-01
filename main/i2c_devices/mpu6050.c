@@ -1,5 +1,5 @@
 
-#include "freertos/FreeRTOS.h"
+
 #include "../helpers/math.h"
 #include "mpu6050.h"
 
@@ -8,7 +8,7 @@
 // output acc_calibrationx,y,z preferably via wifi, set accel_offset_* in constants.c to the midpoints between highest and lowest reading.
 
 struct position_data mpu_pos_callibration;
-struct i2c_bus bus;
+struct i2c_bus mpu6050_bus;
 
 float gyro_precision_factor;	//factor needed to get to deg/sec
 float accel_precision_factor;	//factor needed to get to m/s
@@ -19,7 +19,7 @@ float accel_precision_factor;	//factor needed to get to m/s
 //sens = 3 <-> +- 2000 deg/sec
 void init_gyro_sensitivity(int sens){
 	if(sens < 4 && sens >=0){
-		i2c_send(bus, 104, 27, 8*sens, 1);
+		i2c_send(mpu6050_bus, 104, 27, 8*sens, 1);
 		gyro_precision_factor = 250*smallpow(2,sens)/32768.0;
 	}else{
 		printf("setGyroSensitivity(int sens), sensitivity must be between 0 and 3");
@@ -32,7 +32,7 @@ void init_gyro_sensitivity(int sens){
 //sens = 3 <-> +- 16g
 void init_accel_sensitivity(int sens){
 	if(sens < 4 && sens >=0){
-		i2c_send(bus, 104, 28, 8*sens, 1);
+		i2c_send(mpu6050_bus, 104, 28, 8*sens, 1);
 		accel_precision_factor = 2*9.81*smallpow(2,sens)/32768.0;
 	}else{
 		printf("setAccelSensitivity(int sens), sensitivity must be between 0 and 3");
@@ -41,7 +41,7 @@ void init_accel_sensitivity(int sens){
 
 //cut off low frequencies using a Digital Low Pass Filter
 void enableDLPF(){
-	i2c_send(bus, 104, 26, 3, 1);
+	i2c_send(mpu6050_bus, 104, 26, 3, 1);
 }
 
 void readMPURawData(struct position_data *out){
@@ -50,39 +50,49 @@ void readMPURawData(struct position_data *out){
 	
 	//read acc/gyro data at register 59..., 67...
 	//GYRO X
-	highByte = i2c_receive(bus, 104, 67, 1);
-	lowByte = i2c_receive(bus, 104, 68, 1);
+	highByte = i2c_receive(mpu6050_bus, 104, 67, 1);
+	lowByte = i2c_receive(mpu6050_bus, 104, 68, 1);
 	out->gyro[0] = gyro_precision_factor*(int16_t)((highByte << 8) | lowByte);
 	//GYRO Y
-	highByte = i2c_receive(bus, 104, 69, 1);
-	lowByte = i2c_receive(bus, 104, 70, 1);
+	highByte = i2c_receive(mpu6050_bus, 104, 69, 1);
+	lowByte = i2c_receive(mpu6050_bus, 104, 70, 1);
 	out->gyro[1] = gyro_precision_factor*(int16_t)((highByte << 8) | lowByte);
 	//GYRO Z
-	highByte = i2c_receive(bus, 104, 71, 1);
-	lowByte = i2c_receive(bus, 104, 72, 1);
+	highByte = i2c_receive(mpu6050_bus, 104, 71, 1);
+	lowByte = i2c_receive(mpu6050_bus, 104, 72, 1);
 	out->gyro[2] = gyro_precision_factor*(int16_t)((highByte << 8) | lowByte);
 	
   
 	//ACCEL X
-	highByte = i2c_receive(bus, 104, 59, 1);
-	lowByte = i2c_receive(bus, 104, 60, 1);
+	highByte = i2c_receive(mpu6050_bus, 104, 59, 1);
+	lowByte = i2c_receive(mpu6050_bus, 104, 60, 1);
 	out->accel[0] = accel_precision_factor*(int16_t)((highByte << 8) | lowByte);
 	//ACCEL Y
-	highByte = i2c_receive(bus, 104, 61, 1);
-	lowByte = i2c_receive(bus, 104, 62, 1);
+	highByte = i2c_receive(mpu6050_bus, 104, 61, 1);
+	lowByte = i2c_receive(mpu6050_bus, 104, 62, 1);
 	out->accel[1] = accel_precision_factor*(int16_t)((highByte << 8) | lowByte);
 	//ACCEL Z
-	highByte = i2c_receive(bus, 104, 63, 1);
-	lowByte = i2c_receive(bus, 104, 64, 1);
+	highByte = i2c_receive(mpu6050_bus, 104, 63, 1);
+	lowByte = i2c_receive(mpu6050_bus, 104, 64, 1);
 	out->accel[2] = accel_precision_factor*(int16_t)((highByte << 8) | lowByte);
+}
+
+void readMPUData(struct position_data *position){
+	readMPURawData(position);
+	position->accel[0] -= mpu_pos_callibration.accel[0];
+	position->accel[1] -= mpu_pos_callibration.accel[1];
+	position->accel[2] -= mpu_pos_callibration.accel[2];
+	position->gyro[0] -= mpu_pos_callibration.gyro[0];
+	position->gyro[1] -= mpu_pos_callibration.gyro[1];
+	position->gyro[2] -= mpu_pos_callibration.gyro[2];
 }
 
 void initMPU6050(struct i2c_bus bus_arg, struct position_data callibration_data){
 	
-  bus = bus_arg;
+  	mpu6050_bus = bus_arg;
 
 	//wake up MPU6050 from sleep mode
-	i2c_send(bus, 104, 107, 0, 1);
+	i2c_send(mpu6050_bus, 104, 107, 0, 1);
 
 	mpu_pos_callibration = callibration_data;
 	
