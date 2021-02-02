@@ -6,3 +6,6 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC helpers)
 
 add_subdirectory(i2c_devices)
 target_link_libraries(${COMPONENT_LIB} PUBLIC i2c_devices)
+
+add_subdirectory(control)
+target_link_libraries(${COMPONENT_LIB} PUBLIC control)

@@ -7,7 +7,7 @@
 #include "i2c_devices/bmp280.h"
 #include "i2c_devices/mpu6050.h"
 
-#include "helpers/rotation_matrix.h"
+#include "control/rotation_matrix.h"
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
