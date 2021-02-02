@@ -1,2 +1,3 @@
 add_library(pwm
- motors.c)
+ motors.c
+ pwm_input.c)
