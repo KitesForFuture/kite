@@ -8,6 +8,7 @@
 #include "i2c_devices/mpu6050.h"
 
 #include "control/rotation_matrix.h"
+#include "pwm/motors.h"
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -24,7 +25,7 @@ void app_main(void)
 
     init_bmp280(bus1, readEEPROM(6));
     initMPU6050(bus0, mpu_callibration);
-
+	initMotors(26, 27, 12, 13);
     float test;
 
     printf("EEProm: ");
@@ -34,7 +35,8 @@ void app_main(void)
     //printf("BMP280 Pressure Diff: ");
     //test = getPressureDiff();
     //printf("%f\n", test);
-
+	float degree = -90;
+	float increment = 1;
     while(1) {
         vTaskDelay(10);
 
@@ -42,18 +44,14 @@ void app_main(void)
         
         updateRotationMatrix();
 		
-        /*printf("BMP280 Height: ");
-        test = getHeight();
-        printf("%f\n", test);
-        */
-        /*struct position_data position = {
-            {0, 0, 0},
-            {0, 0, 0}
-        };
-        */
-        //printf("MPU Data: \n");
-        //readMPUData(&position);
-        //printf("(%f, %f, %f), (%f, %f, %f)\n", position.accel[0], position.accel[1],position.accel[2],position.gyro[0], position.gyro[1], position.gyro[2]);
+        printf("BMP280 Height: %f\n", getHeight());
+		
+		setAngle(0, degree);
+		
+        degree += increment;
+        if(degree == 90 || degree == -90){
+        	increment *= -1;
+        }
         
         printf("rotation matrix:\n %f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
         
