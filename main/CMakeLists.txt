@@ -9,3 +9,6 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC i2c_devices)
 
 add_subdirectory(control)
 target_link_libraries(${COMPONENT_LIB} PUBLIC control)
+
+add_subdirectory(pwm)
+target_link_libraries(${COMPONENT_LIB} PUBLIC pwm)
