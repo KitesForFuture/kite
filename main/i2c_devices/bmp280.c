@@ -9,12 +9,12 @@
 #define  INITIAL_MEASUREMENT_CYCLE_COUNT 5
 #define  ONE_DIVIDED_BY_INITIAL_MEASUREMENT_CYCLE_COUNT 0.2
 
-struct i2c_bus bmp280_bus;
+struct i2c_identifier i2c_identifier;
 Time last_update;
 
 void startBmp280Measurement(){
 	// chip_addr, register, precision(0x25 least precise, takes 9 ms, 0x5D most precise, takes 45ms)
-	i2c_send(bmp280_bus, 0x76, 0xF4, 0x5D, 1);
+	i2c_send_byte(i2c_identifier, 0xF4, 0x5D, 1);
   last_update = start_timer();
 }
 
@@ -27,25 +27,25 @@ int64_t last_update = 0;
 
 uint32_t getTemperature(){
 	//printf("bmp280_bus = %d, %d\n", bmp280_bus.sda, bmp280_bus.scl);
-	uint8_t highByte = i2c_receive(bmp280_bus, 0x76, 0xFA, 1);
-	uint8_t middleByte = i2c_receive(bmp280_bus, 0x76, 0xFB, 1);
-	uint8_t lowByte = i2c_receive(bmp280_bus, 0x76, 0xFC, 1);
+	uint8_t highByte = i2c_read_byte(i2c_identifier, 0xFA, 1);
+	uint8_t middleByte = i2c_read_byte(i2c_identifier, 0xFB, 1);
+	uint8_t lowByte = i2c_read_byte(i2c_identifier, 0xFC, 1);
 	
 	return (uint32_t)((highByte << 16) | (middleByte << 8) | lowByte);
 }
 
 float getPressure(){
-	uint8_t highByte = i2c_receive(bmp280_bus, 0x76, 0xF7, 1); // ToDoLeo: interchip should expose a read-x byte sequence function
-	uint8_t middleByte = i2c_receive(bmp280_bus, 0x76, 0xF8, 1);
-	uint8_t lowByte = i2c_receive(bmp280_bus, 0x76, 0xF9, 1);
+	uint8_t highByte = i2c_read_byte(i2c_identifier, 0xF7, 1); // ToDoLeo: interchip should expose a read-x byte sequence function
+	uint8_t middleByte = i2c_read_byte(i2c_identifier, 0xF8, 1);
+	uint8_t lowByte = i2c_read_byte(i2c_identifier, 0xF9, 1);
 	uint32_t bmp280_raw_pressure_reading = (uint32_t)((highByte << 16) | (middleByte << 8) | lowByte);
   return 1365.3-0.00007555555555*(float)(bmp280_raw_pressure_reading);
 }
 
-int update_bmp280_if_necessary() {
+int update_bmp280_if_necessary() { 
   if (query_timer_microseconds(last_update) >= UPDATE_INTERVAL_MICROSECONDS) {
     
-    if(current_smoothened_temperature == 0){
+    if(current_smoothened_temperature == 0){ // ToDoLeo
     	current_smoothened_temperature = (float)getTemperature();
     	current_smoothened_pressure = getPressure();
     }else{
@@ -62,9 +62,9 @@ int update_bmp280_if_necessary() {
   return 0;
 }
 
-void init_bmp280(struct i2c_bus bus_arg, float minus_dp_by_dt){ // ToDoLeo rename to init. Make sure init calls in main don't conflict
-  bmp280_bus = bus_arg;
-  
+void init_bmp280(struct i2c_identifier i2c_identifier_arg, float minus_dp_by_dt){ // ToDoLeo rename to init. Make sure init calls in main don't conflict
+  i2c_identifier = i2c_identifier_arg;
+  init_interchip(i2c_identifier);
   minus_dp_by_dt_factor = minus_dp_by_dt;
   vTaskDelay(500);
 

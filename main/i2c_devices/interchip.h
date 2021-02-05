@@ -2,8 +2,13 @@
 #define I2C_DEVICES_INTERCHIP
 
 struct i2c_bus {
-    int sda;
-    int scl;
+  int sda;
+  int scl;
+};
+
+struct i2c_identifier {
+  struct i2c_bus bus;
+  int chip_addr;
 };
 
 //ToDoLeo this should not be exposed but is currently used in cat24c256:
@@ -17,10 +22,10 @@ struct i2c_bus {
 #define ACK_VAL 0x0                 /*!< I2C ack value */
 #define NACK_VAL 0x1                /*!< I2C nack value */
 
-esp_err_t _initInterchip(struct i2c_bus bus); //ToDoLeo this should not be exposed but is currently used in cat24c256
+void init_interchip(struct i2c_identifier device);
 
-int i2c_receive(struct i2c_bus bus, int chip_addr, int data_addr, int len);
+void i2c_send_byte(struct i2c_identifier, uint16_t data_addr, int data_addr_len, char data);
 
-int i2c_send(struct i2c_bus bus, int chip_addr, int data_addr, int data, int len);
+uint8_t i2c_read_byte(struct i2c_identifier device, uint16_t data_addr, int data_addr_len);
 
 #endif

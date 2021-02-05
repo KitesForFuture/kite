@@ -5,7 +5,7 @@
 
 int update_bmp280_if_necessary();
 
-void init_bmp280(struct i2c_bus bus_arg, float dp_by_dt);
+void init_bmp280(struct i2c_identifier bus_arg, float dp_by_dt);
 
 //float getPressureDiff();
 

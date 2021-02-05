@@ -65,29 +65,29 @@ int i2c_send_16bitDataAddress(int chip_addr, int data_addr, float data, int len)
 	conversion.f = data;
 	
 	_initInterchip(bus);
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd); // START
-    i2c_master_write_byte(cmd, chip_addr << 1 | WRITE_BIT, ACK_CHECK_EN);
-    data_addr*=4;
-    i2c_master_write_byte(cmd, data_addr>>8, ACK_CHECK_EN);// right shifts by 8 bits, thus cutting off the 8 smallest bits
-    i2c_master_write_byte(cmd, data_addr&255, ACK_CHECK_EN);//bitwise AND removes all but the last 8 bits
-    for (int i = 0; i < len; i++) {
-        i2c_master_write_byte(cmd, ((conversion.i)>>(8*i))&255, ACK_CHECK_EN);
-    }
-    // above loop could be replaced by something like
-    // i2c_master_write(cmd, &(conversion.i), ACK_CHECK_EN);
-    i2c_master_stop(cmd); // STOP
-    esp_err_t ret = i2c_master_cmd_begin(I2C_PORT_T, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if (ret == ESP_OK) {
-        //printf("i2c: Write OK");
-    } else if (ret == ESP_ERR_TIMEOUT) {
-        printf("i2c: Bus is busy");
-    } else {
-        printf("i2c: Write Failed");
-    }
-    i2c_driver_delete(I2C_PORT_T);
-    return 0;
+	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+	i2c_master_start(cmd); // START
+	i2c_master_write_byte(cmd, chip_addr << 1 | WRITE_BIT, ACK_CHECK_EN);
+	data_addr*=4;
+	i2c_master_write_byte(cmd, data_addr>>8, ACK_CHECK_EN);// right shifts by 8 bits, thus cutting off the 8 smallest bits
+	i2c_master_write_byte(cmd, data_addr&255, ACK_CHECK_EN);//bitwise AND removes all but the last 8 bits
+	for (int i = 0; i < len; i++) {
+			i2c_master_write_byte(cmd, ((conversion.i)>>(8*i))&255, ACK_CHECK_EN);
+	}
+	// above loop could be replaced by something like
+	// i2c_master_write(cmd, &(conversion.i), ACK_CHECK_EN);
+	i2c_master_stop(cmd); // STOP
+	esp_err_t ret = i2c_master_cmd_begin(I2C_PORT_T, cmd, 1000 / portTICK_RATE_MS);
+	i2c_cmd_link_delete(cmd);
+	if (ret == ESP_OK) {
+			//printf("i2c: Write OK");
+	} else if (ret == ESP_ERR_TIMEOUT) {
+			printf("i2c: Bus is busy");
+	} else {
+			printf("i2c: Write Failed");
+	}
+	i2c_driver_delete(I2C_PORT_T);
+	return 0;
 }
 
 void init_cat24(struct i2c_bus bus_arg){ // ToDoLeo rename to init. Make sure init calls in main don't conflict
