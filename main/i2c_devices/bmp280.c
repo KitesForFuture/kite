@@ -26,19 +26,15 @@ float current_smoothened_pressure = 0;
 int64_t last_update = 0;
 
 uint32_t getTemperature(){
-	//printf("bmp280_bus = %d, %d\n", bmp280_bus.sda, bmp280_bus.scl);
-	uint8_t highByte = i2c_read_byte(i2c_identifier, 0xFA, 1);
-	uint8_t middleByte = i2c_read_byte(i2c_identifier, 0xFB, 1);
-	uint8_t lowByte = i2c_read_byte(i2c_identifier, 0xFC, 1);
-	
-	return (uint32_t)((highByte << 16) | (middleByte << 8) | lowByte);
+  uint8_t result[3];
+  i2c_read_bytes(i2c_identifier, 0xFA, 1, 3, result);
+	return (uint32_t)((result[0] << 16) | (result[1] << 8) | result[2]);
 }
 
 float getPressure(){
-	uint8_t highByte = i2c_read_byte(i2c_identifier, 0xF7, 1); // ToDoLeo: interchip should expose a read-x byte sequence function
-	uint8_t middleByte = i2c_read_byte(i2c_identifier, 0xF8, 1);
-	uint8_t lowByte = i2c_read_byte(i2c_identifier, 0xF9, 1);
-	uint32_t bmp280_raw_pressure_reading = (uint32_t)((highByte << 16) | (middleByte << 8) | lowByte);
+  uint8_t result[3];
+  i2c_read_bytes(i2c_identifier, 0xF7, 1, 3, result);
+	uint32_t bmp280_raw_pressure_reading = (uint32_t)((result[0] << 16) | (result[1] << 8) | result[2]);
   return 1365.3-0.00007555555555*(float)(bmp280_raw_pressure_reading);
 }
 

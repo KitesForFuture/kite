@@ -46,12 +46,13 @@ void init_interchip(struct i2c_identifier device) {
 
 void write_start_sequence(i2c_cmd_handle_t * cmd, struct i2c_identifier device, uint16_t data_addr, int data_addr_len) {
 
-  // Start Configuration
+  // I2C Start
   i2c_master_start(*cmd);
 
-  // Specify Chip
+  // I2C Device Adresse + Read Bit
   i2c_master_write_byte(*cmd, device.chip_addr << 1 | WRITE_BIT, ACK_CHECK_EN);
-  // Specify Data Address
+
+  // Data Address
   if(data_addr_len == 2)
     i2c_master_write_byte(*cmd, data_addr>>8, ACK_CHECK_EN);// right shifts by 8 bits, thus cutting off the 8 smallest bits
 	i2c_master_write_byte(*cmd, data_addr&255, ACK_CHECK_EN);//bitwise AND removes all but the last 8 bits
@@ -70,48 +71,46 @@ void handle_error(esp_err_t ret) {
 void i2c_send_byte(struct i2c_identifier device, uint16_t data_addr, int data_addr_len, char data) {
 
   i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-
   write_start_sequence(&cmd, device, data_addr, data_addr_len);
 
-  // Specify Data byte
+  // Send
   i2c_master_write_byte(cmd, data, ACK_CHECK_EN);
 
-  // End Configuration
+  // I2C Stop
   i2c_master_stop(cmd);
 
-  // Send cmd
+  // Execute Command
   esp_err_t ret = i2c_master_cmd_begin(get_port_num(device.bus), cmd, 1000 / portTICK_RATE_MS);
   i2c_cmd_link_delete(cmd);
 
   handle_error(ret);
 }
 
-uint8_t i2c_read_byte(struct i2c_identifier device, uint16_t data_addr, int data_addr_len) {
+void i2c_read_bytes(struct i2c_identifier device, uint16_t data_addr, int data_addr_len, int data_len, uint8_t out[]) {
 
-  //Communicate Address
   i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-
   write_start_sequence(&cmd, device, data_addr, data_addr_len);
 
+  // I2C Start
   i2c_master_start(cmd);
 
-  uint8_t result;
-
   // Read command
-  i2c_master_write_byte(cmd, device.chip_addr << 1 | READ_BIT, ACK_CHECK_EN); // CHIP ADDR + READ BIT
+  i2c_master_write_byte(cmd, device.chip_addr << 1 | READ_BIT, ACK_CHECK_EN);
 
   // Actual Read
-  i2c_master_read_byte(cmd, &result, NACK_VAL);
-
-  i2c_master_stop(cmd); // Stop configuring
-
-  esp_err_t ret = ESP_FAIL;
-  for (int tries=0; tries<READ_RETRY_CYCLES && ret != ESP_OK; tries++) {
-    // Send cmd
-    ret = i2c_master_cmd_begin(get_port_num(device.bus), cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
+  for (int i=0; i<data_len-1; i++) {
+    i2c_master_read_byte(cmd, &(out[i]), ACK_VAL);
   }
-  printf("%d - %d\n", data_addr, result);
+  i2c_master_read_byte(cmd, &(out[data_len-1]), NACK_VAL);
+
+  // I2C Stop
+  i2c_master_stop(cmd);
+
+  // Execute Command
+  esp_err_t ret = i2c_master_cmd_begin(get_port_num(device.bus), cmd, 1000 / portTICK_RATE_MS);
+  i2c_cmd_link_delete(cmd);
+
+  printf("%d,%d,%d\n", out[0], out[1], out[2]);
+
   handle_error(ret);
-  return result;
 }

@@ -26,6 +26,6 @@ void init_interchip(struct i2c_identifier device);
 
 void i2c_send_byte(struct i2c_identifier, uint16_t data_addr, int data_addr_len, char data);
 
-uint8_t i2c_read_byte(struct i2c_identifier device, uint16_t data_addr, int data_addr_len);
+void i2c_read_bytes(struct i2c_identifier device, uint16_t data_addr, int data_addr_len, int data_len, uint8_t out[]);
 
 #endif
