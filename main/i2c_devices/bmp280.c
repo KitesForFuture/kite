@@ -14,7 +14,7 @@ Time last_update;
 
 void startBmp280Measurement(){
 	// chip_addr, register, precision(0x25 least precise, takes 9 ms, 0x5D most precise, takes 45ms)
-	i2c_send_byte(i2c_identifier, 0xF4, 0x5D, 1);
+	i2c_send_byte(i2c_identifier, 0xF4, 1, 0x5D);
   last_update = start_timer();
 }
 
