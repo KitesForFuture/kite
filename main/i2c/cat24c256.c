@@ -1,6 +1,5 @@
 #include "freertos/FreeRTOS.h"
 #include "cat24c256.h"
-#include "interchip.h"
 
 struct i2c_identifier i2c_identifier;
 
