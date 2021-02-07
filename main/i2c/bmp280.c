@@ -14,7 +14,7 @@ Time last_update;
 
 void startBmp280Measurement(){
 	// chip_addr, register, precision(0x25 least precise, takes 9 ms, 0x5D most precise, takes 45ms)
-	i2c_send_byte(i2c_identifier, 0xF4, 1, 0x5D);
+	i2c_send_bytes(i2c_identifier, 1, 0xF4, 1, (uint8_t[]){0x5D, NULL});
   last_update = start_timer();
 }
 
@@ -27,13 +27,13 @@ int64_t last_update = 0;
 
 uint32_t getTemperature(){
   uint8_t result[3];
-  i2c_read_bytes(i2c_identifier, 0xFA, 1, 3, result);
+  i2c_read_bytes(i2c_identifier, 1, 0xFA, 3, result);
 	return (uint32_t)((result[0] << 16) | (result[1] << 8) | result[2]);
 }
 
 float getPressure(){
   uint8_t result[3];
-  i2c_read_bytes(i2c_identifier, 0xF7, 1, 3, result);
+  i2c_read_bytes(i2c_identifier, 1, 0xF7, 3, result);
 	uint32_t bmp280_raw_pressure_reading = (uint32_t)((result[0] << 16) | (result[1] << 8) | result[2]);
   return 1365.3-0.00007555555555*(float)(bmp280_raw_pressure_reading);
 }

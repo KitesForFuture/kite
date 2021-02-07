@@ -1,10 +1,14 @@
-#include "freertos/FreeRTOS.h"
-#include "driver/i2c.h"
 #include "interchip.h"
+#include "driver/i2c.h"
 #include "esp_err.h"
 
 #define I2X_FREQUENCY 100000
-#define READ_RETRY_CYCLES 10
+#define I2C_MASTER_TX_BUF_DISABLE 0 /*!< I2C master doesn't need buffer */
+#define I2C_MASTER_RX_BUF_DISABLE 0 /*!< I2C master doesn't need buffer */
+#define ACK_CHECK_EN 0x1            /*!< I2C master will check ack from slave*/
+#define ACK_CHECK_DIS 0x0           /*!< I2C master will not check ack from slave */
+#define ACK_VAL 0x0                 /*!< I2C ack value */
+#define NACK_VAL 0x1                /*!< I2C nack value */
 
 struct i2c_bus port0 = {-1, -1};
 struct i2c_bus port1 = {-1, -1};
@@ -44,15 +48,7 @@ void init_interchip(struct i2c_identifier device) {
 
 }
 
-void write_start_sequence(i2c_cmd_handle_t * cmd, struct i2c_identifier device, uint16_t data_addr, int data_addr_len) {
-
-  // I2C Start
-  i2c_master_start(*cmd);
-
-  // I2C Device Adresse + Read Bit
-  i2c_master_write_byte(*cmd, device.chip_addr << 1 | WRITE_BIT, ACK_CHECK_EN);
-
-  // Data Address
+void write_data_address(i2c_cmd_handle_t * cmd, uint16_t data_addr, int data_addr_len) {
   if(data_addr_len == 2)
     i2c_master_write_byte(*cmd, data_addr>>8, ACK_CHECK_EN);// right shifts by 8 bits, thus cutting off the 8 smallest bits
 	i2c_master_write_byte(*cmd, data_addr&255, ACK_CHECK_EN);//bitwise AND removes all but the last 8 bits
@@ -68,13 +64,25 @@ void handle_error(esp_err_t ret) {
 	}
 }
 
-void i2c_send_byte(struct i2c_identifier device, uint16_t data_addr, int data_addr_len, char data) {
+// TodoLeo: data_addr and data_addr_len switched
+void i2c_send_bytes(struct i2c_identifier device, int data_addr_len, uint16_t data_addr, int data_len, uint8_t data[]) {
 
   i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-  write_start_sequence(&cmd, device, data_addr, data_addr_len);
 
-  // Send
-  i2c_master_write_byte(cmd, data, ACK_CHECK_EN);
+  // I2C Start
+  i2c_master_start(cmd);
+
+  // I2C Device Address / Switch to Write
+  i2c_master_write_byte(cmd, device.chip_addr << 1 | I2C_MASTER_WRITE, ACK_CHECK_EN);
+
+  for (int i=0; i<data_len; i++) {
+    if((i==0) || (!device.does_increment_address_on_write)) {
+      // Data Adress
+      write_data_address(&cmd, data_addr, data_addr_len);
+    }
+    // Send
+    i2c_master_write_byte(cmd, data[i], ACK_CHECK_EN);
+  }
 
   // I2C Stop
   i2c_master_stop(cmd);
@@ -86,22 +94,30 @@ void i2c_send_byte(struct i2c_identifier device, uint16_t data_addr, int data_ad
   handle_error(ret);
 }
 
-void i2c_read_bytes(struct i2c_identifier device, uint16_t data_addr, int data_addr_len, int data_len, uint8_t out[]) {
+// TodoLeo: data_addr and data_addr_len switched
+void i2c_read_bytes(struct i2c_identifier device, int data_addr_len, uint16_t data_addr, int data_len, uint8_t out[]) {
 
   i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-  write_start_sequence(&cmd, device, data_addr, data_addr_len);
 
   // I2C Start
   i2c_master_start(cmd);
 
-  // Read command
-  i2c_master_write_byte(cmd, device.chip_addr << 1 | READ_BIT, ACK_CHECK_EN);
+  // I2C Device Address / Switch to Write
+  i2c_master_write_byte(cmd, device.chip_addr << 1 | I2C_MASTER_WRITE, ACK_CHECK_EN);
+
+  // Data Address
+  write_data_address(&cmd, data_addr, data_addr_len);
+
+  // I2C Start
+  i2c_master_start(cmd);
+
+  // I2C Device Address / Switch to Read
+  i2c_master_write_byte(cmd, device.chip_addr << 1 | I2C_MASTER_READ, ACK_CHECK_EN);
 
   // Actual Read
-  for (int i=0; i<data_len-1; i++) {
-    i2c_master_read_byte(cmd, &(out[i]), ACK_VAL);
+  for (int i=0; i<data_len; i++) {
+    i2c_master_read_byte(cmd, &(out[i]), (i < data_len-1) ? ACK_VAL : NACK_VAL);
   }
-  i2c_master_read_byte(cmd, &(out[data_len-1]), NACK_VAL);
 
   // I2C Stop
   i2c_master_stop(cmd);
@@ -109,8 +125,6 @@ void i2c_read_bytes(struct i2c_identifier device, uint16_t data_addr, int data_a
   // Execute Command
   esp_err_t ret = i2c_master_cmd_begin(get_port_num(device.bus), cmd, 1000 / portTICK_RATE_MS);
   i2c_cmd_link_delete(cmd);
-
-  printf("%d,%d,%d\n", out[0], out[1], out[2]);
 
   handle_error(ret);
 }

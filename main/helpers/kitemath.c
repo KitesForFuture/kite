@@ -1,4 +1,4 @@
-#include <math.h>
+#include "kitemath.h"
 
 // acos function continuously extended beyond -1 and 1.
 float safe_acos(float number_more_or_less_between_one_and_minus_one){

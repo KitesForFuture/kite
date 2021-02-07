@@ -1,4 +1,8 @@
 #include "rotation_matrix.h"
+#include <string.h>
+#include "../helpers/kitemath.h"
+#include "../i2c/mpu6050.h"
+#include "../helpers/timer.h"
 
 // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
 // X-Axis: GYRO chip - FUTURE silk writing
