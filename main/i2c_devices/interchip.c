@@ -44,21 +44,17 @@ void init_interchip(struct i2c_identifier device) {
 
 }
 
-i2c_cmd_handle_t kick_off_communication(struct i2c_identifier device, uint16_t data_addr, int data_addr_len) {
-
-  i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+void write_start_sequence(i2c_cmd_handle_t * cmd, struct i2c_identifier device, uint16_t data_addr, int data_addr_len) {
 
   // Start Configuration
-  i2c_master_start(cmd);
+  i2c_master_start(*cmd);
 
   // Specify Chip
-  i2c_master_write_byte(cmd, device.chip_addr << 1 | WRITE_BIT, ACK_CHECK_EN);
+  i2c_master_write_byte(*cmd, device.chip_addr << 1 | WRITE_BIT, ACK_CHECK_EN);
   // Specify Data Address
   if(data_addr_len == 2)
-    i2c_master_write_byte(cmd, data_addr>>8, ACK_CHECK_EN);// right shifts by 8 bits, thus cutting off the 8 smallest bits
-	i2c_master_write_byte(cmd, data_addr&255, ACK_CHECK_EN);//bitwise AND removes all but the last 8 bits
-
-  return cmd;
+    i2c_master_write_byte(*cmd, data_addr>>8, ACK_CHECK_EN);// right shifts by 8 bits, thus cutting off the 8 smallest bits
+	i2c_master_write_byte(*cmd, data_addr&255, ACK_CHECK_EN);//bitwise AND removes all but the last 8 bits
 }
 
 void handle_error(esp_err_t ret) {
@@ -73,7 +69,9 @@ void handle_error(esp_err_t ret) {
 
 void i2c_send_byte(struct i2c_identifier device, uint16_t data_addr, int data_addr_len, char data) {
 
-  i2c_cmd_handle_t cmd = kick_off_communication(device, data_addr, data_addr_len);
+  i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+
+  write_start_sequence(&cmd, device, data_addr, data_addr_len);
 
   // Specify Data byte
   i2c_master_write_byte(cmd, data, ACK_CHECK_EN);
@@ -91,7 +89,9 @@ void i2c_send_byte(struct i2c_identifier device, uint16_t data_addr, int data_ad
 uint8_t i2c_read_byte(struct i2c_identifier device, uint16_t data_addr, int data_addr_len) {
 
   //Communicate Address
-  i2c_cmd_handle_t cmd = kick_off_communication(device, data_addr, data_addr_len);
+  i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+
+  write_start_sequence(&cmd, device, data_addr, data_addr_len);
 
   i2c_master_start(cmd);
 
