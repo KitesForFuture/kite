@@ -3,6 +3,7 @@
 
 #define NUM_PWM_INPUT_CHANNELS 4
 
+int num_registered_channels = 0;
 int pwm_input_channels[NUM_PWM_INPUT_CHANNELS] = {1, 2, 3, 4};
 int pwm_in_gpios[NUM_PWM_INPUT_CHANNELS] = {26, 27, 12, 13};//{2, 0, 4, 5};
 
@@ -26,16 +27,21 @@ float getPWMInputMinus1to1normalized(int num){
 	return 2*getPWMInput0to1normalized(num)-1;
 }
 
-void initPWMInput(int pin0, int pin1, int pin2, int pin3){
+void initPWMInput(int pins[], int length){
 	
+	for(int i = 0; (i < length && i < NUM_PWM_INPUT_CHANNELS); i++){
+		pwm_in_gpios[i] = pins[i];
+		num_registered_channels++;
+	}
+	/*
 	pwm_in_gpios[0] = pin0;
 	pwm_in_gpios[1] = pin1;
 	pwm_in_gpios[2] = pin2;
 	pwm_in_gpios[3] = pin3;
-	
+	*/
 	rmt_config_t rmt_channel; // = RMT_DEFAULT_CONFIG_RX(2, 1);
 	
-	for(int i = 0; i < NUM_PWM_INPUT_CHANNELS; i++){
+	for(int i = 0; i < num_registered_channels; i++){
 		rmt_channel.channel = (rmt_channel_t) pwm_input_channels[i];
 		rmt_channel.gpio_num = (gpio_num_t) pwm_in_gpios[i];
 		rmt_channel.clk_div = 10;//(80000000/8/1000000); // = 10, 80 causes kernel panic, 5 causes doubling of re/per/ceived pulse widths but not able to handle 2*16000=32000, uint8t is in [0, 255] so why does 80 not work?
@@ -59,7 +65,7 @@ void initPWMInput(int pin0, int pin1, int pin2, int pin3){
 
 void updatePWMInput(){
 	
-	for(int i = 0; i < NUM_PWM_INPUT_CHANNELS; i++){
+	for(int i = 0; i < num_registered_channels; i++){
 		
 		while(1){
 			// retrieve item from ring buffer BY REFERENCE(!)
