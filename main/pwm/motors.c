@@ -14,7 +14,7 @@ static uint32_t servoDegree2pulsewidth(int32_t degree_of_rotation)
     return cal_pulsewidth;
 }
 
-void initMotors(int pin0, int pin1, int pin2, int pin3){
+void initMotors(int pins[], int length){
 	//Set GPIO 18 as PWM0A, to which the servo is connected
 	//MCPWM_UNIT_0 and MCPWM_UNIT_1 are the two pwm units, each capable of controlling 3 motors
 	//MCPWM0A, MCPWM0B, MCPWM1A, MCPWM1B, MCPWM2A, MCPWM2B are the possible outputs
@@ -25,10 +25,10 @@ void initMotors(int pin0, int pin1, int pin2, int pin3){
 	//SYNC_X (for timer), FAULT_X, CAP_X ("CAP"=capture), X=0,1,2 are the possible inputs for the three timers 0,1,2
 	//18 is the pin number written on the board. can be any gpio-pin.
 	
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, pin0);
-    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, pin1);
-    mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM0A, pin2);
-    mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM0B, pin3);
+    if(length > 0) mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, pins[0]);
+    if(length > 1) mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, pins[1]);
+    if(length > 2) mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM0A, pins[2]);
+    if(length > 3) mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM0B, pins[3]);
     
     mcpwm_config_t pwm_config;
     pwm_config.frequency = 50;
