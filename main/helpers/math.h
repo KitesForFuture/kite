@@ -28,4 +28,7 @@ float scalarProductOfMatrices(float A[], float B[], int length);
 
 float normalize(float a[], int length);
 
+//TODO:
+//void get_column(float matrix[], float column[], int column_number);
+
 #endif

@@ -11,6 +11,8 @@
 #include "pwm/motors.h"
 #include "pwm/pwm_input.h"
 
+#include "control/figure-eight.c"
+
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
 
@@ -33,7 +35,7 @@ void app_main(void)
     float test;
 
     printf("EEProm: ");
-    test = readEEPROM(0);
+    test = readEEPROM(6);
     printf("%f\n", test);
 
     //printf("BMP280 Pressure Diff: ");
@@ -45,7 +47,7 @@ void app_main(void)
 	float increment = 1;
 	*/
     while(1) {
-        vTaskDelay(10);
+        vTaskDelay(1);
 
         update_bmp280_if_necessary();
         
@@ -54,8 +56,8 @@ void app_main(void)
         updatePWMInput();
 		
         printf("BMP280 Height: %f\n", getHeight());
-		setSpeed(0,30);
-		setSpeed(1,60);
+		//setSpeed(0,30);
+		//setSpeed(1,60);
 		printf("pwm-input: %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1));
 		
 		/*
@@ -68,6 +70,12 @@ void app_main(void)
         */
         
         printf("rotation matrix:\n %f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
+        
+        // FIGURE EIGHT PREPARATION: HOLD NOSE STRAIGHT UP
+        
+        setAngle(0, getRudderControl());
+        
+        
         
     }
 }

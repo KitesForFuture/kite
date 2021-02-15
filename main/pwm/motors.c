@@ -31,7 +31,7 @@ void initMotors(int pins[], int length){
     if(length > 3) mcpwm_gpio_init(MCPWM_UNIT_1, MCPWM0B, pins[3]);
     
     mcpwm_config_t pwm_config;
-    pwm_config.frequency = 50;
+    pwm_config.frequency = 200;
     pwm_config.cmpr_a = 0;
     pwm_config.cmpr_b = 0;
     pwm_config.counter_mode = MCPWM_UP_COUNTER;
