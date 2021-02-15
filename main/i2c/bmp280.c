@@ -9,29 +9,27 @@
 #define  INITIAL_MEASUREMENT_CYCLE_COUNT 5
 #define  ONE_DIVIDED_BY_INITIAL_MEASUREMENT_CYCLE_COUNT 0.2
 
-struct i2c_identifier i2c_identifier;
-Time last_update;
+static struct i2c_identifier i2c_identifier;
+static float minus_dp_by_dt_factor;
+static float initial_smoothened_temperature = 0;
+static float initial_smoothened_pressure = 0;
+static float current_smoothened_temperature = 0;
+static float current_smoothened_pressure = 0;
+static Time last_update = 0;
 
-void startBmp280Measurement(){
+static void startBmp280Measurement(){
 	// chip_addr, register, precision(0x25 least precise, takes 9 ms, 0x5D most precise, takes 45ms)
 	i2c_send_bytes(i2c_identifier, 1, 0xF4, 1, (uint8_t[]){0x5D});
   last_update = start_timer();
 }
 
-float minus_dp_by_dt_factor;
-float initial_smoothened_temperature = 0;
-float initial_smoothened_pressure = 0;
-float current_smoothened_temperature = 0;
-float current_smoothened_pressure = 0;
-int64_t last_update = 0;
-
-uint32_t getTemperature(){
+static uint32_t getTemperature(){
   uint8_t result[3];
   i2c_read_bytes(i2c_identifier, 1, 0xFA, 3, result);
 	return (uint32_t)((result[0] << 16) | (result[1] << 8) | result[2]);
 }
 
-float getPressure(){
+static float getPressure(){
   uint8_t result[3];
   i2c_read_bytes(i2c_identifier, 1, 0xF7, 3, result);
 	uint32_t bmp280_raw_pressure_reading = (uint32_t)((result[0] << 16) | (result[1] << 8) | result[2]);

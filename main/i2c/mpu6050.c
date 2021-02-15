@@ -1,25 +1,32 @@
 
 
+#include "freertos/FreeRTOS.h"
 #include "../helpers/kitemath.h"
 #include "mpu6050.h"
+#include "interchip.h"
 
 
 // HOW TO CALIBRATE:
 // output acc_calibrationx,y,z preferably via wifi, set accel_offset_* in constants.c to the midpoints between highest and lowest reading.
 
-struct position_data mpu_pos_callibration;
-struct i2c_bus mpu6050_bus;
+static struct position_data mpu_pos_callibration;
+static struct i2c_identifier i2c_identifier;
 
-float gyro_precision_factor;	//factor needed to get to deg/sec
-float accel_precision_factor;	//factor needed to get to m/s
+static float gyro_precision_factor;	//factor needed to get to deg/sec
+static float accel_precision_factor;	//factor needed to get to m/s
+
+static union Conversion {
+ int16_t i[3];
+ uint8_t c[6];
+} conversion;
 
 //sens = 0 <-> +- 250 deg/sec
 //sens = 1 <-> +- 500 deg/sec
 //sens = 2 <-> +- 1000 deg/sec
 //sens = 3 <-> +- 2000 deg/sec
-void init_gyro_sensitivity(int sens){
-	if(sens < 4 && sens >=0){
-		i2c_send(mpu6050_bus, 104, 27, 8*sens, 1);
+static void init_gyro_sensitivity(uint8_t sens){
+	if(sens < 4 /* && sens >=0 */){ // ToDoLeo can sense be ever smaller than 0? What is it?
+		i2c_send_bytes(i2c_identifier, 2, 27, 1, (uint8_t[]){8*sens});
 		gyro_precision_factor = 250*smallpow(2,sens)/32768.0;
 	}else{
 		printf("setGyroSensitivity(int sens), sensitivity must be between 0 and 3");
@@ -30,9 +37,9 @@ void init_gyro_sensitivity(int sens){
 //sens = 1 <-> +- 4g
 //sens = 2 <-> +- 8g
 //sens = 3 <-> +- 16g
-void init_accel_sensitivity(int sens){
-	if(sens < 4 && sens >=0){
-		i2c_send(mpu6050_bus, 104, 28, 8*sens, 1);
+static void init_accel_sensitivity(uint8_t sens){
+	if(sens < 4 /* && sens >=0 */){ // ToDoLeo can sense be ever smaller than 0? What is it?
+		i2c_send_bytes(i2c_identifier, 2, 28, 1, (uint8_t[]){8*sens});
 		accel_precision_factor = 2*9.81*smallpow(2,sens)/32768.0;
 	}else{
 		printf("setAccelSensitivity(int sens), sensitivity must be between 0 and 3");
@@ -40,41 +47,26 @@ void init_accel_sensitivity(int sens){
 }
 
 //cut off low frequencies using a Digital Low Pass Filter
-void enableDLPF(){
-	i2c_send(mpu6050_bus, 104, 26, 3, 1);
+static void enableDLPF(){
+	i2c_send_bytes(i2c_identifier, 2, 26, 1, (uint8_t[]){3});
 }
 
-void readMPURawData(struct position_data *out){
-	uint8_t highByte;
-	uint8_t lowByte;
+static void readMPURawData(struct position_data *out){
 	
+	//ToDoLeo vector operations & unify with readMPUData
+
 	//read acc/gyro data at register 59..., 67...
-	//GYRO X
-	highByte = i2c_receive(mpu6050_bus, 104, 67, 1);
-	lowByte = i2c_receive(mpu6050_bus, 104, 68, 1);
-	out->gyro[0] = gyro_precision_factor*(int16_t)((highByte << 8) | lowByte);
-	//GYRO Y
-	highByte = i2c_receive(mpu6050_bus, 104, 69, 1);
-	lowByte = i2c_receive(mpu6050_bus, 104, 70, 1);
-	out->gyro[1] = gyro_precision_factor*(int16_t)((highByte << 8) | lowByte);
-	//GYRO Z
-	highByte = i2c_receive(mpu6050_bus, 104, 71, 1);
-	lowByte = i2c_receive(mpu6050_bus, 104, 72, 1);
-	out->gyro[2] = gyro_precision_factor*(int16_t)((highByte << 8) | lowByte);
+	i2c_read_bytes(i2c_identifier, 1, 67, 6, conversion.c);
+	//GYRO X / Y / Z
+	out->gyro[0] = gyro_precision_factor*conversion.i[0];
+	out->gyro[1] = gyro_precision_factor*conversion.i[1];
+	out->gyro[2] = gyro_precision_factor*conversion.i[2];
 	
-  
-	//ACCEL X
-	highByte = i2c_receive(mpu6050_bus, 104, 59, 1);
-	lowByte = i2c_receive(mpu6050_bus, 104, 60, 1);
-	out->accel[0] = accel_precision_factor*(int16_t)((highByte << 8) | lowByte);
-	//ACCEL Y
-	highByte = i2c_receive(mpu6050_bus, 104, 61, 1);
-	lowByte = i2c_receive(mpu6050_bus, 104, 62, 1);
-	out->accel[1] = accel_precision_factor*(int16_t)((highByte << 8) | lowByte);
-	//ACCEL Z
-	highByte = i2c_receive(mpu6050_bus, 104, 63, 1);
-	lowByte = i2c_receive(mpu6050_bus, 104, 64, 1);
-	out->accel[2] = accel_precision_factor*(int16_t)((highByte << 8) | lowByte);
+  i2c_read_bytes(i2c_identifier, 1, 59, 6, conversion.c);
+	//ACCEL X / Y / Z
+	out->accel[0] = accel_precision_factor*conversion.i[0];
+	out->accel[1] = accel_precision_factor*conversion.i[1];
+	out->accel[2] = accel_precision_factor*conversion.i[2];
 }
 
 void readMPUData(struct position_data *position){
@@ -87,12 +79,13 @@ void readMPUData(struct position_data *position){
 	position->gyro[2] -= mpu_pos_callibration.gyro[2];
 }
 
-void initMPU6050(struct i2c_bus bus_arg, struct position_data callibration_data){
+void initMPU6050(struct i2c_identifier i2c_identifier_arg, struct position_data callibration_data){
 	
-  	mpu6050_bus = bus_arg;
+  i2c_identifier = i2c_identifier_arg;
 
 	//wake up MPU6050 from sleep mode
-	i2c_send(mpu6050_bus, 104, 107, 0, 1);
+	i2c_send_bytes(i2c_identifier, 2, 107, 1, (uint8_t[]){0});
+	
 
 	mpu_pos_callibration = callibration_data;
 	

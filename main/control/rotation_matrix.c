@@ -38,7 +38,7 @@ struct position_data position = {
 Time mpu_last_update_time = 0;
 
 void updateRotationMatrix(){
-	readMPUData(&position);
+	readMPUData(&position); //ToDoLeo
 	if(mpu_last_update_time == 0){
 		mpu_last_update_time = start_timer();
 		return;

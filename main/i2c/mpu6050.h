@@ -9,7 +9,7 @@ struct position_data {
   float gyro[3];
 };
 
-void initMPU6050(struct i2c_bus bus_arg, struct position_data callibration_data);
+void initMPU6050(struct i2c_identifier i2c_identifier_arg, struct position_data callibration_data);
 
 void readMPUData(struct position_data *out);
 

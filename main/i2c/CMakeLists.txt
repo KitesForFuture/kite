@@ -19,9 +19,10 @@ target_link_libraries(cat24c256
   PUBLIC interchip
 )
 
-#[[
 add_library(mpu6050
  mpu6050.c
 )
-target_link_libraries(mpu6050 PUBLIC kitemath)
-]]
+target_link_libraries(mpu6050 
+  PUBLIC kitemath
+  PUBLIC interchip
+)

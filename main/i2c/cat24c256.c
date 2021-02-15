@@ -1,9 +1,9 @@
 #include "freertos/FreeRTOS.h"
 #include "cat24c256.h"
 
-struct i2c_identifier i2c_identifier;
+static struct i2c_identifier i2c_identifier;
 
-union Conversion {
+static union Conversion {
  float f;
  uint8_t c[sizeof(float)];
 };
@@ -17,12 +17,14 @@ void init_cat24(struct i2c_identifier i2c_identifier_arg){ // ToDoLeo rename to 
 void write2EEPROM(float number, int address){
 	union Conversion conversion;
 	conversion.f = number;
-	i2c_send_bytes(i2c_identifier, 1, address, sizeof(float), conversion.c);
+	i2c_send_bytes(i2c_identifier, 2, address, sizeof(float), conversion.c);
 }
 
 // ToDoLeo rename
 float readEEPROM(int address){	
 	union Conversion conversion;
-	i2c_read_bytes(i2c_identifier, 1, address, sizeof(float), conversion.c); //ToDoLeo check if this works
+	i2c_read_bytes(i2c_identifier, 2, address, sizeof(float), conversion.c);
 	return conversion.f;
 }
+
+// ToDoLeo Provide function to read int16_t (mpu6050 and main)
