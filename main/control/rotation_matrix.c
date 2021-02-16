@@ -25,6 +25,7 @@
 
 // rotation of the drone in world coordinates
 float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+float gyro_in_kite_coords[3] = {0,0,0};
 
 struct position_data position = {
 	{0, 0, 0},
@@ -46,6 +47,11 @@ void updateRotationMatrix(){
 	// rotation-matrix:
 	// angles in radians
 	// 0.01745329 = pi/180
+	
+	gyro_in_kite_coords[0] = gyro_x;
+	gyro_in_kite_coords[1] = gyro_y;
+	gyro_in_kite_coords[2] = gyro_z;
+	
 	float alpha = 0.01745329 * gyro_x * time_difference;
 	float beta = 0.01745329 * gyro_y * time_difference;
 	float gamma = 0.01745329 * gyro_z * time_difference;

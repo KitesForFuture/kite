@@ -28,10 +28,10 @@ void app_main(void)
 
     init_bmp280(bus1, readEEPROM(6));
     initMPU6050(bus0, mpu_callibration);
-	int output_pins[] = {26, 27};
-	initMotors(output_pins, 2);
-	int input_pins[] = {12, 13};
-	initPWMInput(input_pins, 2);
+	int output_pins[] = {26};
+	initMotors(output_pins, 1);
+	int input_pins[] = {12, 13, 27};
+	initPWMInput(input_pins, 3);
     float test;
 
     printf("EEProm: ");
@@ -72,10 +72,11 @@ void app_main(void)
         printf("rotation matrix:\n %f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
         
         // FIGURE EIGHT PREPARATION: HOLD NOSE STRAIGHT UP
-        
-        setAngle(0, getRudderControl());
-        
-        
+        getPWMInputMinus1to1normalized(0);
+        getPWMInputMinus1to1normalized(1);
+        float target_angle = 3.1415926535*0.5*getPWMInputMinus1to1normalized(2);
+        printf("target_angle = %f\n", target_angle);
+        setAngle(0, getRudderControl(target_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0)))));
         
     }
 }

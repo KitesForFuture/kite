@@ -7,6 +7,7 @@
 #include "../helpers/timer.h"
 
 float rotation_matrix[9];
+float gyro_in_kite_coords[3];
 
 void updateRotationMatrix();
 

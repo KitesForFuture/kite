@@ -1,9 +1,12 @@
-
-
 #include "../helpers/math.h"
+#include "rotation_matrix.h"
 
 
-float getRudderControl(){
+#define P_RUDDER 100
+#define D_RUDDER 0.2
+
+
+float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder_factor){
 	
 	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
 	
@@ -46,9 +49,12 @@ float getRudderControl(){
 			beta = 3.1415926535*1.5 - safe_acos(left_right_orientation);
 		}
 	}
+	
+	beta -= target_angle;
+	
 	if(norm < 0.01) beta = 0;
 	
-	return 100*beta;
+	return P_RUDDER*p_rudder_factor*beta - D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];
 }
 
 
