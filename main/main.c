@@ -76,7 +76,10 @@ void app_main(void)
         getPWMInputMinus1to1normalized(1);
         float target_angle = 3.1415926535*0.5*getPWMInputMinus1to1normalized(2);
         printf("target_angle = %f\n", target_angle);
-        setAngle(0, getRudderControl(target_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0)))));
-        
+        if(getPWMInputMinus1to1normalized(1) > -0.9){
+        	setAngle(0, getRudderControl(target_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0)))));
+        }else{
+        	setAngle(0, 45*getPWMInputMinus1to1normalized(2)+getRudderControl(0, 0, (float)(pow(10,getPWMInputMinus1to1normalized(0)))));
+        }
     }
 }
