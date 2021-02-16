@@ -10,12 +10,18 @@ float oldBeta = 0;
 float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder_factor){
 	
 	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
+	float z[] = {rotation_matrix[2], rotation_matrix[5], rotation_matrix[8]};
 	
 	float up_vector[] = {1,0,0};
 	// 1	nose straight up
 	// 0	nose horizontal
 	// -1	nose straight down
-	float nose_horizon = scalarProductOfMatrices(x, up_vector, 3);
+	float nose_horizon = rotation_matrix[0];//scalarProductOfMatrices(x, up_vector, 3);
+	
+	// 1	flying horizontally like a plane
+	// 0	upside pointing sideways
+	// -1	flying upside down
+	float how_plane_like = rotation_matrix[2];//scalarProductOfMatrices(z, up_vector, 3);
 	
 	
 	
@@ -55,11 +61,8 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	
 	if(norm < 0.01) beta = 0;
 	
-	//smoothing1 = 0.5*smoothing1 + 0.5*beta;
-	//smoothing2 = 0.9*smoothing2 + 0.1*gyro_in_kite_coords[2];
 	
-	
-	if(fabs(P_RUDDER*p_rudder_factor*(oldBeta - beta)) < 1) beta = oldBeta;
+	if(fabs(P_RUDDER*p_rudder_factor*(oldBeta - beta)) < 1 || how_plane_like > 0.97) beta = oldBeta;
 	else oldBeta = beta;
 	
 	return P_RUDDER*p_rudder_factor*beta - D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];

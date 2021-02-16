@@ -74,7 +74,7 @@ void app_main(void)
         // FIGURE EIGHT PREPARATION: HOLD NOSE STRAIGHT UP
         getPWMInputMinus1to1normalized(0);
         getPWMInputMinus1to1normalized(1);
-        float target_angle = 3.1415926535*0.5*getPWMInputMinus1to1normalized(2);
+        float target_angle = 1.2*3.1415926535*0.5*getPWMInputMinus1to1normalized(2);
         printf("target_angle = %f\n", target_angle);
         if(getPWMInputMinus1to1normalized(1) > -0.9){
         	setAngle(0, getRudderControl(target_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0)))));
