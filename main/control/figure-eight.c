@@ -5,6 +5,7 @@
 #define P_RUDDER 100
 #define D_RUDDER 0.2
 
+float oldBeta = 0;
 
 float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder_factor){
 	
@@ -53,6 +54,13 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	beta -= target_angle;
 	
 	if(norm < 0.01) beta = 0;
+	
+	//smoothing1 = 0.5*smoothing1 + 0.5*beta;
+	//smoothing2 = 0.9*smoothing2 + 0.1*gyro_in_kite_coords[2];
+	
+	
+	if(fabs(P_RUDDER*p_rudder_factor*(oldBeta - beta)) < 1) beta = oldBeta;
+	else oldBeta = beta;
 	
 	return P_RUDDER*p_rudder_factor*beta - D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];
 }
