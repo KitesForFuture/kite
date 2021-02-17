@@ -81,8 +81,9 @@ void readMPUData(struct position_data *position){
 
 void initMPU6050(struct i2c_identifier i2c_identifier_arg, struct position_data callibration_data){
 	
-  i2c_identifier = i2c_identifier_arg;
-
+  	i2c_identifier = i2c_identifier_arg;
+	init_interchip(i2c_identifier);
+	
 	//wake up MPU6050 from sleep mode
 	i2c_send_bytes(i2c_identifier, 2, 107, 1, (uint8_t[]){0});
 	

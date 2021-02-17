@@ -14,7 +14,7 @@
 
 struct i2c_identifier cat24c256 = {{18, 19}, 0x50, 1};
 struct i2c_identifier bmp280    = {{18, 19}, 0x76, 0};
-struct i2c_identifier mpu6050   = {{14, 25}, 0x76, 1};
+struct i2c_identifier mpu6050   = {{14, 25}, 104, 1};
 
 
 void app_main(void)
