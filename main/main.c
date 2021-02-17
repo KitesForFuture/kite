@@ -3,47 +3,51 @@
 #include "freertos/task.h"
 #include "sdkconfig.h"
 
-#include "i2c_devices/cat24c256.h"
-#include "i2c_devices/bmp280.h"
-#include "i2c_devices/mpu6050.h"
+#include "i2c/interchip.h"
+#include "i2c/cat24c256.h"
+#include "i2c/bmp280.h"
+#include "i2c/mpu6050.h"
 
 #include "control/rotation_matrix.h"
-#include "pwm/motors.h"
-#include "pwm/pwm_input.h"
+/* #include "pwm/motors.h"
+#include "pwm/pwm_input.h" */
 
-struct i2c_bus bus0 = {14, 25};
-struct i2c_bus bus1 = {18, 19};
+struct i2c_identifier cat24c256 = {{18, 19}, 0x50, 1};
+struct i2c_identifier bmp280    = {{18, 19}, 0x76, 0};
+struct i2c_identifier mpu6050   = {{14, 25}, 104, 0};
 
 
 void app_main(void)
 {
-    init_cat24(bus1);
+    init_cat24(cat24c256);
 
     struct position_data mpu_callibration = {
-        {readEEPROM(0), readEEPROM(1), readEEPROM(2)},
-        {readEEPROM(3), readEEPROM(4), readEEPROM(5)}
+        {readEEPROM(0*sizeof(float)), readEEPROM(1*sizeof(float)), readEEPROM(2*sizeof(float))}, //ToDoLeo make pretty
+        {readEEPROM(3*sizeof(float)), readEEPROM(4*sizeof(float)), readEEPROM(5*sizeof(float))}
     };
+    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", readEEPROM(0*sizeof(float)), readEEPROM(1*sizeof(float)), readEEPROM(2*sizeof(float)), readEEPROM(3*sizeof(float)), readEEPROM(4*sizeof(float)), readEEPROM(5*sizeof(float)));
 
-    init_bmp280(bus1, readEEPROM(6));
-    initMPU6050(bus0, mpu_callibration);
-	int output_pins[] = {26, 27};
-	initMotors(output_pins, 2);
-	int input_pins[] = {12, 13};
-	initPWMInput(input_pins, 2);
+    init_bmp280(bmp280, readEEPROM(6*sizeof(float)));
+    initMPU6050(mpu6050, mpu_callibration);
+	//initMotors(26, 27, 12, 13);
+	/* initPWMInput(26, 27, 12, 13); */
+   
+	//int output_pins[] = {26, 27};
+	//initMotors(output_pins, 2);
+	//int input_pins[] = {12, 13};
+	//initPWMInput(input_pins, 2);
     float test;
 
-    printf("EEProm: ");
-    test = readEEPROM(0);
-    printf("%f\n", test);
+    
 
-    //printf("BMP280 Pressure Diff: ");
-    //test = getPressureDiff();
-    //printf("%f\n", test);
+    printf("BMP280 Pressure Diff: ");
+    test = getPressureDiff();
+    printf("%f\n", test);
 	
-	/*
+	
 	float degree = -90;
 	float increment = 1;
-	*/
+	
     while(1) {
         vTaskDelay(10);
 
@@ -51,21 +55,26 @@ void app_main(void)
         
         updateRotationMatrix();
         
-        updatePWMInput();
+        //updatePWMInput();
 		
         printf("BMP280 Height: %f\n", getHeight());
-		setSpeed(0,30);
-		setSpeed(1,60);
-		printf("pwm-input: %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1));
+
 		
-		/*
-		setAngle(0, degree);
+		/* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
+		
+
+		//setSpeed(0,30);
+		//setSpeed(1,60);
+		//printf("pwm-input: %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1));
+
+		
+		//setAngle(0, degree);
 		
         degree += increment;
         if(degree == 90 || degree == -90){
         	increment *= -1;
         }
-        */
+        
         
         printf("rotation matrix:\n %f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
         

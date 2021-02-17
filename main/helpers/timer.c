@@ -1,5 +1,7 @@
 #include "timer.h"
 
+static Time start_time_for_uptime = 0;
+
 Time start_timer(){
 	return esp_timer_get_time();
 }
@@ -13,8 +15,6 @@ float query_timer_seconds(int64_t time){
 int64_t query_timer_microseconds(int64_t time){
 	return esp_timer_get_time() - time;
 }
-
-Time start_time_for_uptime = 0;
 
 void init_uptime(){
 	start_time_for_uptime = start_timer();

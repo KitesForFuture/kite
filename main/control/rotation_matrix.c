@@ -1,4 +1,8 @@
 #include "rotation_matrix.h"
+#include <string.h>
+#include "../helpers/kitemath.h"
+#include "../i2c/mpu6050.h"
+#include "../helpers/timer.h"
 
 // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
 // X-Axis: GYRO chip - FUTURE silk writing
@@ -26,7 +30,7 @@
 // rotation of the drone in world coordinates
 float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 
-struct position_data position = {
+static struct position_data position = {
 	{0, 0, 0},
 	{0, 0, 0}
 };
@@ -34,7 +38,7 @@ struct position_data position = {
 Time mpu_last_update_time = 0;
 
 void updateRotationMatrix(){
-	readMPUData(&position);
+	readMPUData(&position); //ToDoLeo
 	if(mpu_last_update_time == 0){
 		mpu_last_update_time = start_timer();
 		return;

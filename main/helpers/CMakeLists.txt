@@ -1,3 +1,7 @@
-add_library(helpers
+add_library(kitemath
+ kitemath.c
+)
+
+add_library(timer
  timer.c
- math.c)
+)
