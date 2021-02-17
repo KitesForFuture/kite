@@ -10,7 +10,7 @@
 
 
 // 26,27,12,13 is a good choice
-void initMotors(int pin0, int pin1, int pin2, int pin3);
+void initMotors(int pins[], int length);
 
 // angle: -90 ... 90
 void setAngle(int motor, float degreeF);

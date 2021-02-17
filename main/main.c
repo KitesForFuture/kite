@@ -31,6 +31,11 @@ void app_main(void)
     initMPU6050(mpu6050, mpu_callibration);
 	//initMotors(26, 27, 12, 13);
 	/* initPWMInput(26, 27, 12, 13); */
+   
+	//int output_pins[] = {26, 27};
+	//initMotors(output_pins, 2);
+	//int input_pins[] = {12, 13};
+	//initPWMInput(input_pins, 2);
     float test;
 
     
@@ -53,9 +58,15 @@ void app_main(void)
         //updatePWMInput();
 		
         printf("BMP280 Height: %f\n", getHeight());
+
 		
 		/* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
 		
+
+		//setSpeed(0,30);
+		//setSpeed(1,60);
+		//printf("pwm-input: %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1));
+
 		
 		//setAngle(0, degree);
 		
