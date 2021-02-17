@@ -25,6 +25,7 @@ void app_main(void)
         {readEEPROM(0*sizeof(float)), readEEPROM(1*sizeof(float)), readEEPROM(2*sizeof(float))}, //ToDoLeo make pretty
         {readEEPROM(3*sizeof(float)), readEEPROM(4*sizeof(float)), readEEPROM(5*sizeof(float))}
     };
+    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", readEEPROM(0*sizeof(float)), readEEPROM(1*sizeof(float)), readEEPROM(2*sizeof(float)), readEEPROM(3*sizeof(float)), readEEPROM(4*sizeof(float)), readEEPROM(5*sizeof(float)));
 
     init_bmp280(bmp280, readEEPROM(6*sizeof(float)));
     initMPU6050(mpu6050, mpu_callibration);
