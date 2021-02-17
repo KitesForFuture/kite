@@ -15,10 +15,7 @@ static struct i2c_identifier i2c_identifier;
 static float gyro_precision_factor;	//factor needed to get to deg/sec
 static float accel_precision_factor;	//factor needed to get to m/s
 
-static union Conversion {
- int16_t i[3];
- uint8_t c[6];
-} conversion;
+static uint8_t six_axis_raw_data[6];
 
 //sens = 0 <-> +- 250 deg/sec
 //sens = 1 <-> +- 500 deg/sec
@@ -56,17 +53,17 @@ static void readMPURawData(struct position_data *out){
 	//ToDoLeo vector operations & unify with readMPUData
 
 	//read acc/gyro data at register 59..., 67...
-	i2c_read_bytes(i2c_identifier, 1, 67, 6, conversion.c);
+	i2c_read_bytes(i2c_identifier, 1, 67, 6, six_axis_raw_data);
 	//GYRO X / Y / Z
-	out->gyro[0] = gyro_precision_factor*(int16_t)((conversion.c[0] << 8) | conversion.c[1]);
-	out->gyro[1] = gyro_precision_factor*(int16_t)((conversion.c[2] << 8) | conversion.c[3]);
-	out->gyro[2] = gyro_precision_factor*(int16_t)((conversion.c[4] << 8) | conversion.c[5]);
+	out->gyro[0] = gyro_precision_factor*(int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
+	out->gyro[1] = gyro_precision_factor*(int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
+	out->gyro[2] = gyro_precision_factor*(int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
 	
-  	i2c_read_bytes(i2c_identifier, 1, 59, 6, conversion.c);
+  	i2c_read_bytes(i2c_identifier, 1, 59, 6, six_axis_raw_data);
 	//ACCEL X / Y / Z
-	out->accel[0] = gyro_precision_factor*(int16_t)((conversion.c[0] << 8) | conversion.c[1]);
-	out->accel[1] = gyro_precision_factor*(int16_t)((conversion.c[2] << 8) | conversion.c[3]);
-	out->accel[2] = gyro_precision_factor*(int16_t)((conversion.c[4] << 8) | conversion.c[5]);
+	out->accel[0] = gyro_precision_factor*(int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
+	out->accel[1] = gyro_precision_factor*(int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
+	out->accel[2] = gyro_precision_factor*(int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
 	
 	//ToDoLeo the trick with the "union" unfortunately orders the bytes in wrong order. So can remove union?
 	
