@@ -61,9 +61,9 @@ static void readMPURawData(struct position_data *out){
 	
   	i2c_read_bytes(i2c_identifier, 1, 59, 6, six_axis_raw_data);
 	//ACCEL X / Y / Z
-	out->accel[0] = gyro_precision_factor*(int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
-	out->accel[1] = gyro_precision_factor*(int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
-	out->accel[2] = gyro_precision_factor*(int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
+	out->accel[0] = accel_precision_factor*(int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
+	out->accel[1] = accel_precision_factor*(int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
+	out->accel[2] = accel_precision_factor*(int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
 	
 	//ToDoLeo the trick with the "union" unfortunately orders the bytes in wrong order. So can remove union?
 	
@@ -88,6 +88,7 @@ void readMPUData(struct position_data *position){
 	position->accel[0] -= mpu_pos_callibration.accel[0];
 	position->accel[1] -= mpu_pos_callibration.accel[1];
 	position->accel[2] -= mpu_pos_callibration.accel[2];
+	
 	position->gyro[0] -= mpu_pos_callibration.gyro[0];
 	position->gyro[1] -= mpu_pos_callibration.gyro[1];
 	position->gyro[2] -= mpu_pos_callibration.gyro[2];

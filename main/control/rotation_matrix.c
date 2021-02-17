@@ -30,7 +30,7 @@
 // rotation of the drone in world coordinates
 float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 
-struct position_data position = {
+static struct position_data position = {
 	{0, 0, 0},
 	{0, 0, 0}
 };
