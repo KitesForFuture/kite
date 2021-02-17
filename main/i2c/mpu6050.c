@@ -58,16 +58,32 @@ static void readMPURawData(struct position_data *out){
 	//read acc/gyro data at register 59..., 67...
 	i2c_read_bytes(i2c_identifier, 1, 67, 6, conversion.c);
 	//GYRO X / Y / Z
-	out->gyro[0] = gyro_precision_factor*conversion.i[0];
+	out->gyro[0] = gyro_precision_factor*(int16_t)((conversion.c[0] << 8) | conversion.c[1]);
+	out->gyro[1] = gyro_precision_factor*(int16_t)((conversion.c[2] << 8) | conversion.c[3]);
+	out->gyro[2] = gyro_precision_factor*(int16_t)((conversion.c[4] << 8) | conversion.c[5]);
+	
+  	i2c_read_bytes(i2c_identifier, 1, 59, 6, conversion.c);
+	//ACCEL X / Y / Z
+	out->accel[0] = gyro_precision_factor*(int16_t)((conversion.c[0] << 8) | conversion.c[1]);
+	out->accel[1] = gyro_precision_factor*(int16_t)((conversion.c[2] << 8) | conversion.c[3]);
+	out->accel[2] = gyro_precision_factor*(int16_t)((conversion.c[4] << 8) | conversion.c[5]);
+	
+	//ToDoLeo the trick with the "union" unfortunately orders the bytes in wrong order. So can remove union?
+	
+	//GYRO X / Y / Z
+	/*out->gyro[0] = gyro_precision_factor*conversion.i[0];
 	out->gyro[1] = gyro_precision_factor*conversion.i[1];
 	out->gyro[2] = gyro_precision_factor*conversion.i[2];
+	float test = gyro_precision_factor*(int16_t)((conversion.c[0] << 8) | conversion.c[1]);
+	printf("test = %f\n", test);
+	printf("gyro[0]: high = %d, low = %d\n", conversion.c[0], conversion.c[1]);
 	printf("gyro: %f, %f, %f\n", out->gyro[0], out->gyro[1], out->gyro[2]);
   	i2c_read_bytes(i2c_identifier, 1, 59, 6, conversion.c);
 	//ACCEL X / Y / Z
 	out->accel[0] = accel_precision_factor*conversion.i[0];
 	out->accel[1] = accel_precision_factor*conversion.i[1];
 	out->accel[2] = accel_precision_factor*conversion.i[2];
-	printf("accel: %f, %f, %f\n", out->accel[0], out->accel[1], out->accel[2]);
+	*/
 }
 
 void readMPUData(struct position_data *position){
