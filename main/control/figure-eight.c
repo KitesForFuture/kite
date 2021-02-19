@@ -2,10 +2,15 @@
 #include "rotation_matrix.h"
 
 
+
 #define P_RUDDER 100
 #define D_RUDDER 0.2
 
 float oldBeta = 0;
+float nose_horizon = 0;
+float how_plane_like = 0;
+float left_right_orientation = 0;
+float beta = 0;
 
 float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder_factor){
 	
@@ -16,12 +21,12 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	// 1	nose straight up
 	// 0	nose horizontal
 	// -1	nose straight down
-	float nose_horizon = rotation_matrix[0];//scalarProductOfMatrices(x, up_vector, 3);
+	nose_horizon = rotation_matrix[0];//scalarProductOfMatrices(x, up_vector, 3);
 	
 	// 1	flying horizontally like a plane
 	// 0	upside pointing sideways
 	// -1	flying upside down
-	float how_plane_like = rotation_matrix[2];//scalarProductOfMatrices(z, up_vector, 3);
+	how_plane_like = rotation_matrix[2];//scalarProductOfMatrices(z, up_vector, 3);
 	
 	
 	
@@ -40,12 +45,12 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	// 1:	going left
 	// 0:	going straight
 	// -1:	going right
-	float left_right_orientation = scalarProductOfMatrices(x, neutral_left_wing_pos, 3);
+	left_right_orientation = scalarProductOfMatrices(x, neutral_left_wing_pos, 3);
 	// 0		straight up
 	// pi/-pi	straight down
 	// <0		left
 	// >0		right
-	float beta = 0;
+	
 	
 	if(nose_horizon > 0){
 		beta = safe_acos(left_right_orientation) - 3.1415926535*0.5;
@@ -64,6 +69,8 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	
 	if(fabs(P_RUDDER*p_rudder_factor*(oldBeta - beta)) < 1 || how_plane_like > 0.97) beta = oldBeta;
 	else oldBeta = beta;
+	
+	
 	
 	return P_RUDDER*p_rudder_factor*beta - D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];
 }
