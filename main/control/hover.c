@@ -11,48 +11,17 @@ float oldBetaHover = 0;
 float oldAlphaHover = 0;
 
 float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, float d_rudder_factor){
-	
-	//float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
-	
-	//float z[] = {rotation_matrix[2], rotation_matrix[5], rotation_matrix[8]};
-	//float up_vector[] = {1,0,0};
-	
+
 	// 1	nose straight up
 	// 0	nose horizontal
 	// -1	nose straight down
-	float nose_horizon = rotation_matrix[0];//scalarProductOfMatrices(x, up_vector, 3);
-	
-	// 1	flying horizontally like a plane
-	// 0	upside pointing sideways
-	// -1	flying upside down
-	//float how_plane_like = rotation_matrix[2];//scalarProductOfMatrices(z, up_vector, 3);
-	
-	
-	
-	// neutral_left_wing_pos is where the left wing would land if only rudder is used to rotate the left wing into the horizon plane: z crossproduct (1,0,0)
-	//float neutral_left_wing_pos[3];
-	//crossProduct(rotation_matrix[2], rotation_matrix[5], rotation_matrix[8], 1, 0, 0, neutral_left_wing_pos);
-	
-	//float norm = normalize(neutral_left_wing_pos, 3);
-	
-	/*
-	// neutral_nose is the highest point the nose can be rotated to if only rudder is used: neutral_left_wing_pos crossproduct z
-	// neutral_left_wing_pos rotated by 90 degrees in the plane orthogonal to z
-	float neutral_nose[3];
-	crossProduct(neutral_left_wing_pos[0], neutral_left_wing_pos[1], neutral_left_wing_pos[2], rotation_matrix[2], rotation_matrix[5], rotation_matrix[8], neutral_nose);
-	*/
+	float nose_horizon = rotation_matrix[0];// <x, (1,0,0)>
 	
 	// 1:	going left
 	// 0:	going straight
 	// -1:	going right
-	//left_right_orientation = scalarProductOfMatrices(x, neutral_left_wing_pos, 3);
-	float left_right_orientation = rotation_matrix[3]*rotation_matrix[8] - rotation_matrix[6]*rotation_matrix[5];
-	// norm_squared = rotation_matrix[8] * rotation_matrix[8] + rotation_matrix[5] * rotation_matrix[5];
-	// 0		straight up
-	// pi/-pi	straight down
-	// <0		left
-	// >0		right
-	
+	// z crossproduct (1,0,0) neutral_left_wing_pos is where the left wing would land if only rudder is used to rotate the left wing into the horizon plane
+	float left_right_orientation = rotation_matrix[3]*rotation_matrix[8] - rotation_matrix[6]*rotation_matrix[5]; // <x, z cross (1,0,0)>
 	
 	float beta = 0;
 	// CALCULATE CURRENT ANGLE
@@ -68,7 +37,6 @@ float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, f
 	
 	// THE ANGLE ERROR WE WANT TO CONTROL TOWARDS 0
 	beta -= sidewards_tilt_angle;
-	
 	
 	// IF MORE ROLL NEUTRAL THAN KITE-LIKE, DON'T CONTROLL RUDDER, BUT ONLY ELEVATOR
 	if(nose_horizon < 0.1 && fabs(rotation_matrix[2]) > fabs(rotation_matrix[1])/*|<z, (1,0,0)>| > |<y, (1,0,0)>|*/){
