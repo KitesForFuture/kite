@@ -16,6 +16,7 @@
 #include "esp_now.h"
 #include "RC.c"
 #include "control/figure-eight.c"
+#include "control/hover.c"
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};

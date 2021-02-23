@@ -15,9 +15,10 @@ float beta = 0;
 float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder_factor){
 	
 	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
-	float z[] = {rotation_matrix[2], rotation_matrix[5], rotation_matrix[8]};
 	
-	float up_vector[] = {1,0,0};
+	//float z[] = {rotation_matrix[2], rotation_matrix[5], rotation_matrix[8]};
+	//float up_vector[] = {1,0,0};
+	
 	// 1	nose straight up
 	// 0	nose horizontal
 	// -1	nose straight down
