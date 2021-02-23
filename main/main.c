@@ -37,26 +37,12 @@ void app_main(void)
 
     init_bmp280(bus1, readEEPROM(6));
     initMPU6050(bus0, mpu_callibration);
-	int output_pins[] = {26};
-	initMotors(output_pins, 1);
-	//int input_pins[] = {12, 13, 27};
-	//initPWMInput(input_pins, 3);
+	int output_pins[] = {26,27,12,13};
+	initMotors(output_pins, 4);
+	
 	int input_pins[] = {4, 33, 2, 17, 16};
 	initPWMInput(input_pins, 5);
-    float test;
-
-    printf("EEProm: ");
-    test = readEEPROM(6);
-    printf("%f\n", test);
-
-    //printf("BMP280 Pressure Diff: ");
-    //test = getPressureDiff();
-    //printf("%f\n", test);
-	
-	/*
-	float degree = -90;
-	float increment = 1;
-	*/
+    
     while(1) {
         vTaskDelay(1);
 
@@ -66,44 +52,34 @@ void app_main(void)
         
         updatePWMInput();
 		
-        //printf("BMP280 Height: %f\n", getHeight());
-		//setSpeed(0,30);
-		//setSpeed(1,60);
-		printf("pwm-input: %f, %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3), getPWMInputMinus1to1normalized(4));
+        printf("BMP280 Height: %f\n", getHeight());
 		
-		/*
-		setAngle(0, degree);
 		
-        degree += increment;
-        if(degree == 90 || degree == -90){
-        	increment *= -1;
-        }
-        */
-        
-        //printf("rotation matrix:\n %f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
-        
         // FIGURE EIGHT PREPARATION: HOLD NOSE STRAIGHT UP
         getPWMInputMinus1to1normalized(0);
         getPWMInputMinus1to1normalized(1);
         float target_angle = 1.2*3.1415926535*0.5*getPWMInputMinus1to1normalized(2);
-        //printf("target_angle = %f\n", target_angle);
-        float rudder_angle = 0;
-        if(getPWMInputMinus1to1normalized(1) > -0.9){
-        	rudder_angle = getRudderControl(target_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))));
-        	//setAngle(0, getRudderControl(target_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0)))));
-        }else{
-        	rudder_angle = -60*getPWMInputMinus1to1normalized(2)+getRudderControl(0, 0, (float)(pow(10,getPWMInputMinus1to1normalized(0))));
-        	//setAngle(0, 45*getPWMInputMinus1to1normalized(2)+getRudderControl(0, 0, (float)(pow(10,getPWMInputMinus1to1normalized(0)))));
-        }
-    
-        // SENDING DEBUGGING DATA TO GROUND
-		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), getHeight(), how_plane_like, nose_horizon, get_uptime_seconds(), beta, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	
+        
+        // MANUAL MODE	
+        //rudder_angle = -60*getPWMInputMinus1to1normalized(2)+getRudderControl(0, 0, (float)(pow(10,getPWMInputMinus1to1normalized(0))));
+        
+        float rudder_angle = getHoverRudderControl(0, 1, 1);
+        
+        
         if(rudder_angle > 45) rudder_angle = 45;
         if(rudder_angle < -45) rudder_angle = -45;
         
         
-        setAngle(0, rudder_angle);
+        float elevator_angle = getHoverElevatorControl(0, 1, 1);
         
+        setAngle(0, rudder_angle);
+        setAngle(1, -elevator_angle);
+        
+        setSpeed(2, 45);
+        setSpeed(3, 45);
+        
+        
+        // SENDING DEBUGGING DATA TO GROUND
+		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), getHeight(), how_plane_like, nose_horizon, get_uptime_seconds(), beta, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 }
