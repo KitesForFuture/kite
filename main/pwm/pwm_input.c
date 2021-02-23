@@ -1,11 +1,11 @@
 
 #include "pwm_input.h"
 
-#define NUM_PWM_INPUT_CHANNELS 4
+#define NUM_PWM_INPUT_CHANNELS 6
 
 int num_registered_channels = 0;
-int pwm_input_channels[NUM_PWM_INPUT_CHANNELS] = {1, 2, 3, 4};
-int pwm_in_gpios[NUM_PWM_INPUT_CHANNELS] = {26, 27, 12, 13};//{2, 0, 4, 5};
+int pwm_input_channels[NUM_PWM_INPUT_CHANNELS] = {1, 2, 3, 4, 5, 6};
+int pwm_in_gpios[NUM_PWM_INPUT_CHANNELS] = {26, 27, 12, 13, 0, 2};//{2, 0, 4, 5};
 
 float smoothedSWC = 0;
 
