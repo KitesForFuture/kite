@@ -88,6 +88,21 @@ float getPressureDiff(){
 }
 
 // HEIGHT DIFFERENCE SINCE BOOT AS MEASURED USING ATMOSPHERIC PRESSURE
+float smoothHeight = 0;
+/*float fabs(float x){
+if(x > 0) return x;
+else return -x;
+}
+*/
 float getHeight() {
-  return -10 * getPressureDiff();
+	/*float x = fabs(-10 * getPressureDiff() - smoothHeight);
+	if(x < 0.2){
+		smoothHeight = 0.9*smoothHeight + 0.1 * -10 * getPressureDiff();
+	}else{
+		smoothHeight =  0.5*smoothHeight + 0.5 * -10 * getPressureDiff(); // FAST UPDATE OF smoothHeight
+	}
+	*/
+	smoothHeight =  0.5*smoothHeight + 0.5 * -10 * getPressureDiff(); // FAST UPDATE OF smoothHeight
+	return smoothHeight;
+	//return -10 * getPressureDiff();
 }

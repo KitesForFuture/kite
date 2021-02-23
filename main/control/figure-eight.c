@@ -65,7 +65,8 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	
 	beta -= target_angle;
 	
-	if(norm < 0.01) beta = 0;
+	//DUPLICATE OF how_plane_like
+	//if(norm < 0.01) beta = 0;
 	
 	
 	if(fabs(P_RUDDER*p_rudder_factor*(oldBeta - beta)) < 1 || how_plane_like > 0.97) beta = oldBeta;

@@ -52,7 +52,7 @@ void app_main(void)
         
         updatePWMInput();
 		
-        printf("BMP280 Height: %f\n", getHeight());
+        //printf("BMP280 Height: %f\n", getHeight());
 		
 		
         // FIGURE EIGHT PREPARATION: HOLD NOSE STRAIGHT UP
@@ -80,6 +80,6 @@ void app_main(void)
         
         
         // SENDING DEBUGGING DATA TO GROUND
-		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), getHeight(), how_plane_like, nose_horizon, get_uptime_seconds(), beta, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), 0, how_plane_like, nose_horizon, get_uptime_seconds(), beta, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, getHeight());
     }
 }
