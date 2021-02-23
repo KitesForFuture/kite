@@ -11,6 +11,10 @@
 #include "pwm/motors.h"
 #include "pwm/pwm_input.h"
 
+#include "nvs_flash.h"
+#include "esp_wifi.h"
+#include "esp_now.h"
+#include "RC.c"
 #include "control/figure-eight.c"
 
 struct i2c_bus bus0 = {14, 25};
@@ -19,6 +23,10 @@ struct i2c_bus bus1 = {18, 19};
 
 void app_main(void)
 {
+	init_uptime();
+	setRole(KITE);
+	network_setup();
+	
     init_cat24(bus1);
 
     struct position_data mpu_callibration = {
@@ -86,9 +94,13 @@ void app_main(void)
         	rudder_angle = -60*getPWMInputMinus1to1normalized(2)+getRudderControl(0, 0, (float)(pow(10,getPWMInputMinus1to1normalized(0))));
         	//setAngle(0, 45*getPWMInputMinus1to1normalized(2)+getRudderControl(0, 0, (float)(pow(10,getPWMInputMinus1to1normalized(0)))));
         }
-        
+    
+        // SENDING DEBUGGING DATA TO GROUND
+		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), getHeight(), how_plane_like, nose_horizon, get_uptime_seconds(), beta, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	
         if(rudder_angle > 45) rudder_angle = 45;
         if(rudder_angle < -45) rudder_angle = -45;
+        
         
         setAngle(0, rudder_angle);
         
