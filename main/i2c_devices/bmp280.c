@@ -10,7 +10,7 @@
 #define  ONE_DIVIDED_BY_INITIAL_MEASUREMENT_CYCLE_COUNT 0.2
 
 struct i2c_bus bmp280_bus;
-Time last_update;
+static Time last_update = 0;
 
 void startBmp280Measurement(){
 	// chip_addr, register, precision(0x25 least precise, takes 9 ms, 0x5D most precise, takes 45ms)
@@ -18,12 +18,11 @@ void startBmp280Measurement(){
   last_update = start_timer();
 }
 
-float minus_dp_by_dt_factor;
-float initial_smoothened_temperature = 0;
-float initial_smoothened_pressure = 0;
-float current_smoothened_temperature = 0;
-float current_smoothened_pressure = 0;
-int64_t last_update = 0;
+static float minus_dp_by_dt_factor;
+static float initial_smoothened_temperature = 0;
+static float initial_smoothened_pressure = 0;
+static float current_smoothened_temperature = 0;
+static float current_smoothened_pressure = 0;
 
 uint32_t getTemperature(){
 	//printf("bmp280_bus = %d, %d\n", bmp280_bus.sda, bmp280_bus.scl);
@@ -88,21 +87,39 @@ float getPressureDiff(){
 }
 
 // HEIGHT DIFFERENCE SINCE BOOT AS MEASURED USING ATMOSPHERIC PRESSURE
-float smoothHeight = 0;
-/*float fabs(float x){
+static float smoothHeight = 0;
+float fabs(float x){
 if(x > 0) return x;
 else return -x;
 }
-*/
+
 float getHeight() {
-	/*float x = fabs(-10 * getPressureDiff() - smoothHeight);
-	if(x < 0.2){
-		smoothHeight = 0.9*smoothHeight + 0.1 * -10 * getPressureDiff();
-	}else{
-		smoothHeight =  0.5*smoothHeight + 0.5 * -10 * getPressureDiff(); // FAST UPDATE OF smoothHeight
+
+	float newHeight = -10 * getPressureDiff();
+	// SMOOTHING FACTOR:
+	// 0.01 ... very smoothed
+	// 1  ...   not smoothed at all
+	// increase the smoothing factor if reading is further than 0.1 meters from smoothed line, max smoothing_factor is 1.
+	float smoothing_factor = 0.01;
+	if(fabs(smoothHeight - newHeight) > 0.1){
+		smoothing_factor += (fabs(smoothHeight - newHeight) - 0.1)*5;
 	}
-	*/
-	smoothHeight =  0.5*smoothHeight + 0.5 * -10 * getPressureDiff(); // FAST UPDATE OF smoothHeight
+	if(smoothing_factor > 1) smoothing_factor = 1;
+	smoothHeight =  (1-smoothing_factor)*smoothHeight + smoothing_factor * -10 * getPressureDiff();
+	
 	return smoothHeight;
-	//return -10 * getPressureDiff();
+}
+
+static float lastHeight = 0;
+static Time derivativeTimeStep = 0;
+static float dH = 0;
+float getHeightDerivative(){
+	float dT = query_timer_seconds(derivativeTimeStep);
+	if(dT < 0.01) return dH; // DON'T RECALCULATE IF LAST READING IS TOO RECENT / TIME STEP TOO SMALL
+	
+	dH = 0.6*dH + (0.4* (getHeight() - lastHeight)/dT); // SLIGHT SMOOTHING
+	
+	lastHeight = getHeight();
+	derivativeTimeStep = start_timer();
+	return dH;
 }

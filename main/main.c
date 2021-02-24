@@ -78,8 +78,8 @@ void app_main(void)
         setSpeed(2, 45);
         setSpeed(3, 45);
         
-        
+        printf("%f, %f\n", getHeightDerivative(), getHeight());
         // SENDING DEBUGGING DATA TO GROUND
-		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), 0, how_plane_like, nose_horizon, get_uptime_seconds(), beta, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, getHeight());
+		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), 0, how_plane_like, nose_horizon, get_uptime_seconds(), beta, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, getHeightDerivative(), getHeight());
     }
 }

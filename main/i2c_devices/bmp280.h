@@ -10,5 +10,6 @@ void init_bmp280(struct i2c_bus bus_arg, float dp_by_dt);
 //float getPressureDiff();
 
 float getHeight();
+float getHeightDerivative();
 
 #endif
