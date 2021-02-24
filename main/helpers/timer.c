@@ -23,3 +23,10 @@ void init_uptime(){
 float get_uptime_seconds(){
 	return query_timer_seconds(start_time_for_uptime);
 }
+
+float get_time_step(Time* t){
+	if(*t == 0) {*t = start_timer(); return 0;}
+	float d_t = query_timer_seconds(*t);
+	*t = start_timer();
+	return d_t;
+}

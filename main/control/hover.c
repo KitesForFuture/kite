@@ -1,4 +1,5 @@
 #include "../helpers/math.h"
+#include "../helpers/timer.h"
 #include "rotation_matrix.h"
 
 #define P_RUDDER 100
@@ -7,8 +8,53 @@
 #define P_ELEVATOR 100
 #define D_ELEVATOR 0.2
 
+#define P_HEIGHT 15
+#define D_HEIGHT 1
+#define TARGET_HEIGHT_BOUND 2 // in meters
+
 float oldBetaHover = 0;
 float oldAlphaHover = 0;
+
+
+
+static float target_height = 0;
+static Time last_called = 0;
+float getHoverHeightControl(float goal_height, float rate_of_climb, float p_height_factor, float d_height_factor){
+	
+	// target_height IS WHERE THE PD-CONTROLLER ATTEMPTS TO KEEP THE KITE AT.
+	// target_height GOES TO goal_height at rate_of_climb, except if:
+	// - actual height h can't keep up with target_height
+	
+	float h = getHeight();
+	float d_h = getHeightDerivative();
+	
+	// TIME STEP
+	//if(last_called == 0) {lastCalled = start_timer(); return 0;}
+	//float d_t = query_timer_seconds(last_called);
+	//last_called = start_timer();
+	float d_t = get_time_step(&last_called);
+	if(d_t == 0) return 0;
+	// HOW MUCH DOES TARGET HEIGHT CHANGE
+	float target_height_update = rate_of_climb * d_t;
+	
+	// DON'T OVERSHOOT TARGET HEIGHT OVER GOAL HEIGHT
+	if(fabs(goal_height - target_height) < target_height_update) target_height_update = fabs(goal_height - target_height);
+	
+	float update_sign = sign(goal_height - target_height);
+	
+	target_height += target_height_update*update_sign;
+	
+	// BOUND |target_height - h|
+	if(target_height > h + TARGET_HEIGHT_BOUND) target_height = h + TARGET_HEIGHT_BOUND;
+	if(target_height < h - TARGET_HEIGHT_BOUND) target_height = h - TARGET_HEIGHT_BOUND;
+	
+	float P = target_height - h;
+	float D = -d_h;
+	//printf("rate_of_climb = %f, d_t = %f, P= %f, D=%f, target_h = %f, goal_h = %f, C = %f\n",rate_of_climb, d_t, P, D, target_height, goal_height, P_HEIGHT*p_height_factor*P - D_HEIGHT*d_height_factor*D);
+	
+	
+	return P_HEIGHT*p_height_factor*P + D_HEIGHT*d_height_factor*D;	
+}
 
 float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, float d_rudder_factor){
 
