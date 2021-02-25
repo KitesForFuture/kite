@@ -83,18 +83,20 @@ void app_main(void)
         	float rate_of_climb = 0.3;
         	rudder_angle = getHoverRudderControl(0, 1, 1);
 		    
-		    if(rudder_angle > 45) rudder_angle = 45;
-		    if(rudder_angle < -45) rudder_angle = -45;
-		    
 		    elevator_angle = -getHoverElevatorControl(0, 1, 1);
 		    
-		    propeller_speed = 30 + getHoverHeightControl(goal_height, rate_of_climb, 1, 1);
+		    propeller_speed = 30/*TODO: find neutral propeller speed*/ + getHoverHeightControl(goal_height, rate_of_climb, 1, 1);
+		    // IF DIVING DOWNWARDS: TURN OFF PROPELLERS
+		    float nose_horizon = rotation_matrix[0];// <x, (1,0,0)>
+		    if(nose_horizon < -0.1){
+		    	propeller_speed = 0;
+		    }
 		    
         } else if (FLIGHT_MODE == FIGURE_EIGHT) {
         
         	float target_angle = 1.2*3.1415926535*0.5*DIRECTION*1;// 1 means 1.2*90 degrees, 0 means 0 degrees
         	rudder_angle = getRudderControl(target_angle, 1, 1);
-        	
+		    
         } else if (FLIGHT_MODE == LANDING) {
         
 			rudder_angle = 0;
@@ -107,6 +109,13 @@ void app_main(void)
         	propeller_speed = 90*CH3;
         	
         }
+        
+        // DON'T LET SERVOS BREAK THE KITE
+		if(rudder_angle > 45) rudder_angle = 45;
+		if(rudder_angle < -45) rudder_angle = -45;
+		
+		// DON'T OVERHEAT THE MOTORS
+		if(propeller_speed > 90) propeller_speed = 90;
         
         setAngle(0, rudder_angle);
 		setAngle(1, elevator_angle);
