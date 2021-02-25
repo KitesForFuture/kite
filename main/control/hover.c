@@ -57,7 +57,9 @@ float getHoverHeightControl(float goal_height, float rate_of_climb, float p_heig
 }
 
 float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, float d_rudder_factor){
-
+	
+	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
+	
 	// 1	nose straight up
 	// 0	nose horizontal
 	// -1	nose straight down
@@ -111,7 +113,9 @@ float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, f
 
 
 float getHoverElevatorControl(float backwards_tilt_angle, float p_elevator_factor, float d_elevator_factor){
-
+	
+	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
+	
 	// 1	nose straight up
 	// 0	nose horizontal
 	// -1	nose straight down
@@ -137,7 +141,7 @@ float getHoverElevatorControl(float backwards_tilt_angle, float p_elevator_facto
 	if(nose_horizon > 0){
 		alpha = safe_acos(forward_backward_orientation) - 3.1415926535*0.5;
 	}else{
-		if(left_right_orientation > 0/*going left*/){
+		if(forward_backward_orientation > 0/*going left*/){
 			alpha = - 3.1415926535*0.5 - safe_acos(forward_backward_orientation);
 		}else{
 			alpha = 3.1415926535*1.5 - safe_acos(forward_backward_orientation);

@@ -34,7 +34,7 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	// neutral_left_wing_pos is where the left wing would land if only rudder is used to rotate the left wing into the horizon plane: z crossproduct (1,0,0)
 	float neutral_left_wing_pos[3];
 	crossProduct(rotation_matrix[2], rotation_matrix[5], rotation_matrix[8], 1, 0, 0, neutral_left_wing_pos);
-	float norm = normalize(neutral_left_wing_pos, 3);
+	normalize(neutral_left_wing_pos, 3);
 	
 	/*
 	// neutral_nose is the highest point the nose can be rotated to if only rudder is used: neutral_left_wing_pos crossproduct z
