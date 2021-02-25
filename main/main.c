@@ -64,13 +64,14 @@ void app_main(void)
         
         updatePWMInput();
 		
-        // FIGURE EIGHT PREPARATION: HOLD NOSE STRAIGHT UP
+        // READING RC SIGNALS
         float CH1 = getPWMInputMinus1to1normalized(0);
         float CH2 = getPWMInputMinus1to1normalized(1);
         float CH3 = getPWMInput0to1normalized(2);
         // CH4 not used
         float CH5 = getPWMInputMinus1to1normalized(3);
         float CH6 = getPWMInputMinus1to1normalized(4);
+        
         
         float rudder_angle = 0;
         float elevator_angle = 0;
