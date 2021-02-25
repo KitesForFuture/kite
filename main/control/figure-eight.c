@@ -6,11 +6,11 @@
 #define P_RUDDER 100
 #define D_RUDDER 0.2
 
-float oldBeta = 0;
-float nose_horizon = 0;
-float how_plane_like = 0;
-float left_right_orientation = 0;
-float beta = 0;
+static float oldBeta = 0;
+
+// z axis projected onto ground plane and averaged over about 10 seconds
+static float wind_direction[] = {0,0};
+static Time z_axis_last_update_time = 0;
 
 float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder_factor){
 	
@@ -22,12 +22,12 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	// 1	nose straight up
 	// 0	nose horizontal
 	// -1	nose straight down
-	nose_horizon = rotation_matrix[0];//scalarProductOfMatrices(x, up_vector, 3);
+	float nose_horizon = rotation_matrix[0];//scalarProductOfMatrices(x, up_vector, 3);
 	
 	// 1	flying horizontally like a plane
 	// 0	upside pointing sideways
 	// -1	flying upside down
-	how_plane_like = rotation_matrix[2];//scalarProductOfMatrices(z, up_vector, 3);
+	float how_plane_like = rotation_matrix[2];//scalarProductOfMatrices(z, up_vector, 3);
 	
 	
 	
@@ -46,13 +46,13 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	// 1:	going left
 	// 0:	going straight
 	// -1:	going right
-	left_right_orientation = scalarProductOfMatrices(x, neutral_left_wing_pos, 3);
+	float left_right_orientation = scalarProductOfMatrices(x, neutral_left_wing_pos, 3);
 	// 0		straight up
 	// pi/-pi	straight down
 	// <0		left
 	// >0		right
 	
-	
+	float beta = 0;
 	if(nose_horizon > 0){
 		beta = safe_acos(left_right_orientation) - 3.1415926535*0.5;
 	}else{
@@ -68,8 +68,33 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	//DUPLICATE OF how_plane_like
 	//if(norm < 0.01) beta = 0;
 	
+	// IF PLANE ALMOST HORIZONTAL:
+	// FINISH TURN
+	if(how_plane_like > 0.97){
+		// WHILE NOT TURNED ENOUGH:
+		// KEEP RUDDER FIX OR TURN FURTHER
+		if(rotation_matrix[3] * wind_direction[0] + rotation_matrix[6] * wind_direction[1] < 0){
+			beta = sign(target_angle) * 20;
+		}else{
+			beta = sign(target_angle) * 5;
+		}
+	}else{
+		// CALCULATE THE DIRECTION OF THE WIND
+		float dT = query_timer_seconds(z_axis_last_update_time);
+		if(dT > 0.1){
+			float z_proj[] = {rotation_matrix[5], rotation_matrix[8]};
+			normalize(z_proj, 2);
+			wind_direction[0] = 0.986 * wind_direction[0] + 0.014 * z_proj[0];
+			wind_direction[1] = 0.986 * wind_direction[1] + 0.014 * z_proj[1];
+			normalize(wind_direction, 2);
+			
+			z_axis_last_update_time = start_timer();
+		}
+	}
 	
-	if(fabs(P_RUDDER*p_rudder_factor*(oldBeta - beta)) < 1 || how_plane_like > 0.97) beta = oldBeta;
+	// IF SERVO ROTATION INSIDE OF 1 DEGREE DEADBAND:
+	// DON'T MOVE
+	if(fabs(P_RUDDER*p_rudder_factor*(oldBeta - beta)) < 1 ) beta = oldBeta;
 	else oldBeta = beta;
 	
 	

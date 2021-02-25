@@ -12,8 +12,8 @@
 #define D_HEIGHT 1
 #define TARGET_HEIGHT_BOUND 2 // in meters
 
-float oldBetaHover = 0;
-float oldAlphaHover = 0;
+static float oldBetaHover = 0;
+static float oldAlphaHover = 0;
 
 
 
@@ -63,11 +63,20 @@ float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, f
 	// -1	nose straight down
 	float nose_horizon = rotation_matrix[0];// <x, (1,0,0)>
 	
+	
+	// neutral_left_wing_pos is where the left wing would land if only rudder is used to rotate the left wing into the horizon plane: z crossproduct (1,0,0)
+	float neutral_left_wing_pos[3];
+	crossProduct(rotation_matrix[2], rotation_matrix[5], rotation_matrix[8], 1, 0, 0, neutral_left_wing_pos);
+	normalize(neutral_left_wing_pos, 3);
+	
+	
 	// 1:	going left
 	// 0:	going straight
 	// -1:	going right
 	// z crossproduct (1,0,0) neutral_left_wing_pos is where the left wing would land if only rudder is used to rotate the left wing into the horizon plane
-	float left_right_orientation = rotation_matrix[3]*rotation_matrix[8] - rotation_matrix[6]*rotation_matrix[5]; // <x, z cross (1,0,0)>
+	float left_right_orientation = scalarProductOfMatrices(x, neutral_left_wing_pos, 3);
+	// In below line, the normalization of neutral_left_wing_pos would be missing:
+	// rotation_matrix[3]*rotation_matrix[8] - rotation_matrix[6]*rotation_matrix[5]; // <x, z cross (1,0,0)>
 	
 	float beta = 0;
 	// CALCULATE CURRENT ANGLE
@@ -108,11 +117,20 @@ float getHoverElevatorControl(float backwards_tilt_angle, float p_elevator_facto
 	// -1	nose straight down
 	float nose_horizon = rotation_matrix[0];//<x, (1,0,0)>
 	
+	
+	// neutral_left_wing_pos is where the left wing would land if only rudder is used to rotate the left wing into the horizon plane: y cross (-1,0,0)
+	float neutral_back_pos[3];
+	crossProduct(rotation_matrix[1], rotation_matrix[4], rotation_matrix[7], -1, 0, 0, neutral_back_pos);
+	normalize(neutral_back_pos, 3);
+	
+	
 	// 1:	flying belly up
 	// 0:	going straight up
 	// -1:	flying belly down
 	// y crossproduct (1,0,0) is where the back of the plane would land if only elevator is used to rotate the back into the horizon plane.
-	float forward_backward_orientation = rotation_matrix[3]*rotation_matrix[7] - rotation_matrix[6]*rotation_matrix[4]; // <x, y cross (-1,0,0)>
+	float forward_backward_orientation = scalarProductOfMatrices(x, neutral_back_pos, 3);
+	// In below line, the normalization of neutral_left_wing_pos would be missing:
+	// rotation_matrix[3]*rotation_matrix[7] - rotation_matrix[6]*rotation_matrix[4]; // <x, y cross (-1,0,0)>
 	
 	float alpha = 0;
 	// CALCULATE CURRENT ANGLE
