@@ -20,7 +20,7 @@ static Time last_update = 0;
 
 static void start_measurement() {
     // chip_addr, register, precision(0x25 least precise, takes 9 ms, 0x5D most precise, takes 45ms)
-    i2c_send_bytes(i2c_identifier, 1, 0xF4, 1, (uint8_t[]) {0x5D});
+    i2c_send_byte(i2c_identifier, 1, 0xF4, 0x5D);
     last_update = start_timer();
 }
 

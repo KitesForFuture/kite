@@ -8,7 +8,7 @@ union Conversion {
  uint8_t c[sizeof(float)];
 };
 
-void cat24_init(struct i2c_identifier i2c_identifier_arg){ // ToDoLeo rename to init. Make sure init calls in main don't conflict
+void cat24_init(struct i2c_identifier i2c_identifier_arg){
     i2c_identifier = i2c_identifier_arg;
     init_interchip(i2c_identifier);
 }
