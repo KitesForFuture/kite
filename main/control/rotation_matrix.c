@@ -4,7 +4,7 @@
 #include "../helpers/timer.h"
 
 int8_t x_gravity_factor, y_gravity_factor, z_gravity_factor;
-Time mpu_last_update_time = 0;
+Time last_update = 0;
 
 // rotates matrix mat such that mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' aligns more with (a,b,c)'
 // (x_gravity_factor, y_gravity_factor, z_gravity_factor) can be initially measured acceleration vector, usually something close to (0,0,1)
@@ -51,12 +51,12 @@ static void rotate_towards_g(float mat[], float a, float b, float c, float out[]
 
 void rotation_matrix_update(struct position_data position, float rotation_matrix[]){
 
-	if(mpu_last_update_time == 0){
-		mpu_last_update_time = start_timer();
+	if(last_update == 0){
+        last_update = start_timer();
 		return;
 	}
-	float time_difference = query_timer_seconds(mpu_last_update_time);
-	mpu_last_update_time = start_timer();
+	float time_difference = query_timer_seconds(last_update);
+    last_update = start_timer();
 	
 	// matrix based:
 	// rotation-matrix:
