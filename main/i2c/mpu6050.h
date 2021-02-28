@@ -5,12 +5,12 @@
 #include "interchip.h"
 
 struct position_data {
-	float accel[3];
-  float gyro[3];
+    float accel[3];
+    float gyro[3];
 };
 
-void initMPU6050(struct i2c_identifier i2c_identifier_arg, struct position_data callibration_data);
+void mpu6050_init(struct i2c_identifier i2c_identifier_arg, struct position_data callibration_data);
 
-void readMPUData(struct position_data *out);
+void mpu6050_get_position(struct position_data *out);
 
 #endif

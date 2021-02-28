@@ -1,3 +1,4 @@
+#include <dirent.h>
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -16,7 +17,7 @@ struct i2c_identifier bmp280    = {{18, 19}, 0x76, 0};
 struct i2c_identifier mpu6050   = {{14, 25}, 104, 0};
 
 
-void app_main(void)
+_Noreturn void app_main(void)
 {
     cat24_init(cat24c256);
 
@@ -27,7 +28,7 @@ void app_main(void)
     printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", cat24_read_float(0*sizeof(cat24_read_float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float)), cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float)));
 
     bmp280_init(bmp280, cat24_read_float(6*sizeof(float)));
-    initMPU6050(mpu6050, mpu_callibration);
+    mpu6050_init(mpu6050, mpu_callibration);
 	//initMotors(26, 27, 12, 13);
 	/* initPWMInput(26, 27, 12, 13); */
    
@@ -35,13 +36,11 @@ void app_main(void)
 	//initMotors(output_pins, 2);
 	//int input_pins[] = {12, 13};
 	//initPWMInput(input_pins, 2);
-    float test;
 
-    
-
+    int test;
     printf("BMP280 Pressure Diff: ");
     test = bmp280_update_if_possible();
-    printf("%f\n", test);
+    printf("%i\n", test);
 	
 	
 	float degree = -90;
