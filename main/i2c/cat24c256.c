@@ -8,20 +8,18 @@ union Conversion {
  uint8_t c[sizeof(float)];
 };
 
-void init_cat24(struct i2c_identifier i2c_identifier_arg){ // ToDoLeo rename to init. Make sure init calls in main don't conflict
-	i2c_identifier = i2c_identifier_arg;
-  init_interchip(i2c_identifier);
+void cat24_init(struct i2c_identifier i2c_identifier_arg){ // ToDoLeo rename to init. Make sure init calls in main don't conflict
+    i2c_identifier = i2c_identifier_arg;
+    init_interchip(i2c_identifier);
 }
 
-// ToDoLeo rename
-void write2EEPROM(float number, int address){
+void cat24_write_float(float number, int address){
 	union Conversion conversion;
 	conversion.f = number;
 	i2c_send_bytes(i2c_identifier, 2, address, sizeof(float), conversion.c);
 }
 
-// ToDoLeo rename
-float readEEPROM(int address){	
+float cat24_read_float(int address){
 	union Conversion conversion;
 	i2c_read_bytes(i2c_identifier, 2, address, sizeof(float), conversion.c);
 	return conversion.f;

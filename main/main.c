@@ -18,15 +18,15 @@ struct i2c_identifier mpu6050   = {{14, 25}, 104, 0};
 
 void app_main(void)
 {
-    init_cat24(cat24c256);
+    cat24_init(cat24c256);
 
     struct position_data mpu_callibration = {
-        {readEEPROM(0*sizeof(float)), readEEPROM(1*sizeof(float)), readEEPROM(2*sizeof(float))}, //ToDoLeo make pretty
-        {readEEPROM(3*sizeof(float)), readEEPROM(4*sizeof(float)), readEEPROM(5*sizeof(float))}
+        {cat24_read_float(0*sizeof(float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float))}, //ToDoLeo make pretty
+        {cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float))}
     };
-    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", readEEPROM(0*sizeof(float)), readEEPROM(1*sizeof(float)), readEEPROM(2*sizeof(float)), readEEPROM(3*sizeof(float)), readEEPROM(4*sizeof(float)), readEEPROM(5*sizeof(float)));
+    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", cat24_read_float(0*sizeof(cat24_read_float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float)), cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float)));
 
-    bmp280_init(bmp280, readEEPROM(6*sizeof(float)));
+    bmp280_init(bmp280, cat24_read_float(6*sizeof(float)));
     initMPU6050(mpu6050, mpu_callibration);
 	//initMotors(26, 27, 12, 13);
 	/* initPWMInput(26, 27, 12, 13); */
