@@ -13,8 +13,8 @@ float query_timer_seconds(int64_t time){
 	return 0.000001*(float)(current_time - time);
 }
 
-int64_t query_timer_microseconds(int64_t time){
-	return esp_timer_get_time() - time;
+int64_t query_timer_ms(int64_t time){
+	return (esp_timer_get_time() - time) * 0.001;
 }
 
 void init_uptime(){

@@ -3,7 +3,7 @@
 #include "../helpers/timer.h"
 #include "bmp280.h"
 
-#define  UPDATE_INTERVAL_MICROSECONDS 50000
+#define  UPDATE_INTERVAL_MS 50
 #define  SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT 0.2
 #define  SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT 0.2
 #define  INITIAL_MEASUREMENT_CYCLE_COUNT 5
@@ -38,7 +38,7 @@ static float get_pressure() {
 }
 
 int bmp280_update_if_possible() {
-    if (query_timer_microseconds(last_update) >= UPDATE_INTERVAL_MICROSECONDS) {
+    if (query_timer_ms(last_update) >= UPDATE_INTERVAL_MS) {
         // current_smoothened_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothened_temperature;
         current_smoothened_temperature = ((float) get_temperature() * SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) +
                                          (current_smoothened_temperature *
@@ -60,14 +60,14 @@ void bmp280_init(struct i2c_identifier i2c_identifier_arg, float minus_dp_by_dt)
 
     // Setup current values to be not 0 (that would worsen the following smoothening process)
     start_measurement();
-    delay_ms(UPDATE_INTERVAL_MICROSECONDS);
+    delay_ms(UPDATE_INTERVAL_MS);
     current_smoothened_temperature = (float) get_temperature();
     current_smoothened_pressure = get_pressure();
 
     // Setup smoothened values
     start_measurement();
     for (int i = 0; i < INITIAL_MEASUREMENT_CYCLE_COUNT; i++) {
-        delay_ms(UPDATE_INTERVAL_MICROSECONDS);
+        delay_ms(UPDATE_INTERVAL_MS);
         bmp280_update_if_possible();
     }
     initial_smoothened_temperature = current_smoothened_temperature;
