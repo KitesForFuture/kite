@@ -3,12 +3,12 @@
 
 #include "interchip.h"
 
-int update_bmp280_if_necessary();
+int bmp280_update_if_possible();
 
-void init_bmp280(struct i2c_identifier i2c_identifier_arg, float minus_dp_by_dt);
+void bmp280_init(struct i2c_identifier i2c_identifier_arg, float minus_dp_by_dt);
 
-float getPressureDiff();
+float bmp280_get_pressure_diff();
 
-float getHeight();
+float bmp280_get_height();
 
 #endif

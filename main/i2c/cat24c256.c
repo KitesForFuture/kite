@@ -3,7 +3,7 @@
 
 static struct i2c_identifier i2c_identifier;
 
-static union Conversion {
+union Conversion {
  float f;
  uint8_t c[sizeof(float)];
 };

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "sdkconfig.h"
 
 #include "i2c/interchip.h"
 #include "i2c/cat24c256.h"
@@ -27,7 +26,7 @@ void app_main(void)
     };
     printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", readEEPROM(0*sizeof(float)), readEEPROM(1*sizeof(float)), readEEPROM(2*sizeof(float)), readEEPROM(3*sizeof(float)), readEEPROM(4*sizeof(float)), readEEPROM(5*sizeof(float)));
 
-    init_bmp280(bmp280, readEEPROM(6*sizeof(float)));
+    bmp280_init(bmp280, readEEPROM(6*sizeof(float)));
     initMPU6050(mpu6050, mpu_callibration);
 	//initMotors(26, 27, 12, 13);
 	/* initPWMInput(26, 27, 12, 13); */
@@ -41,7 +40,7 @@ void app_main(void)
     
 
     printf("BMP280 Pressure Diff: ");
-    test = getPressureDiff();
+    test = bmp280_update_if_possible();
     printf("%f\n", test);
 	
 	
@@ -51,13 +50,13 @@ void app_main(void)
     while(1) {
         vTaskDelay(10);
 
-        update_bmp280_if_necessary();
+        bmp280_update_if_possible();
         
         updateRotationMatrix();
         
         //updatePWMInput();
 		
-        printf("BMP280 Height: %f\n", getHeight());
+        printf("BMP280 Height: %f\n", bmp280_get_height());
 
 		
 		/* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */

@@ -1,4 +1,5 @@
 #include "timer.h"
+#include "freertos/task.h"
 
 static Time start_time_for_uptime = 0;
 
@@ -22,4 +23,8 @@ void init_uptime(){
 
 float get_uptime_seconds(){
 	return query_timer_seconds(start_time_for_uptime);
+}
+
+void delay_ms(int64_t milliseconds) {
+	vTaskDelay(milliseconds / portTICK_PERIOD_MS);
 }
