@@ -9,7 +9,7 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC cat24c256)
 target_link_libraries(${COMPONENT_LIB} PUBLIC mpu6050)
 
 add_subdirectory(control)
-target_link_libraries(${COMPONENT_LIB} PUBLIC control)
+target_link_libraries(${COMPONENT_LIB} PUBLIC rotation_matrix)
 
 #[[
 add_subdirectory(pwm)
