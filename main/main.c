@@ -52,7 +52,7 @@ void app_main(void)
 	initPWMInput(input_pins, 5);
     
     
-    int FLIGHT_MODE = FIGURE_EIGHT;
+    int FLIGHT_MODE = MANUAL;
     int DIRECTION = LEFT;
     
     while(1) {
@@ -83,7 +83,7 @@ void app_main(void)
         	float rate_of_climb = 0.3;
         	rudder_angle = getHoverRudderControl(0, 1, 1);
 		    
-		    elevator_angle = -getHoverElevatorControl(0, 1, 1);
+		    elevator_angle = getHoverElevatorControl(0, 1, 1);
 		    
 		    propeller_speed = 30/*TODO: find neutral propeller speed*/ + getHoverHeightControl(goal_height, rate_of_climb, 1, 1);
 		    // IF DIVING DOWNWARDS: TURN OFF PROPELLERS
@@ -94,13 +94,13 @@ void app_main(void)
 		    
         } else if (FLIGHT_MODE == FIGURE_EIGHT) {
         
-        	float target_angle = 1.2*3.1415926535*0.5*DIRECTION*1;// 1 means 1.2*90 degrees, 0 means 0 degrees
+        	float target_angle = 1.2*3.1415926535*0.5*DIRECTION*0.5;// 1 means 1.2*90 degrees, 0 means 0 degrees
         	rudder_angle = getRudderControl(target_angle, 1, 1);
 		    
         } else if (FLIGHT_MODE == LANDING) {
         
 			rudder_angle = 0;
-			elevator_angle = 20; // TODO: find right angle for stall landing
+			elevator_angle = -20; // TODO: find right angle for stall landing
         	
         } else if (FLIGHT_MODE == MANUAL) {
         
@@ -122,7 +122,7 @@ void app_main(void)
 		setSpeed(2, propeller_speed);
 		setSpeed(3, propeller_speed);
         
-        
+        printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
         //printf("%f, %f\n", getHeightDerivative(), getHeight());
         // SENDING DEBUGGING DATA TO GROUND
 		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), 0, 0, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, getHeightDerivative(), getHeight());

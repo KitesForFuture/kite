@@ -11,12 +11,12 @@
 // Z-Axis: kite - ground station
 
 #define accel_x -position.accel[1]
-#define accel_y position.accel[0]
-#define accel_z position.accel[2]
+#define accel_y -position.accel[0]
+#define accel_z -position.accel[2]
 
 #define gyro_x -position.gyro[1]
-#define gyro_y position.gyro[0]
-#define gyro_z position.gyro[2]
+#define gyro_y -position.gyro[0]
+#define gyro_z -position.gyro[2]
 
 // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
 #define gravity_x 1

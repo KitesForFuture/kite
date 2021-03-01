@@ -108,7 +108,7 @@ float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, f
 		oldBetaHover = beta;
 	}
 	
-	return P_RUDDER*p_rudder_factor*beta - D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];
+	return - P_RUDDER*p_rudder_factor*beta + D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];
 }
 
 
@@ -164,7 +164,7 @@ float getHoverElevatorControl(float backwards_tilt_angle, float p_elevator_facto
 		oldAlphaHover = alpha;
 	}
 	
-	return P_ELEVATOR*p_elevator_factor*alpha - D_ELEVATOR*d_elevator_factor*gyro_in_kite_coords[1];
+	return - P_ELEVATOR*p_elevator_factor*alpha - D_ELEVATOR*d_elevator_factor*gyro_in_kite_coords[1];
 }
 
 

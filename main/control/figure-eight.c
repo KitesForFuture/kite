@@ -70,13 +70,16 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	
 	// IF PLANE ALMOST HORIZONTAL:
 	// FINISH TURN
+	printf("plane like %f\n", how_plane_like);
+	printf("wind dir = (%f, %f), wind pointing (%f, %f)\n", wind_direction[0], wind_direction[1], rotation_matrix[3], rotation_matrix[6]);
+		
 	if(how_plane_like > 0.97){
 		// WHILE NOT TURNED ENOUGH:
 		// KEEP RUDDER FIX OR TURN FURTHER
 		if(rotation_matrix[3] * wind_direction[0] + rotation_matrix[6] * wind_direction[1] < 0){
-			beta = sign(target_angle) * 20;
+			beta = -sign(target_angle) * 0.3;
 		}else{
-			beta = sign(target_angle) * 5;
+			beta = sign(target_angle) * 0.1;
 		}
 	}else{
 		// CALCULATE THE DIRECTION OF THE WIND
@@ -99,7 +102,7 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	
 	
 	
-	return P_RUDDER*p_rudder_factor*beta - D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];
+	return - P_RUDDER*p_rudder_factor*beta + D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];
 }
 
 
