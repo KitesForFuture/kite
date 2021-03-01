@@ -12,10 +12,10 @@
 
 static struct i2c_identifier i2c_identifier;
 static float minus_dp_by_dt_factor;
-static float initial_smoothened_temperature = 0;
-static float initial_smoothened_pressure = 0;
-static float current_smoothened_temperature = 0;
-static float current_smoothened_pressure = 0;
+static float initial_smoothed_temperature = 0;
+static float initial_smoothed_pressure = 0;
+static float current_smoothed_temperature = 0;
+static float current_smoothed_pressure = 0;
 static Time last_update = 0;
 
 static void start_measurement() {
@@ -39,12 +39,11 @@ static float get_pressure() {
 
 int bmp280_update_if_possible() {
     if (query_timer_ms(last_update) >= UPDATE_INTERVAL_MS) {
-        // current_smoothened_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothened_temperature;
-        current_smoothened_temperature = ((float) get_temperature() * SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) +
-                                         (current_smoothened_temperature *
-                                          (1 - SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT));
-        current_smoothened_pressure = (get_pressure() * SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) +
-                                      (current_smoothened_pressure * (1 - SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT));
+        // current_smoothed_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothed_temperature;
+        current_smoothed_temperature = SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT * (float) get_temperature() +
+                                         (1 - SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) * current_smoothed_temperature;
+        current_smoothed_pressure = SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT * get_pressure() +
+                                      (1 - SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) * current_smoothed_pressure;
 
         start_measurement();
         return 1;
@@ -61,23 +60,23 @@ void bmp280_init(struct i2c_identifier i2c_identifier_arg, float minus_dp_by_dt)
     // Setup current values to be not 0 (that would worsen the following smoothening process)
     start_measurement();
     delay_ms(UPDATE_INTERVAL_MS);
-    current_smoothened_temperature = (float) get_temperature();
-    current_smoothened_pressure = get_pressure();
+    current_smoothed_temperature = (float) get_temperature();
+    current_smoothed_pressure = get_pressure();
 
-    // Setup smoothened values
+    // Setup smoothed values
     start_measurement();
     for (int i = 0; i < INITIAL_MEASUREMENT_CYCLE_COUNT; i++) {
         delay_ms(UPDATE_INTERVAL_MS);
         bmp280_update_if_possible();
     }
-    initial_smoothened_temperature = current_smoothened_temperature;
-    initial_smoothened_pressure = current_smoothened_pressure;
+    initial_smoothed_temperature = current_smoothed_temperature;
+    initial_smoothed_pressure = current_smoothed_pressure;
 }
 
 // DIFFERENCE IN ATMOSPHERIC PRESSURE SINCE BOOT
 float bmp280_get_pressure_diff() {
-    float delta_temperature = current_smoothened_temperature - initial_smoothened_temperature;
-    float delta_pressure = current_smoothened_pressure - initial_smoothened_pressure;
+    float delta_temperature = current_smoothed_temperature - initial_smoothed_temperature;
+    float delta_pressure = current_smoothed_pressure - initial_smoothed_pressure;
     return delta_pressure + delta_temperature * minus_dp_by_dt_factor;
 }
 

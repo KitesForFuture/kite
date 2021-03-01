@@ -7,7 +7,7 @@
 // HOW TO CALIBRATE:
 // output acc_calibrationx,y,z preferably via wifi, set accel_offset_* in constants.c to the midpoints between highest and lowest reading.
 
-static struct position_data mpu_pos_callibration;
+static struct motion_data mpu_pos_callibration;
 static struct i2c_identifier i2c_identifier;
 static float gyro_precision_factor;    //factor needed to get to deg/sec
 static float accel_precision_factor;    //factor needed to get to m/s
@@ -38,7 +38,7 @@ static void init_accel_sensitivity(uint8_t sens) {
     }
 }
 
-static void get_position_uncalibrated(struct position_data *out) {
+static void read_motion_data_uncalibrated(struct motion_data *out) {
     //ToDoLeo vector operations & unify with readMPUData
 
     uint8_t six_axis_raw_data[6];
@@ -57,8 +57,8 @@ static void get_position_uncalibrated(struct position_data *out) {
     out->accel[2] = accel_precision_factor * (int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
 }
 
-void mpu6050_get_position(struct position_data *out) {
-    get_position_uncalibrated(out);
+void mpu6050_get_motion(struct motion_data *out) {
+    read_motion_data_uncalibrated(out);
     out->accel[0] -= mpu_pos_callibration.accel[0];
     out->accel[1] -= mpu_pos_callibration.accel[1];
     out->accel[2] -= mpu_pos_callibration.accel[2];
@@ -68,7 +68,7 @@ void mpu6050_get_position(struct position_data *out) {
     out->gyro[2] -= mpu_pos_callibration.gyro[2];
 }
 
-void mpu6050_init(struct i2c_identifier i2c_identifier_arg, struct position_data callibration_data) {
+void mpu6050_init(struct i2c_identifier i2c_identifier_arg, struct motion_data callibration_data) {
 
     i2c_identifier = i2c_identifier_arg;
     init_interchip(i2c_identifier);
