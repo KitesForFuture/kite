@@ -26,6 +26,11 @@
 #define LEFT -1
 #define RIGHT 1
 
+#define INITIAL_SIDEWAYS_FLYING_TIME 5
+
+#define MAX_SERVO_DEFLECTION 60
+#define MAX_PROPELLER_SPEED 90
+
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
 
@@ -55,6 +60,11 @@ void app_main(void)
     int FLIGHT_MODE = MANUAL;
     int DIRECTION = LEFT;
     
+    float sideways_flying_time = INITIAL_SIDEWAYS_FLYING_TIME;
+    Time sideways_flying_timer = 0;
+    int turn_delayed = 0;
+    
+    
     while(1) {
         vTaskDelay(1);
 
@@ -77,6 +87,8 @@ void app_main(void)
         float elevator_angle = 0;
         float propeller_speed = 0;
         
+        if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
+        
         if (FLIGHT_MODE == HOVER) {
         
         	float goal_height = 1.5;
@@ -92,30 +104,105 @@ void app_main(void)
 		    	propeller_speed = 0;
 		    }
 		    
+		    //TODO: REQUEST LOW LINE TENSION FROM GROUND STATION
+		    
+		    if(getHeight() > 50){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer();}
+		    
         } else if (FLIGHT_MODE == FIGURE_EIGHT) {
-        
-        	float target_angle = 1.2*3.1415926535*0.5*DIRECTION*0.5;// 1 means 1.2*90 degrees, 0 means 0 degrees
+        	
+        	/*
+        	if(DIRECTION*CH1 > 0.5){ // IF TURN FORCED
+        		//turn immediately
+        		DIRECTION *= -1;
+        		float time = query_timer_seconds(sideways_flying_timer);
+        		sideways_flying_time = 0.8 * sideways_flying_timer + 0.2 * time;
+        		sideways_flying_timer = start_timer();
+        	}else if(query_timer_seconds(sideways_flying_timer) > sideways_flying_time){ // ELSE IF TURN TIME
+        		if(DIRECTION*CH1 > -0.5){ // IF TURN DELAYED
+        			turn_delayed = 1;
+        		}else{ // TURN NOT OR NO FURTHER DELAYED
+        			if(turn_delayed == 1){
+        				// UPDATE SIDEWAYS FLYING TIME
+        				float time = query_timer_seconds(sideways_flying_timer);
+        				sideways_flying_time = 0.8 * sideways_flying_timer + 0.2 * time;
+        			}
+        			turn_delayed = 0;
+        			DIRECTION *= -1;
+        			sideways_flying_timer = start_timer();
+        		}
+        	}
+        	*/
+        	
+        	if(DIRECTION*CH1 > -0.5){ // IF TURN DELAYED
+        		turn_delayed = 1;
+        	}else{ // TURN NOT OR NO FURTHER DELAYED
+        	
+        		if(DIRECTION*CH1 > 0.5){ // IF TURN FORCED
+		    		
+		    		//UPDATE TURN TIME
+		    		float time = query_timer_seconds(sideways_flying_timer);
+		    		sideways_flying_time = 0.8 * sideways_flying_timer + 0.2 * time;
+		    		turn_delayed = 0;
+		    		
+		    		//TURN
+		    		DIRECTION *= -1;
+		    		sideways_flying_timer = start_timer();
+		    		
+		    	}else if(query_timer_seconds(sideways_flying_timer) > sideways_flying_time){ // IF TIME TO TURN
+		    		
+		    		//TURN
+		    		DIRECTION *= -1;
+		    		sideways_flying_timer = start_timer();
+		    		
+		    		if(turn_delayed == 1){ // IF TURN HAS BEEN DELAYED
+		    		
+						//UPDATE TURN TIME
+						float time = query_timer_seconds(sideways_flying_timer);
+						sideways_flying_time = 0.8 * sideways_flying_timer + 0.2 * time;
+						turn_delayed = 0;
+					}
+		    	}
+        	}
+        	
+        	
+        	// z-axis angle (how much the plane is rolled)
+        	// 0 ... no roll, kite line straight up
+        	// pi/2 ... 90 degree roll angle
+        	float z_axis_angle = safe_acos(rotation_matrix[2]); // between 0 and pi/2
+        	float RC_requested_angle = (1-CH2)*3.1415926535*0.25; // between 0 and pi/2
+        	float angle_diff = RC_requested_angle - z_axis_angle; // between -pi/2 and pi/2
+        	
+        	float target_angle_adjustment = angle_diff*20;
+        	if(target_angle_adjustment > 0.3) target_angle_adjustment = 0.3;
+        	if(target_angle_adjustment < -0.3) target_angle_adjustment = -0.3;
+        	
+        	float target_angle = 3.1415926535*0.5*DIRECTION*(0.9 + target_angle_adjustment);// 1 means 1.2*90 degrees, 0 means 0 degrees
         	rudder_angle = getRudderControl(target_angle, 1, 1);
 		    
         } else if (FLIGHT_MODE == LANDING) {
         
 			rudder_angle = 0;
 			elevator_angle = -20; // TODO: find right angle for stall landing
+			
+			if(getHeight() > 120){FLIGHT_MODE = LANDING;}
         	
         } else if (FLIGHT_MODE == MANUAL) {
         
-        	rudder_angle = 60*CH1;
-        	elevator_angle = 60*CH2;
-        	propeller_speed = 90*CH3;
+        	rudder_angle = MAX_SERVO_DEFLECTION*CH1;
+        	elevator_angle = MAX_SERVO_DEFLECTION*CH2;
+        	propeller_speed = MAX_PROPELLER_SPEED*CH3;
         	
+        	if(CH3 > 0.9) FLIGHT_MODE = HOVER;
         }
         
         // DON'T LET SERVOS BREAK THE KITE
-		if(rudder_angle > 45) rudder_angle = 45;
-		if(rudder_angle < -45) rudder_angle = -45;
+		if(rudder_angle > MAX_SERVO_DEFLECTION) rudder_angle = MAX_SERVO_DEFLECTION;
+		if(rudder_angle < -MAX_SERVO_DEFLECTION) rudder_angle = -MAX_SERVO_DEFLECTION;
+		if(elevator_angle > MAX_SERVO_DEFLECTION) elevator_angle = MAX_SERVO_DEFLECTION;
+		if(elevator_angle < -MAX_SERVO_DEFLECTION) elevator_angle = -MAX_SERVO_DEFLECTION;
 		
 		// DON'T OVERHEAT THE MOTORS
-		if(propeller_speed > 90) propeller_speed = 90;
+		if(propeller_speed > MAX_PROPELLER_SPEED) propeller_speed = MAX_PROPELLER_SPEED;
         
         setAngle(0, rudder_angle);
 		setAngle(1, elevator_angle);
