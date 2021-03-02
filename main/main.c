@@ -91,7 +91,7 @@ void app_main(void)
         float propeller_speed = 0;
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
-        //FLIGHT_MODE = HOVER; // TODO delete this debugging line
+        FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
         if (FLIGHT_MODE == HOVER) {
         
         	float goal_height = 0.0;
@@ -135,8 +135,8 @@ void app_main(void)
         		}
         	}
         	*/
-        	
-        	if(DIRECTION*CH1 > -0.5){ // IF TURN DELAYED
+        	printf("time = %f, time_goal = %f, CH1 = %f\n", query_timer_seconds(sideways_flying_timer), sideways_flying_time, CH1);
+        	if(DIRECTION*CH1 < -0.5){ // IF TURN DELAYED
         		turn_delayed = 1;
         	}else{ // TURN NOT OR NO FURTHER DELAYED
         	
@@ -144,7 +144,9 @@ void app_main(void)
 		    		
 		    		//UPDATE TURN TIME
 		    		float time = query_timer_seconds(sideways_flying_timer);
-		    		sideways_flying_time = 0.8 * sideways_flying_timer + 0.2 * time;
+		    		sideways_flying_time = 0.8 * sideways_flying_time + 0.2 * time;
+		    		printf("time = %f, time_goal = %f, CH1 = %f\n", query_timer_seconds(sideways_flying_timer), sideways_flying_time, CH1);
+        			
 		    		turn_delayed = 0;
 		    		
 		    		//TURN
@@ -161,7 +163,7 @@ void app_main(void)
 		    		
 						//UPDATE TURN TIME
 						float time = query_timer_seconds(sideways_flying_timer);
-						sideways_flying_time = 0.8 * sideways_flying_timer + 0.2 * time;
+						sideways_flying_time = 0.8 * sideways_flying_time + 0.2 * time;
 						turn_delayed = 0;
 					}
 		    	}
@@ -184,13 +186,13 @@ void app_main(void)
 		    
         } else if (FLIGHT_MODE == LANDING) {
         
-			rudder_angle = 0;
+			rudder_angle = getRudderControl(0, 1, 1);
 			elevator_angle = -20; // TODO: find right angle for stall landing
 			
 			if(h > 120){FLIGHT_MODE = LANDING;}
         	
         } else if (FLIGHT_MODE == MANUAL) {
-        
+        	
         	rudder_angle = MAX_SERVO_DEFLECTION*CH1;
         	elevator_angle = MAX_SERVO_DEFLECTION*CH2;
         	propeller_speed = MAX_PROPELLER_SPEED*CH3;
@@ -212,7 +214,7 @@ void app_main(void)
 		setSpeed(2, propeller_speed);
 		setSpeed(3, propeller_speed);
         
-        printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
+        //printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
         //printf("%f, %f\n", d_h, h);
         // SENDING DEBUGGING DATA TO GROUND
 		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), 0, 0, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, d_h, h);

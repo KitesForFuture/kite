@@ -70,8 +70,8 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 	
 	// IF PLANE ALMOST HORIZONTAL:
 	// FINISH TURN
-	printf("plane like %f\n", how_plane_like);
-	printf("wind dir = (%f, %f), wind pointing (%f, %f)\n", wind_direction[0], wind_direction[1], rotation_matrix[3], rotation_matrix[6]);
+	//printf("plane like %f\n", how_plane_like);
+	//printf("wind dir = (%f, %f), wind pointing (%f, %f)\n", wind_direction[0], wind_direction[1], rotation_matrix[3], rotation_matrix[6]);
 		
 	if(how_plane_like > 0.97){
 		// WHILE NOT TURNED ENOUGH:
