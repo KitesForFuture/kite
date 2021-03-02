@@ -94,15 +94,14 @@ else return -x;
 }
 
 float getHeight() {
-
 	float newHeight = -10 * getPressureDiff();
 	// SMOOTHING FACTOR:
 	// 0.01 ... very smoothed
 	// 1  ...   not smoothed at all
 	// increase the smoothing factor if reading is further than 0.1 meters from smoothed line, max smoothing_factor is 1.
-	float smoothing_factor = 0.01;
+	float smoothing_factor = 0.03;
 	if(fabs(smoothHeight - newHeight) > 0.1){
-		smoothing_factor += (fabs(smoothHeight - newHeight) - 0.1)*5;
+		smoothing_factor += (fabs(smoothHeight - newHeight) - 0.1)*6;
 	}
 	if(smoothing_factor > 1) smoothing_factor = 1;
 	smoothHeight =  (1-smoothing_factor)*smoothHeight + smoothing_factor * -10 * getPressureDiff();

@@ -8,7 +8,7 @@
 #define P_ELEVATOR 100
 #define D_ELEVATOR 0.2
 
-#define P_HEIGHT 15
+#define P_HEIGHT 50
 #define D_HEIGHT 1
 #define TARGET_HEIGHT_BOUND 2 // in meters
 
@@ -19,15 +19,14 @@ static float oldAlphaHover = 0;
 
 static float target_height = 0;
 static Time last_called = 0;
-float getHoverHeightControl(float goal_height, float rate_of_climb, float p_height_factor, float d_height_factor){
+float getHoverHeightControl(float h, float d_h, float goal_height, float rate_of_climb, float p_height_factor, float d_height_factor){
 	
 	// target_height IS WHERE THE PD-CONTROLLER ATTEMPTS TO KEEP THE KITE AT.
 	// target_height GOES TO goal_height at rate_of_climb, except if:
 	// - actual height h can't keep up with target_height
 	
-	float h = getHeight();
-	float d_h = getHeightDerivative();
-	
+	//float h = getHeight();
+	//float d_h = getHeightDerivative();
 	// TIME STEP
 	//if(last_called == 0) {lastCalled = start_timer(); return 0;}
 	//float d_t = query_timer_seconds(last_called);
@@ -51,7 +50,6 @@ float getHoverHeightControl(float goal_height, float rate_of_climb, float p_heig
 	float P = target_height - h;
 	float D = -d_h;
 	//printf("rate_of_climb = %f, d_t = %f, P= %f, D=%f, target_h = %f, goal_h = %f, C = %f\n",rate_of_climb, d_t, P, D, target_height, goal_height, P_HEIGHT*p_height_factor*P - D_HEIGHT*d_height_factor*D);
-	
 	
 	return P_HEIGHT*p_height_factor*P + D_HEIGHT*d_height_factor*D;	
 }
