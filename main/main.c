@@ -155,9 +155,6 @@ void app_main(void)
 		    		
 		    	}else if(query_timer_seconds(sideways_flying_timer) > sideways_flying_time){ // IF TIME TO TURN
 		    		
-		    		//TURN
-		    		DIRECTION *= -1;
-		    		sideways_flying_timer = start_timer();
 		    		
 		    		if(turn_delayed == 1){ // IF TURN HAS BEEN DELAYED
 		    		
@@ -166,6 +163,11 @@ void app_main(void)
 						sideways_flying_time = 0.8 * sideways_flying_time + 0.2 * time;
 						turn_delayed = 0;
 					}
+					
+					//TURN
+		    		DIRECTION *= -1;
+		    		sideways_flying_timer = start_timer();
+		    		
 		    	}
         	}
         	
