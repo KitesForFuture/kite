@@ -26,7 +26,7 @@
 #define LEFT -1
 #define RIGHT 1
 
-#define INITIAL_SIDEWAYS_FLYING_TIME 500
+#define INITIAL_SIDEWAYS_FLYING_TIME 5
 
 #define MAX_SERVO_DEFLECTION 60
 #define MAX_PROPELLER_SPEED 90
@@ -91,7 +91,7 @@ void app_main(void)
         float propeller_speed = 0;
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
-        FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
+        //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
         if (FLIGHT_MODE == HOVER) {
         
         	float goal_height = 0.0;
