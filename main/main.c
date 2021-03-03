@@ -26,7 +26,7 @@
 #define LEFT -1
 #define RIGHT 1
 
-#define INITIAL_SIDEWAYS_FLYING_TIME 5
+#define INITIAL_SIDEWAYS_FLYING_TIME 500
 
 #define MAX_SERVO_DEFLECTION 60
 #define MAX_PROPELLER_SPEED 90
@@ -113,29 +113,7 @@ void app_main(void)
 		    
         } else if (FLIGHT_MODE == FIGURE_EIGHT) {
         	
-        	/*
-        	if(DIRECTION*CH1 > 0.5){ // IF TURN FORCED
-        		//turn immediately
-        		DIRECTION *= -1;
-        		float time = query_timer_seconds(sideways_flying_timer);
-        		sideways_flying_time = 0.8 * sideways_flying_timer + 0.2 * time;
-        		sideways_flying_timer = start_timer();
-        	}else if(query_timer_seconds(sideways_flying_timer) > sideways_flying_time){ // ELSE IF TURN TIME
-        		if(DIRECTION*CH1 > -0.5){ // IF TURN DELAYED
-        			turn_delayed = 1;
-        		}else{ // TURN NOT OR NO FURTHER DELAYED
-        			if(turn_delayed == 1){
-        				// UPDATE SIDEWAYS FLYING TIME
-        				float time = query_timer_seconds(sideways_flying_timer);
-        				sideways_flying_time = 0.8 * sideways_flying_timer + 0.2 * time;
-        			}
-        			turn_delayed = 0;
-        			DIRECTION *= -1;
-        			sideways_flying_timer = start_timer();
-        		}
-        	}
-        	*/
-        	printf("time = %f, time_goal = %f, CH1 = %f\n", query_timer_seconds(sideways_flying_timer), sideways_flying_time, CH1);
+        	//printf("time = %f, time_goal = %f, CH1 = %f\n", query_timer_seconds(sideways_flying_timer), sideways_flying_time, CH1);
         	if(DIRECTION*CH1 < -0.5){ // IF TURN DELAYED
         		turn_delayed = 1;
         	}else{ // TURN NOT OR NO FURTHER DELAYED
@@ -145,7 +123,7 @@ void app_main(void)
 		    		//UPDATE TURN TIME
 		    		float time = query_timer_seconds(sideways_flying_timer);
 		    		sideways_flying_time = 0.8 * sideways_flying_time + 0.2 * time;
-		    		printf("time = %f, time_goal = %f, CH1 = %f\n", query_timer_seconds(sideways_flying_timer), sideways_flying_time, CH1);
+		    		//printf("time = %f, time_goal = %f, CH1 = %f\n", query_timer_seconds(sideways_flying_timer), sideways_flying_time, CH1);
         			
 		    		turn_delayed = 0;
 		    		
@@ -179,10 +157,10 @@ void app_main(void)
         	float RC_requested_angle = (1-CH2)*3.1415926535*0.25; // between 0 and pi/2
         	float angle_diff = RC_requested_angle - z_axis_angle; // between -pi/2 and pi/2
         	
-        	float target_angle_adjustment = angle_diff*20;
+        	float target_angle_adjustment = angle_diff*0.5; // between -pi/4=-0.7... and pi/4=0.7...
         	if(target_angle_adjustment > 0.3) target_angle_adjustment = 0.3;
         	if(target_angle_adjustment < -0.3) target_angle_adjustment = -0.3;
-        	
+        	//printf("z_axis_angle %f, RC_angle %f, angle_diff %f, t_a_adj %f\n", z_axis_angle, RC_requested_angle, angle_diff, target_angle_adjustment);
         	float target_angle = 3.1415926535*0.5*DIRECTION*(0.9 + target_angle_adjustment);// 1 means 1.2*90 degrees, 0 means 0 degrees
         	rudder_angle = getRudderControl(target_angle, 1, 1);
 		    
