@@ -14,13 +14,13 @@
 // Y-Axis: left wing - right wing
 // Z-Axis: kite - ground station
 
-#define accel_x -position.accel[1]
-#define accel_y position.accel[0]
-#define accel_z position.accel[2]
+#define accel_x -motion_data.accel[1]
+#define accel_y motion_data.accel[0]
+#define accel_z motion_data.accel[2]
 
-#define gyro_x -position.gyro[1]
-#define gyro_y position.gyro[0]
-#define gyro_z position.gyro[2]
+#define gyro_x -motion_data.gyro[1]
+#define gyro_y motion_data.gyro[0]
+#define gyro_z motion_data.gyro[2]
 
 // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
 #define gravity_x 1
@@ -30,7 +30,7 @@
 // rotation of the drone in world coordinates
 float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 
-static struct position_data position = {
+static struct motion_data motion_data = {
 	{0, 0, 0},
 	{0, 0, 0}
 };
@@ -38,7 +38,7 @@ static struct position_data position = {
 Time mpu_last_update_time = 0;
 
 void updateRotationMatrix(){
-	readMPUData(&position); //ToDoLeo
+    mpu6050_get_motion(&motion_data); //ToDoLeo
 	if(mpu_last_update_time == 0){
 		mpu_last_update_time = start_timer();
 		return;

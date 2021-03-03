@@ -68,7 +68,6 @@ static void handle_error(esp_err_t ret) {
 	}
 }
 
-// TodoLeo: data_addr and data_addr_len switched
 void i2c_send_bytes(struct i2c_identifier device, int data_addr_len, uint16_t data_addr, int data_len, uint8_t data[]) {
 
   i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -98,7 +97,10 @@ void i2c_send_bytes(struct i2c_identifier device, int data_addr_len, uint16_t da
   handle_error(ret);
 }
 
-// TodoLeo: data_addr and data_addr_len switched
+void i2c_send_byte(struct i2c_identifier device, int data_addr_len, uint16_t data_addr, uint8_t data) {
+  i2c_send_bytes(device, data_addr_len, data_addr, 1, (uint8_t[]) {data});
+}
+
 void i2c_read_bytes(struct i2c_identifier device, int data_addr_len, uint16_t data_addr, int data_len, uint8_t out[]) {
 
   i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -132,3 +134,4 @@ void i2c_read_bytes(struct i2c_identifier device, int data_addr_len, uint16_t da
 
   handle_error(ret);
 }
+

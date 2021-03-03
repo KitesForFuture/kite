@@ -1,7 +1,7 @@
+#include <dirent.h>
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "sdkconfig.h"
 
 #include "i2c/interchip.h"
 #include "i2c/cat24c256.h"
@@ -17,18 +17,18 @@ struct i2c_identifier bmp280    = {{18, 19}, 0x76, 0};
 struct i2c_identifier mpu6050   = {{14, 25}, 104, 0};
 
 
-void app_main(void)
+_Noreturn void app_main(void)
 {
-    init_cat24(cat24c256);
+    cat24_init(cat24c256);
 
-    struct position_data mpu_callibration = {
-        {readEEPROM(0*sizeof(float)), readEEPROM(1*sizeof(float)), readEEPROM(2*sizeof(float))}, //ToDoLeo make pretty
-        {readEEPROM(3*sizeof(float)), readEEPROM(4*sizeof(float)), readEEPROM(5*sizeof(float))}
+    struct motion_data mpu_callibration = {
+        {cat24_read_float(0*sizeof(float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float))}, //ToDoLeo make pretty
+        {cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float))}
     };
-    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", readEEPROM(0*sizeof(float)), readEEPROM(1*sizeof(float)), readEEPROM(2*sizeof(float)), readEEPROM(3*sizeof(float)), readEEPROM(4*sizeof(float)), readEEPROM(5*sizeof(float)));
+    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", cat24_read_float(0*sizeof(cat24_read_float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float)), cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float)));
 
-    init_bmp280(bmp280, readEEPROM(6*sizeof(float)));
-    initMPU6050(mpu6050, mpu_callibration);
+    bmp280_init(bmp280, cat24_read_float(6*sizeof(float)));
+    mpu6050_init(mpu6050, mpu_callibration);
 	//initMotors(26, 27, 12, 13);
 	/* initPWMInput(26, 27, 12, 13); */
    
@@ -36,13 +36,11 @@ void app_main(void)
 	//initMotors(output_pins, 2);
 	//int input_pins[] = {12, 13};
 	//initPWMInput(input_pins, 2);
-    float test;
 
-    
-
+    int test;
     printf("BMP280 Pressure Diff: ");
-    test = getPressureDiff();
-    printf("%f\n", test);
+    test = bmp280_update_if_possible();
+    printf("%i\n", test);
 	
 	
 	float degree = -90;
@@ -51,13 +49,13 @@ void app_main(void)
     while(1) {
         vTaskDelay(10);
 
-        update_bmp280_if_necessary();
+        bmp280_update_if_possible();
         
         updateRotationMatrix();
         
         //updatePWMInput();
 		
-        printf("BMP280 Height: %f\n", getHeight());
+        printf("BMP280 Height: %f\n", bmp280_get_height());
 
 		
 		/* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
