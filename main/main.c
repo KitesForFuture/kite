@@ -28,7 +28,7 @@
 
 #define INITIAL_SIDEWAYS_FLYING_TIME 5
 
-#define MAX_SERVO_DEFLECTION 60
+#define MAX_SERVO_DEFLECTION 45
 #define MAX_PROPELLER_SPEED 90
 
 struct i2c_bus bus0 = {14, 25};
@@ -96,9 +96,9 @@ void app_main(void)
         
         	float goal_height = 0.0;
         	float rate_of_climb = 0.3;
-        	rudder_angle = getHoverRudderControl(0, 1, 1);
+        	rudder_angle = getHoverRudderControl(CH5, 1, 1);
 		    
-		    elevator_angle = getHoverElevatorControl(0, 1, 1);
+		    elevator_angle = getHoverElevatorControl(CH6, 1, 1);
 		    
 		    propeller_speed = 30/*TODO: find neutral propeller speed*/ + getHoverHeightControl(h, d_h, goal_height, rate_of_climb, 1, 1);
 		    // IF DIVING DOWNWARDS: TURN OFF PROPELLERS
@@ -190,9 +190,9 @@ void app_main(void)
 		if(propeller_speed > MAX_PROPELLER_SPEED) propeller_speed = MAX_PROPELLER_SPEED;
         
         setAngle(0, rudder_angle);
-		setAngle(1, elevator_angle);
+		setAngle(1, -elevator_angle);
 		setSpeed(2, propeller_speed);
-		setSpeed(3, propeller_speed);
+		setAngle(3, -elevator_angle);
         
         //printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
         //printf("%f, %f\n", d_h, h);

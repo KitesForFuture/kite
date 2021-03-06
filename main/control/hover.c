@@ -8,7 +8,7 @@
 #define P_ELEVATOR 100
 #define D_ELEVATOR 0.2
 
-#define P_HEIGHT 50
+#define P_HEIGHT 10
 #define D_HEIGHT 1
 #define TARGET_HEIGHT_BOUND 2 // in meters
 
