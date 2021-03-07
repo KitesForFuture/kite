@@ -3,6 +3,7 @@
 #include "freertos/task.h"
 #include "sdkconfig.h"
 
+
 #include "i2c_devices/cat24c256.h"
 #include "i2c_devices/bmp280.h"
 #include "i2c_devices/mpu6050.h"
@@ -35,8 +36,10 @@ struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
 
 
+
 void app_main(void)
 {
+
 	init_uptime();
 	setRole(KITE);
 	network_setup();

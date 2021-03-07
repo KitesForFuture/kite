@@ -4,10 +4,11 @@
 #include "bmp280.h"
 
 #define  UPDATE_INTERVAL_MICROSECONDS 50000
-#define  SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT 0.2
+#define  SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT 0.01 // HAS TO BE SMOOTH, BECAUSE TEMP SENSOR PRODUCES SOME FAR OUTLIERS!
 #define  SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT 0.2
 #define  INITIAL_MEASUREMENT_CYCLE_COUNT 5
 #define  ONE_DIVIDED_BY_INITIAL_MEASUREMENT_CYCLE_COUNT 0.2
+
 
 struct i2c_bus bmp280_bus;
 static Time last_update = 0;
@@ -29,7 +30,6 @@ uint32_t getTemperature(){
 	uint8_t highByte = i2c_receive(bmp280_bus, 0x76, 0xFA, 1);
 	uint8_t middleByte = i2c_receive(bmp280_bus, 0x76, 0xFB, 1);
 	uint8_t lowByte = i2c_receive(bmp280_bus, 0x76, 0xFC, 1);
-	
 	return (uint32_t)((highByte << 16) | (middleByte << 8) | lowByte);
 }
 
@@ -43,7 +43,6 @@ float getPressure(){
 
 int update_bmp280_if_necessary() {
   if (query_timer_microseconds(last_update) >= UPDATE_INTERVAL_MICROSECONDS) {
-    
     if(current_smoothened_temperature == 0){
     	current_smoothened_temperature = (float)getTemperature();
     	current_smoothened_pressure = getPressure();
@@ -51,6 +50,7 @@ int update_bmp280_if_necessary() {
     	// For Mathematicians:
     	// current_smoothened_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothened_temperature;
     	current_smoothened_temperature = ((float)getTemperature() * SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) + (current_smoothened_temperature * (1-SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT));
+    	
     	current_smoothened_pressure = (getPressure() * SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) + (current_smoothened_pressure * (1-SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT));
 
     }
