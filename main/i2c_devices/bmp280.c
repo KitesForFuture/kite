@@ -70,7 +70,6 @@ int update_bmp280_if_necessary() {
     	// current_smoothened_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothened_temperature;
     	
     	calculateSmoothTempDiscardingOutliers((float)getTemperature());
-    	
     	current_smoothened_pressure = (getPressure() * SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) + (current_smoothened_pressure * (1-SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT));
 
     }
@@ -121,7 +120,7 @@ float getHeight() {
 	// increase the smoothing factor if reading is further than 0.1 meters from smoothed line, max smoothing_factor is 1.
 	float smoothing_factor = 0.03;
 	if(fabs(smoothHeight - newHeight) > 0.1){
-		smoothing_factor += (fabs(smoothHeight - newHeight) - 0.1)*6;
+		smoothing_factor += (fabs(smoothHeight - newHeight) - 0.1)*1;
 	}
 	if(smoothing_factor > 1) smoothing_factor = 1;
 	smoothHeight =  (1-smoothing_factor)*smoothHeight + smoothing_factor * -10 * getPressureDiff();
