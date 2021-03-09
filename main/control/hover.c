@@ -16,7 +16,6 @@ static float oldBetaHover = 0;
 static float oldAlphaHover = 0;
 
 
-
 static float target_height = 0;
 static Time last_called = 0;
 float getHoverHeightControl(float h, float d_h, float goal_height, float rate_of_climb, float p_height_factor, float d_height_factor){
@@ -110,7 +109,7 @@ float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, f
 }
 
 
-float getHoverElevatorControl(float backwards_tilt_angle, float p_elevator_factor, float d_elevator_factor){
+float getHoverElevatorControl(float backwards_tilt_angle, float p_elevator_factor, float d_elevator_factor, float* p){
 	
 	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
 	
@@ -161,7 +160,7 @@ float getHoverElevatorControl(float backwards_tilt_angle, float p_elevator_facto
 	}else{
 		oldAlphaHover = alpha;
 	}
-	
+	*p = alpha;
 	return - P_ELEVATOR*p_elevator_factor*alpha - D_ELEVATOR*d_elevator_factor*gyro_in_kite_coords[1];
 }
 

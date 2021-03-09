@@ -30,7 +30,9 @@
 #define INITIAL_SIDEWAYS_FLYING_TIME 5
 
 #define MAX_SERVO_DEFLECTION 45
-#define MAX_PROPELLER_SPEED 90
+#define MAX_PROPELLER_SPEED 40
+#define HOVER_RUDDER_OFFSET 0.05
+#define HOVER_ELEVATOR_OFFSET -0.15
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -67,6 +69,7 @@ void app_main(void)
     Time sideways_flying_timer = 0;
     int turn_delayed = 0;
     
+    float GROUND_STATION_MIN_TENSION = 0;
     
     while(1) {
         vTaskDelay(1);
@@ -93,17 +96,20 @@ void app_main(void)
         float elevator_angle = 0;
         float propeller_speed = 0;
         
+        float elevator_p = 0;
+        
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
         //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
         if (FLIGHT_MODE == HOVER) {
         
         	float goal_height = 0.0;
         	float rate_of_climb = 0.3;
-        	rudder_angle = getHoverRudderControl(CH5, 1, 1);
+        	rudder_angle = getHoverRudderControl(HOVER_RUDDER_OFFSET, 1.5, 3.6);
 		    
-		    elevator_angle = getHoverElevatorControl(CH6, 1, 1);
+		    elevator_angle = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET, 0.96, 1.27, &elevator_p);
+		    //(float)(pow(5,CH5)), (float)(pow(5,CH6))
 		    
-		    propeller_speed = 30/*TODO: find neutral propeller speed*/ + getHoverHeightControl(h, d_h, goal_height, rate_of_climb, 1, 1);
+		    propeller_speed = 30/*TODO: find neutral propeller speed*/ + getHoverHeightControl(h, d_h, goal_height, rate_of_climb, 0.5, 1);
 		    // IF DIVING DOWNWARDS: TURN OFF PROPELLERS
 		    float nose_horizon = rotation_matrix[0];// <x, (1,0,0)>
 		    if(nose_horizon < -0.1){
@@ -112,7 +118,8 @@ void app_main(void)
 		    
 		    //TODO: REQUEST LOW LINE TENSION FROM GROUND STATION
 		    
-		    if(h > 50){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer();}
+		    if(h > 50){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); GROUND_STATION_MIN_TENSION = 0;}
+		    if(h < 45) GROUND_STATION_MIN_TENSION = 1; else GROUND_STATION_MIN_TENSION = 0;
 		    
         } else if (FLIGHT_MODE == FIGURE_EIGHT) {
         	
@@ -200,6 +207,6 @@ void app_main(void)
         //printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
         //printf("%f, %f\n", d_h, h);
         // SENDING DEBUGGING DATA TO GROUND
-		sendData(getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), 0, 0, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, d_h, h);
+		sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), 0, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, 0, 0, 0, elevator_p, propeller_speed, CH5, CH6, d_h, h);
     }
 }
