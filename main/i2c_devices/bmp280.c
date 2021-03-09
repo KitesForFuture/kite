@@ -4,9 +4,9 @@
 #include "bmp280.h"
 
 #define  UPDATE_INTERVAL_MICROSECONDS 50000
-#define  SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT 0.01 // HAS TO BE SMOOTH, BECAUSE TEMP SENSOR PRODUCES SOME FAR OUTLIERS!
+#define  SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT 0.1 // HAS TO BE SMOOTH, BECAUSE TEMP SENSOR PRODUCES SOME FAR OUTLIERS!
 #define  SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT 0.2
-#define  INITIAL_MEASUREMENT_CYCLE_COUNT 5
+#define  INITIAL_MEASUREMENT_CYCLE_COUNT 50
 #define  ONE_DIVIDED_BY_INITIAL_MEASUREMENT_CYCLE_COUNT 0.2
 
 
@@ -41,6 +41,25 @@ float getPressure(){
   return 1365.3-0.00007555555555*(float)(bmp280_raw_pressure_reading);
 }
 
+static void calculateSmoothTempDiscardingOutliers(float new_value){
+	
+	static int numDiscardedValuesInARow = 0;
+	static float smooth_variance = 0;
+	float new_variance = (new_value - current_smoothened_temperature)*(new_value - current_smoothened_temperature);
+	// OOPSY, WE MIGHT HAVE AN OUTLIER
+	if(new_variance > 5*smooth_variance && numDiscardedValuesInARow < 2){
+		// DISCARD; INCREMENT DISCARD COUNTER
+		numDiscardedValuesInARow++;
+		return;
+	}
+	
+	smooth_variance = 0.8 * smooth_variance + 0.2 * new_variance;
+	// RESET DISCARD COUNTER
+	numDiscardedValuesInARow = 0;
+	// ADD VALUE TO SMOOTH TEMPERATURE
+	current_smoothened_temperature = (new_value * SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) + (current_smoothened_temperature * (1-SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT));
+}
+
 int update_bmp280_if_necessary() {
   if (query_timer_microseconds(last_update) >= UPDATE_INTERVAL_MICROSECONDS) {
     if(current_smoothened_temperature == 0){
@@ -49,7 +68,8 @@ int update_bmp280_if_necessary() {
     }else{
     	// For Mathematicians:
     	// current_smoothened_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothened_temperature;
-    	current_smoothened_temperature = ((float)getTemperature() * SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) + (current_smoothened_temperature * (1-SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT));
+    	
+    	calculateSmoothTempDiscardingOutliers((float)getTemperature());
     	
     	current_smoothened_pressure = (getPressure() * SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) + (current_smoothened_pressure * (1-SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT));
 
