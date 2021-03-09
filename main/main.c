@@ -102,8 +102,8 @@ void app_main(void)
         //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
         if (FLIGHT_MODE == HOVER) {
         
-        	float goal_height = 0.0;
-        	float rate_of_climb = 0.3;
+        	float goal_height = 3*CH5;// -3 to +3 meters
+        	float rate_of_climb = CH6+1;// 0 to 1 m/s
         	rudder_angle = getHoverRudderControl(HOVER_RUDDER_OFFSET, 1.5, 3.6);
 		    
 		    elevator_angle = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET, 0.96, 1.27, &elevator_p);
