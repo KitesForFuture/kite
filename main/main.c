@@ -31,7 +31,7 @@
 #define INITIAL_SIDEWAYS_FLYING_TIME 5
 
 #define MAX_SERVO_DEFLECTION 45
-#define MAX_PROPELLER_SPEED 40
+#define MAX_PROPELLER_SPEED 65
 #define HOVER_RUDDER_OFFSET 0.05
 #define HOVER_ELEVATOR_OFFSET -0.15
 
@@ -102,7 +102,7 @@ void app_main(void)
         float elevator_p = 0;
         
         float goal_height = 100;// 5*CH5;// -3 to +3 meters
-        float rate_of_climb = 1;// CH6+1;// 0 to 1 m/s
+        float rate_of_climb = 3;// CH6+1;// 0 to 1 m/s
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
         //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
@@ -111,7 +111,7 @@ void app_main(void)
         	
         	rudder_angle = getHoverRudderControl(HOVER_RUDDER_OFFSET, 1.5, 3.6);
 		    
-		    elevator_angle = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET, 0.96, 1.27, &elevator_p);
+		    elevator_angle = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET, (float)(pow(5,CH5)), (float)(pow(5,CH6)), &elevator_p);
 		    //(float)(pow(5,CH5)), (float)(pow(5,CH6))
 		    
 		    propeller_speed = 30/*neutral propeller speed*/ + getHoverHeightControl(h, d_h, goal_height, rate_of_climb, 0.25, 1);
