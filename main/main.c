@@ -84,7 +84,7 @@ void app_main(void)
         updatePWMInput();
 		
 		float h = getHeight();
-	    float d_h = getHeightDerivative();//TODO
+	    float d_h = getHeightDerivative();
 		
         // READING RC SIGNALS
         float CH1 = getPWMInputMinus1to1normalized(0);
@@ -101,8 +101,8 @@ void app_main(void)
         
         float elevator_p = 0;
         
-        float goal_height = 0;// 5*CH5;// -3 to +3 meters
-        float rate_of_climb = 0.5;// CH6+1;// 0 to 1 m/s
+        float goal_height = 100;// 5*CH5;// -3 to +3 meters
+        float rate_of_climb = 1;// CH6+1;// 0 to 1 m/s
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
         //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
@@ -177,19 +177,19 @@ void app_main(void)
         	if(target_angle_adjustment < -0.3) target_angle_adjustment = -0.3;
         	//printf("z_axis_angle %f, RC_angle %f, angle_diff %f, t_a_adj %f\n", z_axis_angle, RC_requested_angle, angle_diff, target_angle_adjustment);
         	float target_angle = 3.1415926535*0.5*DIRECTION*(0.9 + target_angle_adjustment);// 1 means 1.2*90 degrees, 0 means 0 degrees
-        	rudder_angle = getRudderControl(target_angle, 1, 1);
-		    
+        	rudder_angle = getRudderControl(target_angle, (float)(pow(5,CH5)), (float)(pow(5,CH6))); //TODO: CH5,CH6 here for P/D
+		    elevator_angle = getGlideElevatorControl(1);
         } else if (FLIGHT_MODE == LANDING) {
         
-			rudder_angle = getRudderControl(0, 1, 1);
-			elevator_angle = CH2; // TODO: find right angle for stall landing
+			rudder_angle = getRudderControl(0, (float)(pow(5,CH5)), (float)(pow(5,CH6))); //TODO: CH5,CH6 here for P/D
+			elevator_angle = CH2 + getGlideElevatorControl(1); // TODO: find right angle for stall landing
 			
 			if(h > 120){FLIGHT_MODE = LANDING;}
         	
         } else if (FLIGHT_MODE == MANUAL) {
         	
         	rudder_angle = MAX_SERVO_DEFLECTION*CH1;
-        	elevator_angle = MAX_SERVO_DEFLECTION*(CH2+CH6) + getGlideElevatorControl((float)(pow(5,CH5))); // TODO: determine right values experimentally (also use in LANDING and FIGURE_EIGTH mode), then use CH5,CH6 for Rudder-D/P gains in Landing and Figure-8-Mode
+        	elevator_angle = MAX_SERVO_DEFLECTION*(CH2) + getGlideElevatorControl(1); // TODO: determine right values experimentally (also use in LANDING and FIGURE_EIGTH mode), then use CH5,CH6 for Rudder-D/P gains in Landing and Figure-8-Mode, (float)(pow(5,CH5))
         	propeller_speed = MAX_PROPELLER_SPEED*CH3;
         	
         	if(CH3 > 0.9) FLIGHT_MODE = HOVER;
@@ -212,6 +212,6 @@ void app_main(void)
         //printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
         //printf("%f, %f\n", d_h, h);
         // SENDING DEBUGGING DATA TO GROUND
-		sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), 0, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, CH5, CH6, d_h, h);
+		sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, CH5, CH6, d_h, h);
     }
 }
