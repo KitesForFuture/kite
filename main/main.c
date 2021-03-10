@@ -105,7 +105,7 @@ void app_main(void)
         float rate_of_climb = 3;// CH6+1;// 0 to 1 m/s
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
-        //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
+        FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
         if (FLIGHT_MODE == HOVER) {
         
         	
@@ -194,7 +194,7 @@ void app_main(void)
         	
         	if(CH3 > 0.9) FLIGHT_MODE = HOVER;
         }
-        
+        propeller_speed = MAX_PROPELLER_SPEED*CH3;
         // DON'T LET SERVOS BREAK THE KITE
 		if(rudder_angle > MAX_SERVO_DEFLECTION) rudder_angle = MAX_SERVO_DEFLECTION;
 		if(rudder_angle < -MAX_SERVO_DEFLECTION) rudder_angle = -MAX_SERVO_DEFLECTION;
