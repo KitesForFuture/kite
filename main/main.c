@@ -105,7 +105,7 @@ void app_main(void)
         float rate_of_climb = 3;// CH6+1;// 0 to 1 m/s
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
-        FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
+        //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
         if (FLIGHT_MODE == HOVER) {
         
         	
@@ -190,7 +190,6 @@ void app_main(void)
         	
         	rudder_angle = MAX_SERVO_DEFLECTION*CH1;
         	elevator_angle = MAX_SERVO_DEFLECTION*(CH2) + getGlideElevatorControl(1); // TODO: determine right values experimentally (also use in LANDING and FIGURE_EIGTH mode), then use CH5,CH6 for Rudder-D/P gains in Landing and Figure-8-Mode, (float)(pow(5,CH5))
-        	propeller_speed = MAX_PROPELLER_SPEED*CH3;
         	
         	if(CH3 > 0.9) FLIGHT_MODE = HOVER;
         }
