@@ -31,9 +31,9 @@
 #define INITIAL_SIDEWAYS_FLYING_TIME 5
 
 #define MAX_SERVO_DEFLECTION 45
-#define MAX_PROPELLER_SPEED 65
-#define HOVER_RUDDER_OFFSET 0.05
-#define HOVER_ELEVATOR_OFFSET -0.15
+#define MAX_PROPELLER_SPEED 40
+#define HOVER_RUDDER_OFFSET -0.07
+#define HOVER_ELEVATOR_OFFSET 0.17
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -73,7 +73,7 @@ void app_main(void)
     int turn_delayed = 0;
     
     float GROUND_STATION_MIN_TENSION = 0;
-    
+    float propeller_speed = 0;
     while(1) {
         vTaskDelay(1);
 
@@ -83,7 +83,7 @@ void app_main(void)
         
         updatePWMInput();
 		
-		float h = getHeight();
+		float h = getHeight() + 0.047*propeller_speed; // TODO: this is a hack to offset the airflow caused pressure difference at the sensor
 	    float d_h = getHeightDerivative();
 		
         // READING RC SIGNALS
@@ -97,12 +97,12 @@ void app_main(void)
         
         float rudder_angle = 0;
         float elevator_angle = 0;
-        float propeller_speed = 0;
+        //float propeller_speed = 0;
         
         float elevator_p = 0;
         
-        float goal_height = 100;// 5*CH5;// -3 to +3 meters
-        float rate_of_climb = 3;// CH6+1;// 0 to 1 m/s
+        float goal_height = 0;// 100 // 5*CH5;// -3 to +3 meters
+        float rate_of_climb = 0.2;// 3 // CH6+1;// 0 to 1 m/s
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
         //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
@@ -111,7 +111,7 @@ void app_main(void)
         	
         	rudder_angle = getHoverRudderControl(HOVER_RUDDER_OFFSET, 1.5, 3.6);
 		    
-		    elevator_angle = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET, (float)(pow(5,CH5)), (float)(pow(5,CH6)), &elevator_p);
+		    elevator_angle = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET, 0.7, 1.4, &elevator_p);
 		    //(float)(pow(5,CH5)), (float)(pow(5,CH6))
 		    
 		    propeller_speed = 30/*neutral propeller speed*/ + getHoverHeightControl(h, d_h, goal_height, rate_of_climb, 0.25, 1);
@@ -191,9 +191,11 @@ void app_main(void)
         	rudder_angle = MAX_SERVO_DEFLECTION*CH1;
         	elevator_angle = MAX_SERVO_DEFLECTION*(CH2) + getGlideElevatorControl(1); // TODO: determine right values experimentally (also use in LANDING and FIGURE_EIGTH mode), then use CH5,CH6 for Rudder-D/P gains in Landing and Figure-8-Mode, (float)(pow(5,CH5))
         	
+        	propeller_speed = MAX_PROPELLER_SPEED*CH3;
+        	
         	if(CH3 > 0.9) FLIGHT_MODE = HOVER;
         }
-        propeller_speed = MAX_PROPELLER_SPEED*CH3;
+        
         // DON'T LET SERVOS BREAK THE KITE
 		if(rudder_angle > MAX_SERVO_DEFLECTION) rudder_angle = MAX_SERVO_DEFLECTION;
 		if(rudder_angle < -MAX_SERVO_DEFLECTION) rudder_angle = -MAX_SERVO_DEFLECTION;
