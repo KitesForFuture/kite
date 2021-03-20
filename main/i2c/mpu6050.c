@@ -11,8 +11,7 @@ static struct position_data mpu_pos_callibration;
 static struct i2c_identifier i2c_identifier;
 static float gyro_precision_factor;    //factor needed to get to deg/sec
 static float accel_precision_factor;    //factor needed to get to m/s
-static uint8_t x, y, z;
-static int8_t x_reverse_sign, y_reverse_sign, z_reverse_sign;
+static float (*map_x)(float, float, float), (*map_y)(float, float, float), (*map_z)(float, float, float);
 
 //sens = 0 <-> +- 250 deg/sec
 //sens = 1 <-> +- 500 deg/sec
@@ -47,28 +46,22 @@ static void get_position_uncalibrated(struct position_data *out) {
 
     //read acc/gyro data at register 59..., 67...
     i2c_read_bytes(i2c_identifier, 1, 67, 6, six_axis_raw_data);
+    float gyro_1 = gyro_precision_factor * (int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
+    float gyro_2 = gyro_precision_factor * (int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
+    float gyro_3 = gyro_precision_factor * (int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
     //GYRO X / Y / Z
-    out->gyro[x] = gyro_precision_factor * (int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
-    out->gyro[y] = gyro_precision_factor * (int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
-    out->gyro[z] = gyro_precision_factor * (int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
+    out->gyro[1] = map_x(gyro_1, gyro_2, gyro_3);
+    out->gyro[2] = map_y(gyro_1, gyro_2, gyro_3);
+    out->gyro[3] = map_z(gyro_1, gyro_2, gyro_3);
 
     i2c_read_bytes(i2c_identifier, 1, 59, 6, six_axis_raw_data);
+    float accel_1 = accel_precision_factor * (int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
+    float accel_2 = accel_precision_factor * (int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
+    float accel_3 = accel_precision_factor * (int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
     //ACCEL X / Y / Z
-    out->accel[x] = accel_precision_factor * (int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
-    out->accel[y] = accel_precision_factor * (int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
-    out->accel[z] = accel_precision_factor * (int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
-}
-
-static void apply_reverse(struct position_data *out) {
-
-    // ToDoLeo all of this could be done with vector operations.
-
-    out->accel[0] *= x_reverse_sign;
-    out->accel[1] *= y_reverse_sign;
-    out->accel[2] *= z_reverse_sign;
-    out->gyro[0] *= x_reverse_sign;
-    out->gyro[1] *= y_reverse_sign;
-    out->gyro[2] *= z_reverse_sign;
+    out->accel[1] = map_x(accel_1, accel_2, accel_3);
+    out->accel[2] = map_y(accel_1, accel_2, accel_3);
+    out->accel[3] = map_z(accel_1, accel_2, accel_3);
 }
 
 void mpu6050_get_position(struct position_data *out) {
@@ -81,23 +74,18 @@ void mpu6050_get_position(struct position_data *out) {
     out->gyro[0] -= mpu_pos_callibration.gyro[0];
     out->gyro[1] -= mpu_pos_callibration.gyro[1];
     out->gyro[2] -= mpu_pos_callibration.gyro[2];
-
-    apply_reverse(out);
 }
 
 void mpu6050_init(
         struct i2c_identifier i2c_identifier_arg,
         struct position_data calibration_data,
-        uint8_t x_mapping, uint8_t y_mapping, uint8_t z_mapping,
-        bool is_x_reversed, bool is_y_reversed, bool is_z_reversed ) {
+        float (*x_mapper)(float, float, float),
+        float (*y_mapper)(float, float, float),
+        float (*z_mapper)(float, float, float)) {
 
-    x = x_mapping;
-    y = y_mapping;
-    z = z_mapping;
-
-    x_reverse_sign = is_x_reversed ? -1 : 1;
-    y_reverse_sign = is_y_reversed ? -1 : 1;
-    z_reverse_sign = is_z_reversed ? -1 : 1;
+    map_x = x_mapper;
+    map_y = y_mapper;
+    map_z = z_mapper;
 
     i2c_identifier = i2c_identifier_arg;
     init_interchip(i2c_identifier);

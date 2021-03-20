@@ -19,6 +19,10 @@ struct i2c_identifier mpu6050   = {{14, 25}, 104, 0};
 // rotation of the drone in world coordinates
 float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 
+float x_mapper(float v1, float v2, float v3) { return -1 * v2; }
+float y_mapper(float v1, float v2, float v3) { return v1; }
+float z_mapper(float v1, float v2, float v3) { return v3; }
+
 _Noreturn void app_main(void)
 {
     cat24_init(cat24c256);
@@ -43,7 +47,7 @@ _Noreturn void app_main(void)
     // X-Axis: head - tail
     // Y-Axis: left wing - right wing
     // Z-Axis: kite - ground station
-    mpu6050_init(mpu6050, mpu_callibration, 1, 0, 2, 1, 0, 0);
+    mpu6050_init(mpu6050, mpu_callibration, x_mapper, y_mapper, z_mapper);
 	//initMotors(26, 27, 12, 13);
 	/* initPWMInput(26, 27, 12, 13); */
    
