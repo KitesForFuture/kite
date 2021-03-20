@@ -32,7 +32,7 @@ _Noreturn void app_main(void)
     bmp280_init(bmp280, cat24_read_float(6*sizeof(float)));
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
-    rotation_matrix_init(1, 0, 0);
+    rotation_matrix_init((float[]) {1, 0, 0});
 
     // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
     // X-Axis: GYRO chip - FUTURE silk writing

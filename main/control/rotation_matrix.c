@@ -89,8 +89,9 @@ void rotation_matrix_update(struct position_data position, float rotation_matrix
 	normalize_matrix(rotation_matrix);
 }
 
-void rotation_matrix_init (int8_t x_gravity, int8_t y_gravity, int8_t z_gravity) {
-    x_gravity_factor = x_gravity;
-    y_gravity_factor = y_gravity;
-    z_gravity_factor = z_gravity;
+void rotation_matrix_init (float gravity[]) {
+    normalize(gravity, 3);
+    x_gravity_factor = gravity[0];
+    y_gravity_factor = gravity[1];
+    z_gravity_factor = gravity[2];
 }
