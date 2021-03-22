@@ -112,13 +112,13 @@ void app_main(void)
         
         float elevator_p = 0;
         
-        float goal_height = 0;// 100 // 5*CH5;// -3 to +3 meters
-        float rate_of_climb = 0.2;// 3 // CH6+1;// 0 to 1 m/s
+        float goal_height = 100;// 100 // 5*CH5;// -3 to +3 meters
+        float rate_of_climb = 2;// 3 // CH6+1;// 0 to 1 m/s
         
         float propeller_diff = 0;
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
-        FLIGHT_MODE = LANDING; // TODO delete this debugging line
+        //FLIGHT_MODE = LANDING; // TODO delete this debugging line
         if (FLIGHT_MODE == HOVER) {
         
         	
@@ -208,8 +208,8 @@ void app_main(void)
 		    
         } else if (FLIGHT_MODE == LANDING) {
         
-			rudder_angle = getLandingRudderControl((float)(pow(5,CH5)), (float)(pow(5,CH6))); //TODO: CH5,CH6 here for P/D
-			elevon_angle_right = elevon_angle_left = -24 + 20*CH2 + getGlideElevatorControl(1); // TODO: find right angle for stall landing
+			rudder_angle = getLandingRudderControl(2, 2.1); //TODO: CH5,CH6 here for P/D
+			elevon_angle_right = elevon_angle_left = -50 + 20*CH2 + getGlideElevatorControl(1); // TODO: find right angle for stall landing
 			if(h > 120){FLIGHT_MODE = LANDING;}
         	
         } else if (FLIGHT_MODE == MANUAL) {
