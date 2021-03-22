@@ -10,10 +10,20 @@
 
 #define P_HEIGHT 10
 #define D_HEIGHT 1
-#define TARGET_HEIGHT_BOUND 2 // in meters
+#define TARGET_HEIGHT_BOUND 5 // in meters
+
+#define D_AILERON 0.2
 
 static float oldBetaHover = 0;
 static float oldAlphaHover = 0;
+
+
+
+
+float get_aileron_D_gain(float d_aileron_factor){
+	return D_AILERON*d_aileron_factor*gyro_in_kite_coords[0];
+}
+
 
 
 static float target_height = 0;

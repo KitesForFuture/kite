@@ -3,6 +3,8 @@ build
 # Created by https://www.toptal.com/developers/gitignore/api/cmake,ninja,visualstudio,macos,windows,linux
 # Edit at https://www.toptal.com/developers/gitignore?templates=cmake,ninja,visualstudio,macos,windows,linux
 
+octave-workspace
+
 ### CMake ###
 CMakeLists.txt.user
 CMakeCache.txt

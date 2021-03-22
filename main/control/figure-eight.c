@@ -12,7 +12,24 @@ static float oldBeta = 0;
 static float wind_direction[] = {0,0};
 static Time z_axis_last_update_time = 0;
 
-float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder_factor){
+float get_slowly_changing_target_angle(float target_angle, float turning_speed){
+	
+    static float slowly_changing_target_angle = 0;
+    static Time target_angle_delta_timer = 0;
+    
+    float d_t = get_time_step(&target_angle_delta_timer);
+    if(slowly_changing_target_angle < target_angle){
+    	slowly_changing_target_angle += d_t * turning_speed;
+    	if(slowly_changing_target_angle > target_angle) slowly_changing_target_angle = target_angle;
+    }
+    if(slowly_changing_target_angle > target_angle){
+    	slowly_changing_target_angle -= d_t * turning_speed;
+    	if(slowly_changing_target_angle < target_angle) slowly_changing_target_angle = target_angle;
+    }
+    return slowly_changing_target_angle;
+}
+
+float getRudderControl(float target_angle, float slowly_changing_target_angle, float p_rudder_factor, float d_rudder_factor){
 	
 	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
 	
@@ -63,7 +80,7 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 		}
 	}
 	
-	beta -= target_angle;
+	beta -= slowly_changing_target_angle;
 	
 	//DUPLICATE OF how_plane_like
 	//if(norm < 0.01) beta = 0;
@@ -77,9 +94,9 @@ float getRudderControl(float target_angle, float p_rudder_factor, float d_rudder
 		// WHILE NOT TURNED ENOUGH:
 		// KEEP RUDDER FIX OR TURN FURTHER
 		if(rotation_matrix[3] * wind_direction[0] + rotation_matrix[6] * wind_direction[1] < 0){
-			beta = -sign(target_angle) * 0.3;
+			beta = -sign(target_angle) * 0.1;
 		}else{
-			beta = sign(target_angle) * 0.1;
+			beta = sign(target_angle) * 0.03;
 		}
 	}else{
 		// CALCULATE THE DIRECTION OF THE WIND
