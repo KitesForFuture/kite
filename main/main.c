@@ -198,12 +198,12 @@ void app_main(void)
         	if(target_angle_adjustment > 0.3) target_angle_adjustment = 0.3;
         	if(target_angle_adjustment < -0.3) target_angle_adjustment = -0.3;
         	//printf("z_axis_angle %f, RC_angle %f, angle_diff %f, t_a_adj %f\n", z_axis_angle, RC_requested_angle, angle_diff, target_angle_adjustment);
-        	float target_angle = 3.1415926535*0.5*DIRECTION*(0.9 + target_angle_adjustment);// 1 means 1.2*90 degrees, 0 means 0 degrees
+        	float target_angle = 3.1415926535*0.5*DIRECTION*(0.9 + target_angle_adjustment/* 1 means 1.2*90 degrees, 0 means 0 degrees*/);
         	
         	// BOUNDING THE TURNING SPEED
         	float slowly_changing_target_angle = get_slowly_changing_target_angle(target_angle, TURNING_SPEED);
         	
-        	rudder_angle = getRudderControl(target_angle, slowly_changing_target_angle, (float)(pow(5,CH5)), (float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
+        	rudder_angle = getRudderControl(target_angle, slowly_changing_target_angle, (float)(pow(5,CH5)), (float)(pow(5,CH5)), SINGULARITY_AT_BOTTOM); //TODO: CH5,CH6 here for P/D
 		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl((float)(pow(5,CH6)));
 		    
         } else if (FLIGHT_MODE == LANDING) {

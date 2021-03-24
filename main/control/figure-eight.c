@@ -6,6 +6,11 @@
 #define P_RUDDER 100
 #define D_RUDDER 0.2
 
+#define SINGULARITY_AT_TOP 0
+#define SINGULARITY_AT_BOTTOM -0.5*3.1415926535
+#define SINGULARITY_AT_RIGHT 0.25*3.1415926535
+#define SINGULARITY_AT_LEFT -0.25*3.1415926535
+
 static float oldBeta = 0;
 
 // z axis projected onto ground plane and averaged over about 10 seconds
@@ -29,7 +34,15 @@ float get_slowly_changing_target_angle(float target_angle, float turning_speed){
     return slowly_changing_target_angle;
 }
 
-float getRudderControl(float target_angle, float slowly_changing_target_angle, float p_rudder_factor, float d_rudder_factor){
+static float haveAngleSingularityAtAngle(float variable, float angle){
+	if(variable >= angle){
+		return variable;
+	}else{
+		return variable + 2 * 3.1415926535;
+	}
+}
+
+float getRudderControl(float target_angle, float slowly_changing_target_angle, float p_rudder_factor, float d_rudder_factor, float singularity_angle){
 	
 	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
 	
@@ -79,6 +92,9 @@ float getRudderControl(float target_angle, float slowly_changing_target_angle, f
 			beta = 3.1415926535*1.5 - safe_acos(left_right_orientation);
 		}
 	}
+	
+	beta = haveAngleSingularityAtAngle(beta, singularity_angle);
+	slowly_changing_target_angle = haveAngleSingularityAtAngle(slowly_changing_target_angle, singularity_angle);
 	
 	beta -= slowly_changing_target_angle;
 	
