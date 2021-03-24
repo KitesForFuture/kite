@@ -124,7 +124,7 @@ void app_main(void)
         	
         	rudder_angle = 0;//getHoverRudderControl(HOVER_RUDDER_OFFSET, 1.5, 3.6);
 		    
-		    elevon_angle_left = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET, 1, 0.44, &elevator_p);
+		    elevon_angle_left = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET, 1*(float)(pow(3,CH5)), 0.44*(float)(pow(3,CH6)), &elevator_p);
 		    float ailerons = get_aileron_D_gain(5.0);
 		    if(ailerons > AILERON_MAX_DEFLECTION) ailerons = AILERON_MAX_DEFLECTION;
 		    if(ailerons < AILERON_MIN_DEFLECTION) ailerons = AILERON_MIN_DEFLECTION;
@@ -145,7 +145,7 @@ void app_main(void)
 		    
 		    //REQUEST LOW LINE TENSION FROM GROUND STATION
 		    
-		    if(h > 50){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); GROUND_STATION_MIN_TENSION = 0;}
+		    if(h > 50){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); GROUND_STATION_MIN_TENSION = 0; propeller_speed = 0; propeller_diff = 0;}
 		    if(h < 45) GROUND_STATION_MIN_TENSION = 1; else GROUND_STATION_MIN_TENSION = 0;
 		    
         } else if (FLIGHT_MODE == FIGURE_EIGHT) {
@@ -203,8 +203,8 @@ void app_main(void)
         	// BOUNDING THE TURNING SPEED
         	float slowly_changing_target_angle = get_slowly_changing_target_angle(target_angle, TURNING_SPEED);
         	
-        	rudder_angle = getRudderControl(target_angle, slowly_changing_target_angle, (float)(pow(5,CH5)), (float)(pow(5,CH6))); //TODO: CH5,CH6 here for P/D
-		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl(1);
+        	rudder_angle = getRudderControl(target_angle, slowly_changing_target_angle, (float)(pow(5,CH5)), (float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
+		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl((float)(pow(5,CH6)));
 		    
         } else if (FLIGHT_MODE == LANDING) {
         
