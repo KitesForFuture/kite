@@ -27,7 +27,7 @@ _Noreturn void app_main(void)
 {
     cat24_init(cat24c256);
 
-    struct position_data mpu_callibration = {
+    struct motion_data mpu_callibration = {
         {cat24_read_float(0*sizeof(float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float))}, //ToDoLeo make pretty
         {cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float))}
     };
@@ -70,7 +70,7 @@ _Noreturn void app_main(void)
 
         bmp280_update_if_possible();
 
-        struct position_data position;
+        struct motion_data position;
         mpu6050_get_position(&position);
         rotation_matrix_update(position, rotation_matrix);
         

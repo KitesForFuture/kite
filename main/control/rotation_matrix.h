@@ -4,7 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "../i2c/mpu6050.h"
 
-void rotation_matrix_update(struct position_data position, float rotation_matrix[]);
+void rotation_matrix_update(struct motion_data position, float rotation_matrix[]);
 
 void rotation_matrix_init (float gravity[]);
 

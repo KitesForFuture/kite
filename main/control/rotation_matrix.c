@@ -49,7 +49,7 @@ static void rotate_towards_g(float mat[], float a, float b, float c, float out[]
     mat_mult_mat_transp(mat, tmp_rot_matrix, out);
 }
 
-void rotation_matrix_update(struct position_data position, float rotation_matrix[]){
+void rotation_matrix_update(struct motion_data position, float rotation_matrix[]){
 
 	if(last_update == 0){
         last_update = start_timer();
