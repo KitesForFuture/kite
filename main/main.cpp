@@ -23,6 +23,8 @@ float x_mapper(float v1, float v2, float v3) { return -1 * v2; }
 float y_mapper(float v1, float v2, float v3) { return v1; }
 float z_mapper(float v1, float v2, float v3) { return v3; }
 
+// TODO extern c
+
 _Noreturn void app_main(void)
 {
     cat24_init(cat24c256);

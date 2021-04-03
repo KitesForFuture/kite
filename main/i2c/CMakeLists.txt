@@ -1,11 +1,11 @@
 include_directories(../helpers)
 
 add_library(interchip
- interchip.c
+        interchip.cpp
 )
 
 add_library(bmp280
- bmp280.c
+        bmp280.cpp
 )
 target_link_libraries(bmp280 
   PUBLIC timer
@@ -13,14 +13,14 @@ target_link_libraries(bmp280
 )
 
 add_library(cat24c256
- cat24c256.c
+        cat24c256.cpp
 )
 target_link_libraries(cat24c256 
   PUBLIC interchip
 )
 
 add_library(mpu6050
- mpu6050.c
+        mpu6050.cpp
 )
 target_link_libraries(mpu6050 
   PUBLIC kitemath
