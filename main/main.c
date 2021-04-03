@@ -113,6 +113,7 @@ void app_main(void)
         
         float elevator_p = 0;
         
+        //TODO set outside of the while loop
         float goal_height = 100;// 100 // 5*CH5;// -3 to +3 meters
         float rate_of_climb = 2.5;// 3 // CH6+1;// 0 to 1 m/s
         
