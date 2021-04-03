@@ -83,6 +83,10 @@ void mpu6050_init(
         float (*y_mapper)(float, float, float),
         float (*z_mapper)(float, float, float)) {
 
+    /* Measurements need to be mapped / interpreted depending on how the ESP is mounted on the kite.
+     * The return values of the mpu6050 wrapper factor in how the device is mounted.
+     */
+
     map_x = x_mapper;
     map_y = y_mapper;
     map_z = z_mapper;

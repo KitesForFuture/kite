@@ -19,6 +19,16 @@ struct i2c_identifier mpu6050   = {{14, 25}, 104, 0};
 // rotation of the drone in world coordinates
 float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 
+// COORDINATE SYSTEM OF MPU (in vector subtraction notation):
+// X-Axis: GYRO chip - FUTURE silk writing
+// Y-Axis: BMP chip - BATTERY CONNECTORS
+// Z-Axis: custom board - ESP32 board
+
+// COORDINATE SYSTEM OF KITE (in vector subtraction notation):
+// X-Axis: head - tail
+// Y-Axis: left wing - right wing
+// Z-Axis: kite - ground station
+
 float x_mapper(float v1, float v2, float v3) { return -1 * v2; }
 float y_mapper(float v1, float v2, float v3) { return v1; }
 float z_mapper(float v1, float v2, float v3) { return v3; }
