@@ -87,6 +87,9 @@ void mpu6050_init(
     map_y = y_mapper;
     map_z = z_mapper;
 
+    // Enable DLPF (cut off low frequencies using a Digital Low Pass Filter)
+    i2c_send_byte(i2c_identifier, 1, 26, 3);
+
     i2c_identifier = i2c_identifier_arg;
     init_interchip(i2c_identifier);
 
@@ -97,8 +100,4 @@ void mpu6050_init(
 
     init_gyro_sensitivity(1);
     init_accel_sensitivity(2);
-
-    // ToDoLeo shouldn't we do this BEFORE callibration?
-    // Enable DLPF (cut off low frequencies using a Digital Low Pass Filter)
-    i2c_send_byte(i2c_identifier, 1, 26, 3);
 }
