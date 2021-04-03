@@ -16,6 +16,22 @@ struct i2c_identifier cat24c256 = {{18, 19}, 0x50, 1};
 struct i2c_identifier bmp280    = {{18, 19}, 0x76, 0};
 struct i2c_identifier mpu6050   = {{14, 25}, 104, 0};
 
+// rotation of the drone in world coordinates
+float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+
+// COORDINATE SYSTEM OF MPU (in vector subtraction notation):
+// X-Axis: GYRO chip - FUTURE silk writing
+// Y-Axis: BMP chip - BATTERY CONNECTORS
+// Z-Axis: custom board - ESP32 board
+
+// COORDINATE SYSTEM OF KITE (in vector subtraction notation):
+// X-Axis: head - tail
+// Y-Axis: left wing - right wing
+// Z-Axis: kite - ground station
+
+float x_mapper(float v1, float v2, float v3) { return -1 * v2; }
+float y_mapper(float v1, float v2, float v3) { return v1; }
+float z_mapper(float v1, float v2, float v3) { return v3; }
 
 _Noreturn void app_main(void)
 {
@@ -28,7 +44,20 @@ _Noreturn void app_main(void)
     printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", cat24_read_float(0*sizeof(cat24_read_float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float)), cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float)));
 
     bmp280_init(bmp280, cat24_read_float(6*sizeof(float)));
-    mpu6050_init(mpu6050, mpu_callibration);
+
+    // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
+    rotation_matrix_init((float[]) {1, 0, 0});
+
+    // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
+    // X-Axis: GYRO chip - FUTURE silk writing
+    // Y-Axis: BMP chip - BATTERY CONNECTORS
+    // Z-Axis: custom board - ESP32 board
+
+    // COORDINATE SYSTEM OF KITE (in vector subtraction notation):
+    // X-Axis: head - tail
+    // Y-Axis: left wing - right wing
+    // Z-Axis: kite - ground station
+    mpu6050_init(mpu6050, mpu_callibration, x_mapper, y_mapper, z_mapper);
 	//initMotors(26, 27, 12, 13);
 	/* initPWMInput(26, 27, 12, 13); */
    
@@ -50,8 +79,10 @@ _Noreturn void app_main(void)
         vTaskDelay(10);
 
         bmp280_update_if_possible();
-        
-        updateRotationMatrix();
+
+        struct motion_data position;
+        mpu6050_get_position(&position);
+        rotation_matrix_update(position, rotation_matrix);
         
         //updatePWMInput();
 		

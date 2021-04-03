@@ -22,8 +22,6 @@ void mat_mult_vec(float mat[], float a, float b, float c, float out[]);
 
 void normalize_matrix(float a[]);
 
-void rotate_towards_g(float mat[], float a_init, float b_init, float c_init, float a, float b, float c, float out[]);
-
 float scalarProductOfMatrices(float A[], float B[], int length);
 
 float normalize(float a[], int length);

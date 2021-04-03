@@ -1,10 +1,9 @@
 include_directories(../helpers)
 include_directories(../i2c)
 
-add_library(control
+add_library(rotation_matrix
  rotation_matrix.c
 )
-target_link_libraries(control
+target_link_libraries(rotation_matrix
     PUBLIC timer
-    PUBLIC mpu6050
 )
