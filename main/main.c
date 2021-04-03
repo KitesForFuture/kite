@@ -32,7 +32,7 @@
 #define INITIAL_SIDEWAYS_FLYING_TIME 8
 
 #define MAX_SERVO_DEFLECTION 70
-#define MAX_PROPELLER_SPEED 50
+#define MAX_PROPELLER_SPEED 65
 #define HOVER_RUDDER_OFFSET 0
 #define HOVER_ELEVATOR_OFFSET 0
 
@@ -41,7 +41,7 @@
 #define AILERON_MIN_DEFLECTION -30
 #define MAX_PROPELLER_DIFF 10
 
-#define TURNING_SPEED 0.5 // in QUARTER TURNS PER SECOND, 2 is too fast, 0.5 seems a bit too slow, but let's try
+#define TURNING_SPEED 0.75 // in QUARTER TURNS PER SECOND, 2 is too fast, 0.5 seems a bit too slow, but let's try
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -82,11 +82,12 @@ void app_main(void)
     Time sideways_flying_timer = 0;
     int turn_delayed = 0;
     
-    float GROUND_STATION_MIN_TENSION = 0;
+    float GROUND_STATION_MIN_TENSION = 1;
     float propeller_speed = 0;
+    float FINAL_LANDING = false;
     while(1) {
         vTaskDelay(1);
-
+        
         update_bmp280_if_necessary();
         
         updateRotationMatrix();
@@ -113,12 +114,12 @@ void app_main(void)
         float elevator_p = 0;
         
         float goal_height = 100;// 100 // 5*CH5;// -3 to +3 meters
-        float rate_of_climb = 2;// 3 // CH6+1;// 0 to 1 m/s
+        float rate_of_climb = 2.5;// 3 // CH6+1;// 0 to 1 m/s
         
         float propeller_diff = 0;
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
-        //FLIGHT_MODE = LANDING; // TODO delete this debugging line
+        //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
         if (FLIGHT_MODE == HOVER) {
         
         	
@@ -144,9 +145,9 @@ void app_main(void)
 		    }
 		    
 		    //REQUEST LOW LINE TENSION FROM GROUND STATION
-		    
 		    if(h > 50){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); GROUND_STATION_MIN_TENSION = 0; propeller_speed = 0; propeller_diff = 0;}
 		    if(h < 45) GROUND_STATION_MIN_TENSION = 1; else GROUND_STATION_MIN_TENSION = 0;
+		    
 		    
         } else if (FLIGHT_MODE == FIGURE_EIGHT) {
         	
@@ -200,22 +201,26 @@ void app_main(void)
         	//printf("z_axis_angle %f, RC_angle %f, angle_diff %f, t_a_adj %f\n", z_axis_angle, RC_requested_angle, angle_diff, target_angle_adjustment);
         	float target_angle = 3.1415926535*0.5*DIRECTION*(0.9 + target_angle_adjustment/* 1 means 1.2*90 degrees, 0 means 0 degrees*/);
         	
-        	// BOUNDING THE TURNING SPEED
-        	float slowly_changing_target_angle = get_slowly_changing_target_angle(target_angle, TURNING_SPEED);
         	
-        	rudder_angle = getRudderControl(target_angle, slowly_changing_target_angle, (float)(pow(5,CH5)), (float)(pow(5,CH5)), SINGULARITY_AT_BOTTOM); //TODO: CH5,CH6 here for P/D
+        	rudder_angle = getRudderControl(target_angle, TURNING_SPEED, (float)(pow(5,CH5)), (float)(pow(5,CH5)), SINGULARITY_AT_BOTTOM); //TODO: CH5,CH6 here for P/D
 		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl((float)(pow(5,CH6)));
+		    
+		    if(h > 120){FLIGHT_MODE = LANDING;}
 		    
         } else if (FLIGHT_MODE == LANDING) {
         
-			rudder_angle = getLandingRudderControl(2, 2.1); //TODO: CH5,CH6 here for P/D
-			elevon_angle_right = elevon_angle_left = -50 + 20*CH2 + getGlideElevatorControl(1); // TODO: find right angle for stall landing
-			if(h > 120){FLIGHT_MODE = LANDING;}
+			rudder_angle = getLandingRudderControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
+			elevon_angle_right = elevon_angle_left = -50 + 20*CH2 + getGlideElevatorControl(1*(float)(pow(5,CH6))); // TODO: find right angle for stall landing
+			
+			if(CH1 < -0.8 || CH1 > 0.8) {FINAL_LANDING = true;}
+			if(h < 60 && !FINAL_LANDING){FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); /*GROUND_STATION_MIN_TENSION = 0; propeller_speed=0; propeller_diff=0;*/}
+		    if(h < 10){FLIGHT_MODE = HOVER; goal_height = -10; rate_of_climb = 0.5;}
+		    if(h < 5){FLIGHT_MODE = HOVER; goal_height = -10; rate_of_climb = 0.3;}
         	
         } else if (FLIGHT_MODE == MANUAL) {
         	
         	rudder_angle = MAX_SERVO_DEFLECTION*CH1;
-        	elevon_angle_right = elevon_angle_left = MAX_SERVO_DEFLECTION*(CH2) + getGlideElevatorControl(1); // TODO: determine right values experimentally (also use in LANDING and FIGURE_EIGTH mode), then use CH5,CH6 for Rudder-D/P gains in Landing and Figure-8-Mode, (float)(pow(5,CH5))
+        	elevon_angle_right = elevon_angle_left = MAX_SERVO_DEFLECTION*(CH2) + getGlideElevatorControl(1*(float)(pow(5,CH6))); // TODO: determine right values experimentally (also use in LANDING and FIGURE_EIGTH mode), then use CH5,CH6 for Rudder-D/P gains in Landing and Figure-8-Mode, (float)(pow(5,CH5))
         	
         	propeller_speed = MAX_PROPELLER_SPEED*CH3;
         	

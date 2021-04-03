@@ -42,7 +42,7 @@ static float haveAngleSingularityAtAngle(float variable, float angle){
 	}
 }
 
-float getRudderControl(float target_angle, float slowly_changing_target_angle, float p_rudder_factor, float d_rudder_factor, float singularity_angle){
+float getRudderControl(float target_angle, float turning_speed, float p_rudder_factor, float d_rudder_factor, float singularity_angle){
 	
 	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
 	
@@ -94,7 +94,14 @@ float getRudderControl(float target_angle, float slowly_changing_target_angle, f
 	}
 	
 	beta = haveAngleSingularityAtAngle(beta, singularity_angle);
-	slowly_changing_target_angle = haveAngleSingularityAtAngle(slowly_changing_target_angle, singularity_angle);
+	
+	
+	
+	target_angle = haveAngleSingularityAtAngle(target_angle, singularity_angle);
+	
+	// BOUNDING THE TURNING SPEED
+    float slowly_changing_target_angle = get_slowly_changing_target_angle(target_angle, turning_speed);
+        	
 	
 	beta -= slowly_changing_target_angle;
 	

@@ -10,7 +10,7 @@
 
 #define P_HEIGHT 10
 #define D_HEIGHT 1
-#define TARGET_HEIGHT_BOUND 5 // in meters
+#define TARGET_HEIGHT_BOUND 7 // in meters
 
 #define D_AILERON 0.2
 
