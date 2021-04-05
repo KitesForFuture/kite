@@ -1,5 +1,4 @@
 #include "rotation_matrix.h"
-#include <string.h>
 #include "../helpers/kitemath.h"
 #include "../helpers/timer.h"
 

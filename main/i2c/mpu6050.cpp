@@ -19,7 +19,7 @@ static float (*map_x)(float, float, float), (*map_y)(float, float, float), (*map
 //sens = 3 <-> +- 2000 deg/sec
 static void init_gyro_sensitivity(uint8_t sens) {
     if (sens < 4 /* && sens >=0 */) { // ToDoLeo can sense be ever smaller than 0? What is it?
-        i2c_send_bytes(i2c_identifier, 1, 27, 1, (uint8_t[]) {8 * sens});
+        i2c_send_byte(i2c_identifier, 27, 1, 8 * sens);
         gyro_precision_factor = 250 * smallpow(2, sens) / 32768.0;
     } else {
         printf("setGyroSensitivity(int sens), sensitivity must be between 0 and 3");
@@ -32,7 +32,7 @@ static void init_gyro_sensitivity(uint8_t sens) {
 //sens = 3 <-> +- 16g
 static void init_accel_sensitivity(uint8_t sens) {
     if (sens < 4 /* && sens >=0 */) { // ToDoLeo can sense be ever smaller than 0? What is it?
-        i2c_send_bytes(i2c_identifier, 1, 28, 1, (uint8_t[]) {8 * sens});
+        i2c_send_byte(i2c_identifier, 28, 1, 8 * sens);
         accel_precision_factor = 2 * 9.81 * smallpow(2, sens) / 32768.0;
     } else {
         printf("setAccelSensitivity(int sens), sensitivity must be between 0 and 3");

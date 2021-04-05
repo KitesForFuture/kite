@@ -25,7 +25,7 @@ float z_mapper(float v1, float v2, float v3) { return v3; }
 
 // TODO extern c
 
-_Noreturn void app_main(void)
+extern "C" _Noreturn void app_main(void)
 {
     cat24_init(cat24c256);
 
@@ -33,12 +33,13 @@ _Noreturn void app_main(void)
         {cat24_read_float(0*sizeof(float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float))}, //ToDoLeo make pretty
         {cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float))}
     };
-    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", cat24_read_float(0*sizeof(cat24_read_float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float)), cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float)));
+    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", cat24_read_float(0*sizeof(float)), cat24_read_float(1*sizeof(float)), cat24_read_float(2*sizeof(float)), cat24_read_float(3*sizeof(float)), cat24_read_float(4*sizeof(float)), cat24_read_float(5*sizeof(float)));
 
     bmp280_init(bmp280, cat24_read_float(6*sizeof(float)));
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
-    rotation_matrix_init((float[]) {1, 0, 0});
+    float gravity[3] = {1, 0, 0};
+    rotation_matrix_init(gravity);
 
     // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
     // X-Axis: GYRO chip - FUTURE silk writing

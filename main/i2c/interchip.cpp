@@ -6,9 +6,6 @@
 #define I2C_MASTER_TX_BUF_DISABLE 0 /*!< I2C master doesn't need buffer */
 #define I2C_MASTER_RX_BUF_DISABLE 0 /*!< I2C master doesn't need buffer */
 #define ACK_CHECK_EN 0x1            /*!< I2C master will check ack from slave*/
-#define ACK_CHECK_DIS 0x0           /*!< I2C master will not check ack from slave */
-#define ACK_VAL 0x0                 /*!< I2C ack value */
-#define NACK_VAL 0x1                /*!< I2C nack value */
 
 static struct i2c_bus port0 = {-1, -1};
 static struct i2c_bus port1 = {-1, -1};
@@ -40,10 +37,12 @@ void init_interchip(struct i2c_identifier device) {
   i2c_config_t conf = {
     .mode = I2C_MODE_MASTER,
     .sda_io_num = device.bus.sda,         // select GPIO specific to your project
-    .sda_pullup_en = GPIO_PULLUP_ENABLE,
     .scl_io_num = device.bus.scl,         // select GPIO specific to your project
+    .sda_pullup_en = GPIO_PULLUP_ENABLE,
     .scl_pullup_en = GPIO_PULLUP_ENABLE,
-    .master.clk_speed = I2X_FREQUENCY,  // select frequency specific to your project
+    .master = {
+            .clk_speed = I2X_FREQUENCY     // select frequency specific to your project
+    },
     // .clk_flags = 0,          /*!< Optional, you can use I2C_SCLK_SRC_FLAG_* flags to choose i2c source clock here. */
   };
   i2c_param_config(current_port, &conf);
@@ -98,7 +97,8 @@ void i2c_send_bytes(struct i2c_identifier device, int data_addr_len, uint16_t da
 }
 
 void i2c_send_byte(struct i2c_identifier device, int data_addr_len, uint16_t data_addr, uint8_t data) {
-  i2c_send_bytes(device, data_addr_len, data_addr, 1, (uint8_t[]) {data});
+    uint8_t data_array[1] = {data};
+    i2c_send_bytes(device, data_addr_len, data_addr, 1, data_array);
 }
 
 void i2c_read_bytes(struct i2c_identifier device, int data_addr_len, uint16_t data_addr, int data_len, uint8_t out[]) {
@@ -122,7 +122,7 @@ void i2c_read_bytes(struct i2c_identifier device, int data_addr_len, uint16_t da
 
   // Actual Read
   for (int i=0; i<data_len; i++) {
-    i2c_master_read_byte(cmd, &(out[i]), (i < data_len-1) ? ACK_VAL : NACK_VAL);
+    i2c_master_read_byte(cmd, &(out[i]), (i < data_len-1) ? I2C_MASTER_ACK : I2C_MASTER_NACK);
   }
 
   // I2C Stop
