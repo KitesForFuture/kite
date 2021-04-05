@@ -4,14 +4,14 @@
 #include "freertos/FreeRTOS.h"
 
 struct i2c_bus {
-  int sda;
-  int scl;
+    int sda;
+    int scl;
 };
 
 struct i2c_identifier {
-  struct i2c_bus bus;
-  int chip_addr;
-  int does_increment_address_on_write; // On read, address is always auto incremented
+    struct i2c_bus bus;
+    int chip_addr;
+    int does_increment_address_on_write; // On read, address is always auto incremented
 };
 
 void init_interchip(struct i2c_identifier device);

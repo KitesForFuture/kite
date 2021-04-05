@@ -6,6 +6,6 @@
 
 void rotation_matrix_update(struct motion_data position, float rotation_matrix[]);
 
-void rotation_matrix_init (float gravity[]);
+void rotation_matrix_init(float gravity[]);
 
 #endif

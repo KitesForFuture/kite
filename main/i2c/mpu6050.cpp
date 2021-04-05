@@ -46,18 +46,18 @@ static void get_position_uncalibrated(struct motion_data *out) {
 
     //read acc/gyro data at register 59..., 67...
     i2c_read_bytes(i2c_identifier, 1, 67, 6, six_axis_raw_data);
-    float gyro_1 = gyro_precision_factor * (int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
-    float gyro_2 = gyro_precision_factor * (int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
-    float gyro_3 = gyro_precision_factor * (int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
+    float gyro_1 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
+    float gyro_2 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
+    float gyro_3 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
     //GYRO X / Y / Z
     out->gyro[1] = map_x(gyro_1, gyro_2, gyro_3);
     out->gyro[2] = map_y(gyro_1, gyro_2, gyro_3);
     out->gyro[3] = map_z(gyro_1, gyro_2, gyro_3);
 
     i2c_read_bytes(i2c_identifier, 1, 59, 6, six_axis_raw_data);
-    float accel_1 = accel_precision_factor * (int16_t)((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
-    float accel_2 = accel_precision_factor * (int16_t)((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
-    float accel_3 = accel_precision_factor * (int16_t)((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
+    float accel_1 = accel_precision_factor * (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
+    float accel_2 = accel_precision_factor * (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
+    float accel_3 = accel_precision_factor * (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
     //ACCEL X / Y / Z
     out->accel[1] = map_x(accel_1, accel_2, accel_3);
     out->accel[2] = map_y(accel_1, accel_2, accel_3);

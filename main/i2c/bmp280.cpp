@@ -40,9 +40,9 @@ int bmp280_update_if_possible() {
     if (query_timer_ms(last_update) >= UPDATE_INTERVAL_MS) {
         // current_smoothed_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothed_temperature;
         current_smoothed_temperature = SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT * (float) get_temperature() +
-                                         (1 - SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) * current_smoothed_temperature;
+                                       (1 - SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) * current_smoothed_temperature;
         current_smoothed_pressure = SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT * get_pressure() +
-                                      (1 - SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) * current_smoothed_pressure;
+                                    (1 - SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) * current_smoothed_pressure;
 
         start_measurement();
         return 1;

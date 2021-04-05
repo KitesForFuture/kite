@@ -10,10 +10,10 @@ struct motion_data {
 };
 
 void mpu6050_init(struct i2c_identifier i2c_identifier_arg,
-        struct motion_data callibration_data,
-        float (*x_mapper)(float, float, float),
-        float (*y_mapper)(float, float, float),
-        float (*z_mapper)(float, float, float));
+                  struct motion_data callibration_data,
+                  float (*x_mapper)(float, float, float),
+                  float (*y_mapper)(float, float, float),
+                  float (*z_mapper)(float, float, float));
 
 void mpu6050_get_position(struct motion_data *out);
 
