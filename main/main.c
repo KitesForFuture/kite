@@ -85,6 +85,10 @@ void app_main(void)
     float GROUND_STATION_MIN_TENSION = 1;
     float propeller_speed = 0;
     float FINAL_LANDING = false;
+    
+    float goal_height = 100;// 100 // 5*CH5;// -3 to +3 meters
+    float rate_of_climb = 2.5;// 3 // CH6+1;// 0 to 1 m/s
+    
     while(1) {
         vTaskDelay(1);
         
@@ -113,9 +117,7 @@ void app_main(void)
         
         float elevator_p = 0;
         
-        //TODO set outside of the while loop
-        float goal_height = 100;// 100 // 5*CH5;// -3 to +3 meters
-        float rate_of_climb = 2.5;// 3 // CH6+1;// 0 to 1 m/s
+        
         
         float propeller_diff = 0;
         
@@ -196,9 +198,9 @@ void app_main(void)
         	float RC_requested_angle = (1-CH2)*3.1415926535*0.25; // between 0 and pi/2
         	float angle_diff = RC_requested_angle - z_axis_angle; // between -pi/2 and pi/2
         	
-        	float target_angle_adjustment = angle_diff*0.5; // between -pi/4=-0.7... and pi/4=0.7...
-        	if(target_angle_adjustment > 0.3) target_angle_adjustment = 0.3;
-        	if(target_angle_adjustment < -0.3) target_angle_adjustment = -0.3;
+        	float target_angle_adjustment = angle_diff; // between -pi/4=-0.7... and pi/4=0.7...
+        	if(target_angle_adjustment > 0.4) target_angle_adjustment = 0.4;
+        	if(target_angle_adjustment < -0.4) target_angle_adjustment = -0.4;
         	//printf("z_axis_angle %f, RC_angle %f, angle_diff %f, t_a_adj %f\n", z_axis_angle, RC_requested_angle, angle_diff, target_angle_adjustment);
         	float target_angle = 3.1415926535*0.5*DIRECTION*(0.9 + target_angle_adjustment/* 1 means 1.2*90 degrees, 0 means 0 degrees*/);
         	
@@ -209,12 +211,12 @@ void app_main(void)
         	//rudder_angle = getRudderControl(target_angle, TURNING_SPEED, (float)(pow(5,CH5)), (float)(pow(5,CH5)), SINGULARITY_AT_BOTTOM); //TODO: CH5,CH6 here for P/D
 		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl((float)(pow(5,CH6)));
 		    
-		    if(h > 120){FLIGHT_MODE = LANDING;}
+		    if(h > 70){FLIGHT_MODE = LANDING;}
 		    
         } else if (FLIGHT_MODE == LANDING) {
         
 			rudder_angle = getLandingRudderControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
-			elevon_angle_right = elevon_angle_left = -50 + 20*CH2 + getGlideElevatorControl(1*(float)(pow(5,CH6))); // TODO: find right angle for stall landing
+			elevon_angle_right = elevon_angle_left = -50 + 90*CH2 + getGlideElevatorControl(1*(float)(pow(5,CH6))); // TODO: find right angle for stall landing
 			
 			if(CH1 < -0.8 || CH1 > 0.8) {FINAL_LANDING = true;}
 			if(h < 60 && !FINAL_LANDING){FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); /*GROUND_STATION_MIN_TENSION = 0; propeller_speed=0; propeller_diff=0;*/}
