@@ -198,7 +198,7 @@ void app_main(void)
         	float RC_requested_angle = (1-CH2)*3.1415926535*0.25; // between 0 and pi/2
         	float angle_diff = RC_requested_angle - z_axis_angle; // between -pi/2 and pi/2
         	
-        	float target_angle_adjustment = angle_diff; // between -pi/4=-0.7... and pi/4=0.7...
+        	float target_angle_adjustment = angle_diff*0.5; // between -pi/4=-0.7... and pi/4=0.7...
         	if(target_angle_adjustment > 0.4) target_angle_adjustment = 0.4;
         	if(target_angle_adjustment < -0.4) target_angle_adjustment = -0.4;
         	//printf("z_axis_angle %f, RC_angle %f, angle_diff %f, t_a_adj %f\n", z_axis_angle, RC_requested_angle, angle_diff, target_angle_adjustment);
