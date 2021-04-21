@@ -3,7 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "i2c/interchip.h"
+#include "i2c/i2c_device.h"
 #include "i2c/cat24c256.h"
 #include "i2c/bmp280.h"
 #include "i2c/mpu6050.h"
@@ -13,9 +13,9 @@
 /* #include "pwm/motors.h"
 #include "pwm/pwm_input.h" */
 
-struct i2c_identifier cat24c256 = {{18, 19}, 0x50, 1};
-struct i2c_identifier bmp280 = {{18, 19}, 0x76, 0};
-struct i2c_identifier mpu6050 = {{14, 25}, 104, 0};
+struct i2c_config cat24c256 = {{18, 19}, 0x50, 1};
+struct i2c_config bmp280 = {{18, 19}, 0x76, 0};
+struct i2c_config mpu6050 = {{14, 25}, 104, 0};
 
 // rotation of the drone in world coordinates
 float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};

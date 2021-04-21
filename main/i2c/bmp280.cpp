@@ -10,25 +10,24 @@
 
 void Bmp280::start_measurement() {
     // chip_addr, register, precision(0x25 least precise, takes 9 ms, 0x5D most precise, takes 45ms)
-    i2c_send_byte(i2c_identifier, 1, 0xF4, 0x5D);
+    send_byte(1, 0xF4, 0x5D);
     last_update = start_timer();
 }
 
 uint32_t Bmp280::get_temperature() {
     uint8_t result[3];
-    i2c_read_bytes(i2c_identifier, 1, 0xFA, 3, result);
+    read_bytes(1, 0xFA, 3, result);
     return (uint32_t) ((result[0] << 16) | (result[1] << 8) | result[2]);
 }
 
 float Bmp280::get_pressure() {
     uint8_t result[3];
-    i2c_read_bytes(i2c_identifier, 1, 0xF7, 3, result);
+    read_bytes(1, 0xF7, 3, result);
     uint32_t bmp280_raw_pressure_reading = (uint32_t) ((result[0] << 16) | (result[1] << 8) | result[2]);
     return 1365.3 - 0.00007555555555 * (float) (bmp280_raw_pressure_reading);
 }
 
-Bmp280::Bmp280(struct i2c_identifier i2c_identifier, float minus_dp_by_dt) : i2c_identifier{i2c_identifier}, minus_dp_by_dt {minus_dp_by_dt} {
-    init_interchip(i2c_identifier);
+Bmp280::Bmp280(struct i2c_config i2c_config, float minus_dp_by_dt) : I2cDevice(i2c_config), minus_dp_by_dt {minus_dp_by_dt} {
     delay_ms(WARM_UP_PERIOD_MS);
     // Setup current values to be not 0 (that would worsen the following smoothening process)
     start_measurement();

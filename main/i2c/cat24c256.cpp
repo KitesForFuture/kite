@@ -6,19 +6,17 @@ union Conversion {
     uint8_t c[sizeof(float)];
 };
 
-Cat24c256::Cat24c256(struct i2c_identifier i2c_identifier) : i2c_identifier{i2c_identifier} {
-    init_interchip(i2c_identifier);
-}
+Cat24c256::Cat24c256(struct i2c_config i2c_config) : I2cDevice(i2c_config) {}
 
 void Cat24c256::write_float(float number, int address) {
     Conversion conversion {};
     conversion.f = number;
-    i2c_send_bytes(i2c_identifier, 2, address, sizeof(float), conversion.c);
+    send_bytes(2, address, sizeof(float), conversion.c);
 }
 
 float Cat24c256::read_float(int address) {
     Conversion conversion {};
-    i2c_read_bytes(i2c_identifier, 2, address, sizeof(float), conversion.c);
+    read_bytes(2, address, sizeof(float), conversion.c);
     return conversion.f;
 }
 

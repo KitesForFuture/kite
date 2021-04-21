@@ -9,7 +9,7 @@
 float Mpu6050::get_gyro_sensitivity(uint8_t sens) {
     // ToDo Leo correct exception handling
     if (sens < 4 /* && sens >=0 */) { // ToDo Leo can sense be ever smaller than 0? What is it?
-        i2c_send_byte(i2c_identifier, 27, 1, 8 * sens);
+        send_byte(27, 1, 8 * sens);
         return 250 * smallpow(2, sens) / 32768.0;
     }
     printf("setGyroSensitivity(int sens), sensitivity must be between 0 and 3");
@@ -23,7 +23,7 @@ float Mpu6050::get_gyro_sensitivity(uint8_t sens) {
 float Mpu6050::get_accel_sensitivity(uint8_t sens) {
     // ToDo Leo correct exception handling
     if (sens < 4 /* && sens >=0 */) { // ToDo Leo can sense be ever smaller than 0? What is it?
-        i2c_send_byte(i2c_identifier, 28, 1, 8 * sens);
+        send_byte(28, 1, 8 * sens);
         return 2 * 9.81 * smallpow(2, sens) / 32768.0;
     }
     printf("setAccelSensitivity(int sens), sensitivity must be between 0 and 3");
@@ -36,7 +36,7 @@ void Mpu6050::get_motion_uncalibrated(struct motion_data *out) {
     uint8_t six_axis_raw_data[6];
 
     //read acc/gyro data at register 59..., 67...
-    i2c_read_bytes(i2c_identifier, 1, 67, 6, six_axis_raw_data);
+    read_bytes(1, 67, 6, six_axis_raw_data);
     float gyro_1 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
     float gyro_2 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
     float gyro_3 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
@@ -45,7 +45,7 @@ void Mpu6050::get_motion_uncalibrated(struct motion_data *out) {
     out->gyro[2] = y_mapper(gyro_1, gyro_2, gyro_3);
     out->gyro[3] = z_mapper(gyro_1, gyro_2, gyro_3);
 
-    i2c_read_bytes(i2c_identifier, 1, 59, 6, six_axis_raw_data);
+    read_bytes(1, 59, 6, six_axis_raw_data);
     float accel_1 = accel_precision_factor * (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
     float accel_2 = accel_precision_factor * (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
     float accel_3 = accel_precision_factor * (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
@@ -67,24 +67,22 @@ void Mpu6050::get_motion(struct motion_data *out) {
     out->gyro[2] -= calibration_data.gyro[2];
 }
 
-Mpu6050::Mpu6050(   struct i2c_identifier i2c_identifier,
+Mpu6050::Mpu6050(   struct i2c_config i2c_config,
                     struct motion_data calibration_data,
                     float (*x_mapper)(float, float, float),
                     float (*y_mapper)(float, float, float),
                     float (*z_mapper)(float, float, float))
                         :
-                    i2c_identifier{i2c_identifier},
+                    I2cDevice(i2c_config),
                     calibration_data{calibration_data},
                     x_mapper{x_mapper}, y_mapper{y_mapper}, z_mapper{z_mapper}
 {
 
     // Enable DLPF (cut off low frequencies using a Digital Low Pass Filter)
-    i2c_send_byte(i2c_identifier, 1, 26, 3);
-
-    init_interchip(i2c_identifier); // ToDo Leo gehört das nicht nach oben?
+    send_byte(1, 26, 3);
 
     // wake up from sleep mode
-    i2c_send_byte(i2c_identifier, 1, 107, 0);
+    send_byte(1, 107, 0);
 
     gyro_precision_factor = get_gyro_sensitivity(1);
     accel_precision_factor = get_accel_sensitivity(2);

@@ -1,15 +1,12 @@
 #ifndef I2C_DEVICES_CAT24C256
 #define I2C_DEVICES_CAT24C256
 
-#include "interchip.h"
+#include "i2c_device.h"
 
-class Cat24c256 {
-
-    struct i2c_identifier i2c_identifier;
-
+class Cat24c256: protected I2cDevice {
 public:
 
-    Cat24c256(struct i2c_identifier i2c_identifier_arg);
+    explicit Cat24c256(struct i2c_config i2c_config);
     void write_float(float number, int address);
     float read_float(int address);
 

@@ -1,7 +1,7 @@
 include_directories(../helpers)
 
 add_library(interchip
-        interchip.cpp
+        i2c_device.cpp
 )
 
 add_library(bmp280
