@@ -1,14 +1,12 @@
 #include "rotation_matrix.h"
 #include "../helpers/kitemath.h"
-#include "../helpers/timer.h"
 
-int8_t x_gravity_factor, y_gravity_factor, z_gravity_factor;
-MsTimer timer {};
+
 
 // rotates matrix mat such that mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' aligns more with (a,b,c)'
 // (x_gravity_factor, y_gravity_factor, z_gravity_factor) can be initially measured acceleration vector, usually something close to (0,0,1)
 // (a,b,c) can be the currently measured acceleration vector
-static void rotate_towards_g(float mat[], float a, float b, float c, float out[]) {
+void RotationMatrix::rotate_towards_g(float mat[], float a, float b, float c) {
     // mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor'
     float tmp_vec[3];
     mat_transp_mult_vec(mat, x_gravity_factor, y_gravity_factor, z_gravity_factor, tmp_vec);
@@ -47,12 +45,12 @@ static void rotate_towards_g(float mat[], float a, float b, float c, float out[]
     tmp_rot_matrix[7] = axis_1 * sin(angle);
     tmp_rot_matrix[8] = 1;
 
-    mat_mult_mat_transp(mat, tmp_rot_matrix, out);
+    mat_mult_mat_transp(mat, tmp_rot_matrix, matrix);
 }
 
-void rotation_matrix_update(struct motion_data position, float rotation_matrix[]) {
+void RotationMatrix::update(struct motion_data position) {
 
-    if (!timer.has_laptime()) { // ToDo improve this when converted to class. It's somehow about skipping the first time
+    if (!timer.has_laptime()) { // ToDo improve this. It's about skipping the first time
         timer.take();
         return;
     }
@@ -81,17 +79,23 @@ void rotation_matrix_update(struct motion_data position, float rotation_matrix[]
     diff[8] = 1;
 
     float temp_rotation_matrix[9];
-    mat_mult(rotation_matrix, diff, temp_rotation_matrix);
+    mat_mult(matrix, diff, temp_rotation_matrix);
 
-    rotate_towards_g(temp_rotation_matrix, position.accel[0], position.accel[1], position.accel[2], rotation_matrix);
-    //memcpy(rotation_matrix, temp_rotation_matrix, sizeof(temp_rotation_matrix));// TODO: remove when above line uncommented!!!
+    rotate_towards_g(temp_rotation_matrix, position.accel[0], position.accel[1], position.accel[2]);
 
-    normalize_matrix(rotation_matrix);
+    normalize_matrix(matrix);
 }
 
-void rotation_matrix_init(float gravity[]) {
+
+RotationMatrix::RotationMatrix(float gravity[]) {
     normalize(gravity, 3);
     x_gravity_factor = gravity[0];
     y_gravity_factor = gravity[1];
     z_gravity_factor = gravity[2];
+}
+
+void RotationMatrix::print() {
+    printf("rotation matrix:\n %f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", matrix[0], matrix[1],
+           matrix[2], matrix[3], matrix[4], matrix[5], matrix[6],
+           matrix[7], matrix[8]);
 }

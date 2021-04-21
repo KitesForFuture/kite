@@ -17,9 +17,6 @@ struct i2c_config cat24c256 = {{18, 19}, 0x50, 1};
 struct i2c_config bmp280 = {{18, 19}, 0x76, 0};
 struct i2c_config mpu6050 = {{14, 25}, 104, 0};
 
-// rotation of the drone in world coordinates
-float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-
 float x_mapper(float v1, float v2, float v3) { return -1 * v2; }
 
 float y_mapper(float v1, float v2, float v3) { return v1; }
@@ -45,7 +42,7 @@ extern "C" _Noreturn void app_main(void) {
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
     float gravity[3] = {1, 0, 0};
-    rotation_matrix_init(gravity);
+    RotationMatrix rotation_matrix {gravity};
 
     // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
     // X-Axis: GYRO chip - FUTURE silk writing
@@ -81,7 +78,7 @@ extern "C" _Noreturn void app_main(void) {
 
         struct motion_data motion;
         orientation_sensor.get_motion(&motion);
-        rotation_matrix_update(motion, rotation_matrix);
+        rotation_matrix.update(motion);
 
         //updatePWMInput();
 
@@ -104,9 +101,7 @@ extern "C" _Noreturn void app_main(void) {
         }
 
 
-        printf("rotation matrix:\n %f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1],
-               rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6],
-               rotation_matrix[7], rotation_matrix[8]);
+        rotation_matrix.print();
 
     }
 }
