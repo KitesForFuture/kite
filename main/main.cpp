@@ -40,7 +40,7 @@ extern "C" _Noreturn void app_main(void) {
            cat24_read_float(3 * sizeof(float)), cat24_read_float(4 * sizeof(float)),
            cat24_read_float(5 * sizeof(float)));
 
-    bmp280_init(bmp280, cat24_read_float(6 * sizeof(float)));
+    Bmp280 height_sensor {bmp280, cat24_read_float(6 * sizeof(float))};
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
     float gravity[3] = {1, 0, 0};
@@ -66,7 +66,7 @@ extern "C" _Noreturn void app_main(void) {
 
     int test;
     printf("BMP280 Pressure Diff: ");
-    test = bmp280_update_if_possible();
+    test = height_sensor.update_if_possible();
     printf("%i\n", test);
 
 
@@ -76,7 +76,7 @@ extern "C" _Noreturn void app_main(void) {
     while (1) {
         vTaskDelay(10);
 
-        bmp280_update_if_possible();
+        height_sensor.update_if_possible();
 
         struct motion_data position;
         mpu6050_get_position(&position);
@@ -84,7 +84,7 @@ extern "C" _Noreturn void app_main(void) {
 
         //updatePWMInput();
 
-        printf("BMP280 Height: %f\n", bmp280_get_height());
+        printf("BMP280 Height: %f\n", height_sensor.get_height());
 
 
         /* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
