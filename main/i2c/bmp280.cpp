@@ -27,7 +27,7 @@ float Bmp280::get_pressure() {
     return 1365.3 - 0.00007555555555 * (float) (bmp280_raw_pressure_reading);
 }
 
-Bmp280::Bmp280(struct i2c_identifier i2c_identifier_arg, float minus_dp_by_dt) : i2c_identifier{i2c_identifier_arg}, minus_dp_by_dt {minus_dp_by_dt} {
+Bmp280::Bmp280(struct i2c_identifier i2c_identifier, float minus_dp_by_dt) : i2c_identifier{i2c_identifier}, minus_dp_by_dt {minus_dp_by_dt} {
     init_interchip(i2c_identifier);
     delay_ms(WARM_UP_PERIOD_MS);
     // Setup current values to be not 0 (that would worsen the following smoothening process)

@@ -28,20 +28,20 @@ float z_mapper(float v1, float v2, float v3) { return v3; }
 
 extern "C" _Noreturn void app_main(void) {
 
-    Cat24c256 eeprom {cat24c256};
+    Cat24c256 storage {cat24c256};
 
     struct motion_data mpu_callibration = {
-            {eeprom.read_float(0 * sizeof(float)), eeprom.read_float(1 * sizeof(float)), eeprom.read_float(
+            {storage.read_float(0 * sizeof(float)), storage.read_float(1 * sizeof(float)), storage.read_float(
                     2 * sizeof(float))}, //ToDoLeo make pretty
-            {eeprom.read_float(3 * sizeof(float)), eeprom.read_float(4 * sizeof(float)), eeprom.read_float(
+            {storage.read_float(3 * sizeof(float)), storage.read_float(4 * sizeof(float)), storage.read_float(
                     5 * sizeof(float))}
     };
-    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", eeprom.read_float(0 * sizeof(float)),
-           eeprom.read_float(1 * sizeof(float)), eeprom.read_float(2 * sizeof(float)),
-           eeprom.read_float(3 * sizeof(float)), eeprom.read_float(4 * sizeof(float)),
-           eeprom.read_float(5 * sizeof(float)));
+    printf("storage-readings: %f, %f, %f, %f, %f, %f\n", storage.read_float(0 * sizeof(float)),
+           storage.read_float(1 * sizeof(float)), storage.read_float(2 * sizeof(float)),
+           storage.read_float(3 * sizeof(float)), storage.read_float(4 * sizeof(float)),
+           storage.read_float(5 * sizeof(float)));
 
-    Bmp280 height_sensor {bmp280, eeprom.read_float(6 * sizeof(float))};
+    Bmp280 height_sensor {bmp280, storage.read_float(6 * sizeof(float))};
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
     float gravity[3] = {1, 0, 0};
@@ -56,7 +56,7 @@ extern "C" _Noreturn void app_main(void) {
     // X-Axis: head - tail
     // Y-Axis: left wing - right wing
     // Z-Axis: kite - ground station
-    mpu6050_init(mpu6050, mpu_callibration, x_mapper, y_mapper, z_mapper);
+    Mpu6050 orientation_sensor {mpu6050, mpu_callibration, x_mapper, y_mapper, z_mapper};
     //initMotors(26, 27, 12, 13);
     /* initPWMInput(26, 27, 12, 13); */
 
@@ -79,9 +79,9 @@ extern "C" _Noreturn void app_main(void) {
 
         height_sensor.update_if_possible();
 
-        struct motion_data position;
-        mpu6050_get_position(&position);
-        rotation_matrix_update(position, rotation_matrix);
+        struct motion_data motion;
+        orientation_sensor.get_motion(&motion);
+        rotation_matrix_update(motion, rotation_matrix);
 
         //updatePWMInput();
 
