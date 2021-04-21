@@ -3,10 +3,16 @@
 
 #include "interchip.h"
 
-void cat24_init(struct i2c_identifier i2c_identifier_arg);
+class Cat24c256 {
 
-void cat24_write_float(float number, int address);
+    struct i2c_identifier i2c_identifier;
 
-float cat24_read_float(int address);
+public:
+
+    Cat24c256(struct i2c_identifier i2c_identifier_arg);
+    void write_float(float number, int address);
+    float read_float(int address);
+
+};
 
 #endif

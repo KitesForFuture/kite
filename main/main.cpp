@@ -27,20 +27,21 @@ float y_mapper(float v1, float v2, float v3) { return v1; }
 float z_mapper(float v1, float v2, float v3) { return v3; }
 
 extern "C" _Noreturn void app_main(void) {
-    cat24_init(cat24c256);
+
+    Cat24c256 eeprom {cat24c256};
 
     struct motion_data mpu_callibration = {
-            {cat24_read_float(0 * sizeof(float)), cat24_read_float(1 * sizeof(float)), cat24_read_float(
+            {eeprom.read_float(0 * sizeof(float)), eeprom.read_float(1 * sizeof(float)), eeprom.read_float(
                     2 * sizeof(float))}, //ToDoLeo make pretty
-            {cat24_read_float(3 * sizeof(float)), cat24_read_float(4 * sizeof(float)), cat24_read_float(
+            {eeprom.read_float(3 * sizeof(float)), eeprom.read_float(4 * sizeof(float)), eeprom.read_float(
                     5 * sizeof(float))}
     };
-    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", cat24_read_float(0 * sizeof(float)),
-           cat24_read_float(1 * sizeof(float)), cat24_read_float(2 * sizeof(float)),
-           cat24_read_float(3 * sizeof(float)), cat24_read_float(4 * sizeof(float)),
-           cat24_read_float(5 * sizeof(float)));
+    printf("eeprom-readings: %f, %f, %f, %f, %f, %f\n", eeprom.read_float(0 * sizeof(float)),
+           eeprom.read_float(1 * sizeof(float)), eeprom.read_float(2 * sizeof(float)),
+           eeprom.read_float(3 * sizeof(float)), eeprom.read_float(4 * sizeof(float)),
+           eeprom.read_float(5 * sizeof(float)));
 
-    Bmp280 height_sensor {bmp280, cat24_read_float(6 * sizeof(float))};
+    Bmp280 height_sensor {bmp280, eeprom.read_float(6 * sizeof(float))};
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
     float gravity[3] = {1, 0, 0};
