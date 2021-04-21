@@ -11,7 +11,6 @@
 void Bmp280::start_measurement() {
     // chip_addr, register, precision(0x25 least precise, takes 9 ms, 0x5D most precise, takes 45ms)
     send_byte(1, 0xF4, 0x5D);
-    last_update = start_timer();
 }
 
 uint32_t Bmp280::get_temperature() {
@@ -46,13 +45,14 @@ Bmp280::Bmp280(struct i2c_config i2c_config, float minus_dp_by_dt) : I2cDevice(i
 }
 
 int Bmp280::update_if_possible() {
-    if (query_timer_ms(last_update) >= UPDATE_INTERVAL_MS) {
+    if (timer.take() >= UPDATE_INTERVAL_MS) {
         // current_smoothed_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothed_temperature;
         current_smoothed_temperature = SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT * (float) get_temperature() +
                                        (1 - SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) * current_smoothed_temperature;
         current_smoothed_pressure = SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT * get_pressure() +
                                     (1 - SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) * current_smoothed_pressure;
 
+        timer = {};
         start_measurement();
         return 1;
     }

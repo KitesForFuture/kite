@@ -3,7 +3,7 @@
 #include "../helpers/timer.h"
 
 int8_t x_gravity_factor, y_gravity_factor, z_gravity_factor;
-Time last_update = 0;
+MsTimer timer {};
 
 // rotates matrix mat such that mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' aligns more with (a,b,c)'
 // (x_gravity_factor, y_gravity_factor, z_gravity_factor) can be initially measured acceleration vector, usually something close to (0,0,1)
@@ -52,20 +52,19 @@ static void rotate_towards_g(float mat[], float a, float b, float c, float out[]
 
 void rotation_matrix_update(struct motion_data position, float rotation_matrix[]) {
 
-    if (last_update == 0) {
-        last_update = start_timer();
+    if (!timer.has_laptime()) { // ToDo improve this when converted to class. It's somehow about skipping the first time
+        timer.take();
         return;
     }
-    float time_difference = query_timer_seconds(last_update);
-    last_update = start_timer();
+    timer.take();
 
     // matrix based:
     // rotation-matrix:
     // angles in radians
     // 0.01745329 = pi/180
-    float alpha = 0.01745329 * position.gyro[0] * time_difference;
-    float beta = 0.01745329 * position.gyro[1] * time_difference;
-    float gamma = 0.01745329 * position.gyro[2] * time_difference;
+    float alpha = 0.01745329 * position.gyro[0] * timer.get_laptime();
+    float beta = 0.01745329 * position.gyro[1] * timer.get_laptime();
+    float gamma = 0.01745329 * position.gyro[2] * timer.get_laptime();
 
     // infinitesimal rotation matrix:
     float diff[9];

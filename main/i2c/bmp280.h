@@ -7,11 +7,11 @@
 class Bmp280: protected I2cDevice {
 
     float minus_dp_by_dt;
-    float initial_smoothed_temperature = 0;
-    float initial_smoothed_pressure = 0;
-    float current_smoothed_temperature = 0;
-    float current_smoothed_pressure = 0;
-    Time last_update = 0;
+    float initial_smoothed_temperature {0};
+    float initial_smoothed_pressure {0};
+    float current_smoothed_temperature {0};
+    float current_smoothed_pressure {0};
+    MsTimer timer;
 
     void start_measurement();
     uint32_t get_temperature();
