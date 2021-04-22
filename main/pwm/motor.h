@@ -8,7 +8,6 @@
 class Motor {
 
     static double duty_interval_micro_seconds;
-
     static int next_free_channel;
 
     int channel;
