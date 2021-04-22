@@ -1,5 +1,6 @@
 #include <dirent.h>
 #include <stdio.h>
+#include <pwm/motor.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -62,6 +63,15 @@ extern "C" _Noreturn void app_main(void) {
     //int input_pins[] = {12, 13};
     //initPWMInput(input_pins, 2);
 
+    /*
+        #define SERVO_MIN_PULSEWIDTH 400 //Minimum pulse width in microsecond (500 according to nettigo.eu)
+        #define SERVO_MAX_PULSEWIDTH 2400 //Maximum pulse width in microsecond
+        #define ESC_MIN_PULSEWIDTH 1000 //Minimum pulse width in microsecond
+        #define ESC_MAX_PULSEWIDTH 2000 //Maximum pulse width in microsecond
+        #define ESC_MAX_DEGREE 90 //Maximum angle in degree upto which servo can rotate
+     */
+    Motor myServo {27, 400, 2400};
+
     int test;
     printf("BMP280 Pressure Diff: ");
     test = height_sensor.update_if_possible();
@@ -87,6 +97,10 @@ extern "C" _Noreturn void app_main(void) {
 
         /* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
 
+        myServo.set(0);
+        vTaskDelay(200);
+        myServo.set(1);
+        vTaskDelay(200);
 
         //setSpeed(0,30);
         //setSpeed(1,60);
