@@ -8,8 +8,9 @@
 #include "i2c/cat24c256.h"
 #include "i2c/bmp280.h"
 #include "i2c/mpu6050.h"
-
+#include "nvs_flash.h"
 #include "control/rotation_matrix.h"
+#include "helpers/wifi.h"
 
 /* #include "pwm/motors.h"
 #include "pwm/pwm_input.h" */
@@ -26,9 +27,22 @@ float z_mapper(float v1, float v2, float v3) { return v3; }
 
 extern "C" _Noreturn void app_main(void) {
 
+    nvs_flash_init(); // Required for WiFi at least.
+
+    wifi_sta_config_t wifi_config {
+            "KiteReceiver",
+            "KiteReceiver",
+            .threshold = { .authmode = WIFI_AUTH_WPA2_PSK },
+            .pmf_cfg = {
+                    .capable = true,
+                    .required = false
+            },
+    };
+    init_wifi(wifi_config);
+
     Cat24c256 storage {cat24c256};
 
-    struct motion_data mpu_callibration = {
+    struct motion_data mpu_calibration = {
             {storage.read_float(0 * sizeof(float)), storage.read_float(1 * sizeof(float)), storage.read_float(
                     2 * sizeof(float))}, //ToDoLeo make pretty
             {storage.read_float(3 * sizeof(float)), storage.read_float(4 * sizeof(float)), storage.read_float(
@@ -54,7 +68,7 @@ extern "C" _Noreturn void app_main(void) {
     // X-Axis: head - tail
     // Y-Axis: left wing - right wing
     // Z-Axis: kite - ground station
-    Mpu6050 orientation_sensor {mpu6050, mpu_callibration, x_mapper, y_mapper, z_mapper};
+    Mpu6050 orientation_sensor {mpu6050, mpu_calibration, x_mapper, y_mapper, z_mapper};
     //initMotors(26, 27, 12, 13);
     /* initPWMInput(26, 27, 12, 13); */
 

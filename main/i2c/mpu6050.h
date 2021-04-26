@@ -25,7 +25,7 @@ class Mpu6050: protected I2cDevice {
 public:
 
     Mpu6050(struct i2c_config i2c_config,
-            struct motion_data callibration_data,
+            struct motion_data calibration_data,
             float (*x_mapper)(float, float, float),
             float (*y_mapper)(float, float, float),
             float (*z_mapper)(float, float, float));

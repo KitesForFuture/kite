@@ -5,3 +5,7 @@ add_library(kitemath
 add_library(timer
         timer.cpp
 )
+
+add_library(wifi
+        wifi.cpp
+        )
