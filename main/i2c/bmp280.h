@@ -1,14 +1,29 @@
 #ifndef I2C_DEVICES_BMP280
 #define I2C_DEVICES_BMP280
 
-#include "interchip.h"
+#include "i2c_device.h"
+#include "../helpers/timer.h"
 
-int bmp280_update_if_possible();
+class Bmp280: protected I2cDevice {
 
-void bmp280_init(struct i2c_identifier i2c_identifier_arg, float minus_dp_by_dt);
+    float minus_dp_by_dt;
+    float initial_smoothed_temperature {0};
+    float initial_smoothed_pressure {0};
+    float current_smoothed_temperature {0};
+    float current_smoothed_pressure {0};
+    MsTimer timer;
 
-float bmp280_get_pressure_diff();
+    void start_measurement();
+    uint32_t get_temperature();
+    float get_pressure();
 
-float bmp280_get_height();
+public:
+
+    Bmp280(struct i2c_config i2c_config, float minus_dp_by_dt);
+    int update_if_possible();
+    float get_pressure_diff();
+    float get_height();
+
+};
 
 #endif

@@ -1,7 +1,11 @@
 add_library(kitemath
- kitemath.c
+        kitemath.cpp
 )
 
 add_library(timer
- timer.c
+        timer.cpp
 )
+
+add_library(wifi
+        wifi.cpp
+        )

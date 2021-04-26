@@ -3,13 +3,20 @@
 #define HELPERS_TIMER
 
 #include "freertos/FreeRTOS.h"
-#define Time int64_t
 
-Time start_timer();
-float query_timer_seconds(Time time);
-int64_t query_timer_ms(Time time);
-void init_uptime();
-float get_uptime_seconds();
 void delay_ms(int64_t milliseconds);
- 
+
+class MsTimer {
+
+    int64_t start_ms;
+    int64_t laptime_ms {-1};
+
+public:
+
+    MsTimer();
+    float take();
+    bool has_laptime();
+    float get_laptime();
+};
+
 #endif
