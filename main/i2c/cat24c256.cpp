@@ -20,4 +20,5 @@ float Cat24c256::read_float(int address) {
     return conversion.f;
 }
 
-// ToDoLeo Provide function to read int16_t (mpu6050 and main)
+// ToDo Leo Provide function to read int16_t (mpu6050 and main)
+// ToDo Leo Provide function to read vectors

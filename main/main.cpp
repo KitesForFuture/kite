@@ -11,6 +11,8 @@
 #include "nvs_flash.h"
 #include "control/rotation_matrix.h"
 #include "helpers/wifi.h"
+#include "helpers/Vector3.h"
+#include "helpers/Matrix3.h"
 
 /* #include "pwm/motors.h"
 #include "pwm/pwm_input.h" */
@@ -19,11 +21,9 @@ struct i2c_config cat24c256 = {{18, 19}, 0x50, 1};
 struct i2c_config bmp280 = {{18, 19}, 0x76, 0};
 struct i2c_config mpu6050 = {{14, 25}, 104, 0};
 
-float x_mapper(float v1, float v2, float v3) { return -1 * v2; }
-
-float y_mapper(float v1, float v2, float v3) { return v1; }
-
-float z_mapper(float v1, float v2, float v3) { return v3; }
+float x_mapper(Vector3 vector) { return -1 * vector[1]; }
+float y_mapper(Vector3 vector) { return vector[0]; }
+float z_mapper(Vector3 vector) { return vector[2]; }
 
 extern "C" _Noreturn void app_main(void) {
 
@@ -42,7 +42,7 @@ extern "C" _Noreturn void app_main(void) {
 
     Cat24c256 storage {cat24c256};
 
-    struct motion_data mpu_calibration = {
+    MotionData mpu_calibration = {
             {storage.read_float(0 * sizeof(float)), storage.read_float(1 * sizeof(float)), storage.read_float(
                     2 * sizeof(float))}, //ToDoLeo make pretty
             {storage.read_float(3 * sizeof(float)), storage.read_float(4 * sizeof(float)), storage.read_float(
@@ -56,7 +56,7 @@ extern "C" _Noreturn void app_main(void) {
     Bmp280 height_sensor {bmp280, storage.read_float(6 * sizeof(float))};
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
-    float gravity[3] = {1, 0, 0};
+    Vector3 gravity {1, 0, 0};
     RotationMatrix rotation_matrix {gravity};
 
     // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
@@ -68,7 +68,7 @@ extern "C" _Noreturn void app_main(void) {
     // X-Axis: head - tail
     // Y-Axis: left wing - right wing
     // Z-Axis: kite - ground station
-    Mpu6050 orientation_sensor {mpu6050, mpu_calibration, x_mapper, y_mapper, z_mapper};
+    Mpu6050 orientation_sensor {mpu6050};
     //initMotors(26, 27, 12, 13);
     /* initPWMInput(26, 27, 12, 13); */
 
@@ -100,8 +100,13 @@ extern "C" _Noreturn void app_main(void) {
 
         height_sensor.update_if_possible();
 
-        struct motion_data motion;
-        orientation_sensor.get_motion(&motion);
+        MotionData motion { orientation_sensor.get_motion() };
+        // Calibrate
+        motion.accel = motion.accel - mpu_calibration.accel;
+        motion.gyro = motion.gyro - mpu_calibration.gyro;
+        // Map depending on mounting
+        motion.accel.map(x_mapper, y_mapper, z_mapper);
+        motion.gyro.map(x_mapper, y_mapper, z_mapper);
         rotation_matrix.update(motion);
 
         //updatePWMInput();
@@ -128,8 +133,6 @@ extern "C" _Noreturn void app_main(void) {
             increment *= -1;
         }
 
-
         rotation_matrix.print();
-
     }
 }
