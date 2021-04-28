@@ -1,7 +1,7 @@
 #include "rotation_matrix.h"
 #include "../helpers/kitemath.h"
 
-
+// ToDo Sollte von matrix erben (?)
 
 // rotates matrix mat such that mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' aligns more with (a,b,c)'
 // (x_gravity_factor, y_gravity_factor, z_gravity_factor) can be initially measured acceleration vector, usually something close to (0,0,1)
@@ -11,7 +11,7 @@ void RotationMatrix::rotate_towards_g(Vector3 gravitation) {
     // ToDo Naming: Two kinds of gravitation
 
     // determine the normalized rotation axis mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' x (a,b,c)'
-    Vector3 axis = matrix.transposed_multiply(gravitation_factor) * gravitation;
+    Vector3 axis = matrix.transposed_multiply(gravitation_factor).cross(gravitation);
     axis.normalize();
 
     // determine the approximate angle between mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' and (a,b,c)'

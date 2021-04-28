@@ -16,22 +16,27 @@ public:
 
     Vector3(float values[]);
 
-    float &operator[](int index);
+    Vector3();
 
-    Vector3 cross(const Vector3 &other);
+    float& operator[](int index);
 
-    float scalar(const Vector3 &other);
+    Vector3 cross(Vector3 &other);
 
-    Vector3 normalize();
+    float scalar(Vector3 &other);
 
-    Vector3 normalize(float eps);
+    float get_norm();
+
+    float normalize();
+
+    float normalize(float eps);
 
     Vector3 operator+(Vector3 &other);
 
     Vector3 operator-(Vector3 &other);
 
-    void map(float (*x_mapper)(Vector3), float (*y_mapper)(Vector3), float (*z_mapper)(Vector3));
+    Vector3 operator* (float value);
 
+    void map(float (*x_mapper)(Vector3), float (*y_mapper)(Vector3), float (*z_mapper)(Vector3));
 };
 
 

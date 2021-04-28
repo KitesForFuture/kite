@@ -3,8 +3,8 @@
 
 #include "freertos/FreeRTOS.h"
 #include "i2c_device.h"
-#include "../helpers/Vector3.h"
-#include "../helpers/Matrix3.h"
+#include "../helpers/vector3.h"
+#include "../helpers/matrix3.h"
 
 struct MotionData {
     Vector3 accel;

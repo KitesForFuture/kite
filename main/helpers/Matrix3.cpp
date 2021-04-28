@@ -2,7 +2,7 @@
 // Created by Leonard Koll on 27.04.21.
 //
 
-#include "Matrix3.h"
+#include "matrix3.h"
 
 Matrix3::Matrix3(float v0x, float v0y, float v0z, float v1x, float v1y, float v1z, float v2x, float v2y, float v2z)
 :vectors {
@@ -12,17 +12,17 @@ Matrix3::Matrix3(float v0x, float v0y, float v0z, float v1x, float v1y, float v1
 } {}
 
 Matrix3::Matrix3(float values[])
-        :vectors {
-        Vector3 {values[0], values[1], values[2]},
-        Vector3 {values[3], values[4], values[5]},
-        Vector3 {values[6], values[7], values[8]}
+:vectors {
+    Vector3 {values[0], values[1], values[2]},
+    Vector3 {values[3], values[4], values[5]},
+    Vector3 {values[6], values[7], values[8]}
 } {}
 
 Matrix3::Matrix3()
-        :vectors {
-        Vector3 {0, 0, 0},
-        Vector3 {0, 0, 0},
-        Vector3 {0, 0, 0}
+:vectors {
+    Vector3 {0, 0, 0},
+    Vector3 {0, 0, 0},
+    Vector3 {0, 0, 0}
 } {}
 
 Vector3& Matrix3::operator[] (int index) {
@@ -30,7 +30,7 @@ Vector3& Matrix3::operator[] (int index) {
 }
 
 // ToDo Review by Benni
-Matrix3 Matrix3::operator* (const Matrix3& other) {
+Matrix3 Matrix3::operator* (Matrix3& other) {
     Matrix3 result;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -43,7 +43,7 @@ Matrix3 Matrix3::operator* (const Matrix3& other) {
 }
 
 // ToDo Review by Benni
-Matrix3 Matrix3::transposed_multiply (const Matrix3& other) {
+Matrix3 Matrix3::transposed_multiply (Matrix3& other) {
     Matrix3 result;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -55,7 +55,7 @@ Matrix3 Matrix3::transposed_multiply (const Matrix3& other) {
     return result;
 }
 
-Vector3 Matrix3::transposed_multiply (const Vector3& vector) {
+Vector3 Matrix3::transposed_multiply (Vector3& vector) {
     Vector3 result {
         vectors[0][0] * vector[0] + vectors[0][1] * vector[1] + vectors[0][2] * vector[2],
         vectors[1][0] * vector[0] + vectors[1][1] * vector[1] + vectors[1][2] * vector[2],
@@ -78,9 +78,8 @@ void Matrix3::normalize() {
 
     vectors[1].normalize();
 
-    scalarProd = vectors[0].scalar(vectors[2]);
     for (int i = 0; i < 3; i++) {
-        vectors[2][i] -= scalarProd * vectors[0][i];
+        vectors[2][i] -= vectors[0].scalar(vectors[2]) * vectors[0][i];
     }
 
     for (int i = 0; i < 3; i++) {

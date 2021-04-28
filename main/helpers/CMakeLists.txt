@@ -10,10 +10,10 @@ add_library(wifi
         wifi.cpp
 )
 
-add_library(Vector3
+add_library(vector3
         vector3.cpp
 )
 
-add_library(Matrix3
-        Matrix3.cpp
+add_library(matrix3
+        matrix3.cpp
 )

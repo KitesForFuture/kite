@@ -6,4 +6,6 @@ add_library(rotation_matrix
 )
 target_link_libraries(rotation_matrix
     PUBLIC timer
+    PUBLIC vector3
+    PUBLIC matrix3
 )

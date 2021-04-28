@@ -4,8 +4,8 @@
 #include "freertos/FreeRTOS.h"
 #include "../i2c/mpu6050.h"
 #include "../helpers/timer.h"
-#include "../helpers/Vector3.h"
-#include "../helpers/Matrix3.h"
+#include "../helpers/vector3.h"
+#include "../helpers/matrix3.h"
 
 class RotationMatrix {
 
