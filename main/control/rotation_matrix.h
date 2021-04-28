@@ -9,7 +9,7 @@
 
 class RotationMatrix {
 
-    Vector3 gravitation_factor;
+    Vector3 world_up;
     MsTimer timer {};
     Matrix3 matrix {1, 0, 0, 0, 1, 0, 0, 0, 1};// rotation of the drone in world coordinates
 

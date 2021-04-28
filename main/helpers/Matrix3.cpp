@@ -4,18 +4,11 @@
 
 #include "matrix3.h"
 
-Matrix3::Matrix3(float v0x, float v0y, float v0z, float v1x, float v1y, float v1z, float v2x, float v2y, float v2z)
+Matrix3::Matrix3(float r1c1, float r1c2, float r1c3, float r2c1, float r2c2, float r2c3, float r3c1, float r3c2, float r3c3)
 :vectors {
-    Vector3 {v0x, v0y, v0z},
-    Vector3 {v1x, v1y, v1z},
-    Vector3 {v2x, v2y, v2z}
-} {}
-
-Matrix3::Matrix3(float values[])
-:vectors {
-    Vector3 {values[0], values[1], values[2]},
-    Vector3 {values[3], values[4], values[5]},
-    Vector3 {values[6], values[7], values[8]}
+    Vector3 {r1c1, r2c1, r3c1},
+    Vector3 {r1c2, r2c2, r3c2},
+    Vector3 {r1c3, r2c3, r3c3}
 } {}
 
 Matrix3::Matrix3()
@@ -29,38 +22,61 @@ Vector3& Matrix3::operator[] (int index) {
     return vectors[index];
 }
 
-// ToDo Review by Benni
-Matrix3 Matrix3::operator* (Matrix3& other) {
+Matrix3 Matrix3::multiply (Matrix3& other) {
+    return multiply(other, false, false);
+}
+
+// ToDo Review by Benni, naming?
+Matrix3 Matrix3::multiply (Matrix3& other, bool transpose_left, bool transpose_right) {
     Matrix3 result;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
+
+            int left_i, left_j, right_i, right_j;
+
+            if (transpose_left) {
+                left_i = j; left_j = i;
+            } else {
+                left_i = i; left_j = j;
+            }
+
+            if (transpose_right) {
+                right_i = j; right_j = i;
+            } else {
+                right_i = i; right_j = j;
+            }
+
             for (int k = 0; k < 3; k++) {
-                result[i][j] += vectors[i][j+k] * other[i+k][j];
+                result[i][j] += vectors[left_i+k][left_j] * other[right_i][right_j+k];
             }
         }
     }
     return result;
 }
 
-// ToDo Review by Benni
-Matrix3 Matrix3::transposed_multiply (Matrix3& other) {
-    Matrix3 result;
+Vector3 Matrix3::multiply (Vector3& vector) {
+    return multiply(vector, false);
+}
+
+// ToDo Review by Benni, naming?
+Vector3 Matrix3::multiply (Vector3& vector, bool transpose) {
+    Vector3 result;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
+
+            int matrix_i, matrix_j;
+
+            if (transpose) {
+                matrix_i = j; matrix_j = i;
+            } else {
+                matrix_i = i; matrix_j = j;
+            }
+
             for (int k = 0; k < 3; k++) {
-                result[i][j] += vectors[i][j+k] * other[i][j+k];
+                result[i] += vectors[matrix_i+k][matrix_j] * vector[i+k];
             }
         }
     }
-    return result;
-}
-
-Vector3 Matrix3::transposed_multiply (Vector3& vector) {
-    Vector3 result {
-        vectors[0][0] * vector[0] + vectors[0][1] * vector[1] + vectors[0][2] * vector[2],
-        vectors[1][0] * vector[0] + vectors[1][1] * vector[1] + vectors[1][2] * vector[2],
-        vectors[2][0] * vector[0] + vectors[2][1] * vector[1] + vectors[2][2] * vector[2]
-    };
     return result;
 }
 

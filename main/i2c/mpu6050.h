@@ -24,7 +24,7 @@ class Mpu6050: protected I2cDevice {
 public:
 
     Mpu6050(struct i2c_config i2c_config);
-    MotionData get_motion();
+    MotionData read_motion();
 
 };
 

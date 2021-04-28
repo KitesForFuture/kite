@@ -13,13 +13,13 @@ class Matrix3 {
 
 public:
 
-    Matrix3(float v0x, float v0y, float v0z, float v1x, float v1y, float v1z, float v2x, float v2y, float v2z);
-    Matrix3(float values[]);
+    Matrix3(float r1c1, float r1c2, float r1c3, float r2c1, float r2c2, float r2c3, float r3c1, float r3c2, float r3c3);
     Matrix3();
     Vector3& operator[] (int index);
-    Matrix3 operator* (Matrix3& other);
-    Matrix3 transposed_multiply (Matrix3& other);
-    Vector3 transposed_multiply (Vector3& vector);
+    Matrix3 multiply (Matrix3& other);
+    Vector3 multiply (Vector3& vector);
+    Matrix3 multiply (Matrix3& other, bool transpose_left, bool transpose_right);
+    Vector3 multiply (Vector3& vector, bool transpose);
     void normalize();
 
 };

@@ -30,7 +30,7 @@ float Mpu6050::get_accel_sensitivity(uint8_t sens) {
     return 0;
 }
 
-MotionData Mpu6050::get_motion() {
+MotionData Mpu6050::read_motion() {
 
     uint8_t accel_six_axis_raw_data[6];
     read_bytes(1, 59, 6, accel_six_axis_raw_data);

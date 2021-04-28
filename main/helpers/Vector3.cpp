@@ -13,7 +13,6 @@ float& Vector3::operator[] (int index) {
     return values[index];
 }
 
-// Cross Product
 Vector3 Vector3::cross (Vector3& other) {
     Vector3 result {
         values[1] * other[2] - values[2] * other[1],
@@ -23,7 +22,6 @@ Vector3 Vector3::cross (Vector3& other) {
     return result;
 }
 
-// Scalar Product / Dot Product
 float Vector3::scalar (Vector3& other) {
     return values[0]*other[0] + values[1]*other[1] + values[2]*other[2];
 }
@@ -40,6 +38,7 @@ float Vector3::normalize() {
     return norm;
 }
 
+//ToDo Benni where to use this normalize
 float Vector3::normalize(float eps) {
     float norm = get_norm();
     if (norm > eps) {
@@ -68,7 +67,7 @@ Vector3 Vector3::operator+ (Vector3& other) {
     return result;
 }
 
-Vector3 Vector3::operator* (float value) {
+Vector3 Vector3::multiply (float value) {
     Vector3 result {
     values[0]*value,
     values[1]*value,

@@ -34,7 +34,7 @@ public:
 
     Vector3 operator-(Vector3 &other);
 
-    Vector3 operator* (float value);
+    Vector3 multiply (float value);
 
     void map(float (*x_mapper)(Vector3), float (*y_mapper)(Vector3), float (*z_mapper)(Vector3));
 };

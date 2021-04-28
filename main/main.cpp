@@ -21,9 +21,9 @@ struct i2c_config cat24c256 = {{18, 19}, 0x50, 1};
 struct i2c_config bmp280 = {{18, 19}, 0x76, 0};
 struct i2c_config mpu6050 = {{14, 25}, 104, 0};
 
-float x_mapper(Vector3 vector) { return -1 * vector[1]; }
-float y_mapper(Vector3 vector) { return vector[0]; }
-float z_mapper(Vector3 vector) { return vector[2]; }
+float pcb_rotation_mapper_x(Vector3 vector) { return -1 * vector[1]; }
+float pcb_rotation_mapper_y(Vector3 vector) { return vector[0]; }
+float pcb_rotation_mapper_z(Vector3 vector) { return vector[2]; }
 
 extern "C" _Noreturn void app_main(void) {
 
@@ -56,8 +56,8 @@ extern "C" _Noreturn void app_main(void) {
     Bmp280 height_sensor {bmp280, storage.read_float(6 * sizeof(float))};
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
-    Vector3 gravity {1, 0, 0};
-    RotationMatrix rotation_matrix {gravity};
+    Vector3 world_up {1, 0, 0};
+    RotationMatrix rotation_matrix {world_up};
 
     // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
     // X-Axis: GYRO chip - FUTURE silk writing
@@ -100,13 +100,13 @@ extern "C" _Noreturn void app_main(void) {
 
         height_sensor.update_if_possible();
 
-        MotionData motion { orientation_sensor.get_motion() };
+        MotionData motion { orientation_sensor.read_motion() };
         // Calibrate
-        motion.accel = motion.accel - mpu_calibration.accel;
+        motion.accel = motion.accel - mpu_calibration.accel; // ToDo Callibration back to MPU6050
         motion.gyro = motion.gyro - mpu_calibration.gyro;
         // Map depending on mounting
-        motion.accel.map(x_mapper, y_mapper, z_mapper);
-        motion.gyro.map(x_mapper, y_mapper, z_mapper);
+        motion.accel.map(pcb_rotation_mapper_x, pcb_rotation_mapper_y, pcb_rotation_mapper_z);
+        motion.gyro.map(pcb_rotation_mapper_x, pcb_rotation_mapper_y, pcb_rotation_mapper_z);
         rotation_matrix.update(motion);
 
         //updatePWMInput();
