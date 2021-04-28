@@ -40,7 +40,7 @@ void RotationMatrix::rotate_towards_g(Vector3 kite_gravitation) {
         1
     };
 
-    matrix = matrix.multiply(tmp_rot_matrix, false, true);
+    matrix = matrix.multiply(tmp_rot_matrix, true);
 }
 
 void RotationMatrix::update(MotionData position) {

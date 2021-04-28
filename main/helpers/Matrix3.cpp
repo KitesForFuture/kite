@@ -23,31 +23,25 @@ Vector3& Matrix3::operator[] (int index) {
 }
 
 Matrix3 Matrix3::multiply (Matrix3& other) {
-    return multiply(other, false, false);
+    return multiply(other, false);
 }
 
-// ToDo Review by Benni, naming?
-Matrix3 Matrix3::multiply (Matrix3& other, bool transpose_left, bool transpose_right) {
+Matrix3 Matrix3::multiply (Matrix3& other, bool transpose_right) {
     Matrix3 result;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-
-            int left_i, left_j, right_i, right_j;
-
-            if (transpose_left) {
-                left_i = j; left_j = i;
-            } else {
-                left_i = i; left_j = j;
+    if (transpose_right) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    result[i][j] += vectors[i+k][j] * other[j][i+k];
+                }
             }
-
-            if (transpose_right) {
-                right_i = j; right_j = i;
-            } else {
-                right_i = i; right_j = j;
-            }
-
-            for (int k = 0; k < 3; k++) {
-                result[i][j] += vectors[left_i+k][left_j] * other[right_i][right_j+k];
+        }
+    } else {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    result[i][j] += vectors[i+k][j] * other[i][j+k];
+                }
             }
         }
     }
@@ -58,22 +52,22 @@ Vector3 Matrix3::multiply (Vector3& vector) {
     return multiply(vector, false);
 }
 
-// ToDo Review by Benni, naming?
 Vector3 Matrix3::multiply (Vector3& vector, bool transpose) {
     Vector3 result;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-
-            int matrix_i, matrix_j;
-
-            if (transpose) {
-                matrix_i = j; matrix_j = i;
-            } else {
-                matrix_i = i; matrix_j = j;
+    if (transpose) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    result[i] += vectors[j+k][i] * vector[i+k];
+                }
             }
-
-            for (int k = 0; k < 3; k++) {
-                result[i] += vectors[matrix_i+k][matrix_j] * vector[i+k];
+        }
+    } else {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    result[i] += vectors[i+k][j] * vector[i+k];
+                }
             }
         }
     }

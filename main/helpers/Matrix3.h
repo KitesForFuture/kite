@@ -18,7 +18,7 @@ public:
     Vector3& operator[] (int index);
     Matrix3 multiply (Matrix3& other);
     Vector3 multiply (Vector3& vector);
-    Matrix3 multiply (Matrix3& other, bool transpose_left, bool transpose_right);
+    Matrix3 multiply (Matrix3& other, bool transpose_right);
     Vector3 multiply (Vector3& vector, bool transpose);
     void normalize();
 
