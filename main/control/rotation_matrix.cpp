@@ -60,9 +60,11 @@ void RotationMatrix::update(struct motion_data position) {
     // rotation-matrix:
     // angles in radians
     // 0.01745329 = pi/180
-    float alpha = 0.01745329 * position.gyro[0] * timer.get_laptime();
-    float beta = 0.01745329 * position.gyro[1] * timer.get_laptime();
-    float gamma = 0.01745329 * position.gyro[2] * timer.get_laptime();
+    float alpha = 0.01745329 * position.gyro[0] * timer.get_laptime() * 0.001;
+    float beta = 0.01745329 * position.gyro[1] * timer.get_laptime() * 0.001;
+    float gamma = 0.01745329 * position.gyro[2] * timer.get_laptime() * 0.001;
+
+    timer.reset();
 
     // infinitesimal rotation matrix:
     float diff[9];

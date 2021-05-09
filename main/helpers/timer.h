@@ -17,6 +17,7 @@ public:
     float take();
     bool has_laptime();
     float get_laptime();
+    void reset();
 };
 
 #endif
