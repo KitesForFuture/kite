@@ -27,7 +27,7 @@ float z_mapper(float v1, float v2, float v3) { return v3; }
 
 extern "C" _Noreturn void app_main(void) {
 
-    nvs_flash_init(); // Required for WiFi at least.
+    /*nvs_flash_init(); // Required for WiFi at least.
 
     wifi_sta_config_t wifi_config {
             "KiteReceiver",
@@ -39,6 +39,7 @@ extern "C" _Noreturn void app_main(void) {
             },
     };
     init_wifi(wifi_config);
+    */
 
     Cat24c256 storage {cat24c256};
 
@@ -111,10 +112,12 @@ extern "C" _Noreturn void app_main(void) {
 
         /* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
 
+        /*
         myServo.set(0);
         vTaskDelay(200);
         myServo.set(1);
         vTaskDelay(200);
+         */
 
         //setSpeed(0,30);
         //setSpeed(1,60);

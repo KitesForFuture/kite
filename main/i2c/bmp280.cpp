@@ -52,7 +52,7 @@ int Bmp280::update_if_possible() {
         current_smoothed_pressure = SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT * get_pressure() +
                                     (1 - SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) * current_smoothed_pressure;
 
-        timer = {};
+        timer.reset();
         start_measurement();
         return 1;
     }

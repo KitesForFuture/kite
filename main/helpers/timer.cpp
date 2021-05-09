@@ -6,7 +6,7 @@ void delay_ms(int64_t milliseconds) {
 }
 
 MsTimer::MsTimer() {
-    start_ms = 0.001 * (float) esp_timer_get_time();
+    reset();
 }
 
 float MsTimer::take() {
@@ -20,4 +20,8 @@ bool MsTimer::has_laptime() {
 
 float MsTimer::get_laptime() {
     return laptime_ms;
+}
+
+void MsTimer::reset() {
+    start_ms = 0.001 * (float) esp_timer_get_time();
 }
