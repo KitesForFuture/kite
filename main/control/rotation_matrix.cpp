@@ -1,7 +1,8 @@
+#include <esp_log.h>
 #include "rotation_matrix.h"
 #include "../helpers/kitemath.h"
 
-
+static const char* TAG = "RotationMatrix";
 
 // rotates matrix mat such that mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' aligns more with (a,b,c)'
 // (x_gravity_factor, y_gravity_factor, z_gravity_factor) can be initially measured acceleration vector, usually something close to (0,0,1)
@@ -91,18 +92,18 @@ void RotationMatrix::update(struct motion_data position) {
     rotate_towards_g(temp_rotation_matrix, position.accel[0], position.accel[1], position.accel[2]);
 
     normalize_matrix(matrix);
+
+    /*
+    ESP_LOGI(TAG, "Values: %f,%f,%f,%f,%f,%f,%f,%f,%f", matrix[0], matrix[1],
+             matrix[2], matrix[3], matrix[4], matrix[5], matrix[6],
+             matrix[7], matrix[8] );
+    */
 }
 
 
-RotationMatrix::RotationMatrix(float gravity[]) {
+RotationMatrix::RotationMatrix(float matrix[], float gravity[]) : matrix{matrix} {
     normalize(gravity, 3);
     x_gravity_factor = gravity[0];
     y_gravity_factor = gravity[1];
     z_gravity_factor = gravity[2];
-}
-
-void RotationMatrix::print() {
-    printf("rotation matrix:\n %f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", matrix[0], matrix[1],
-           matrix[2], matrix[3], matrix[4], matrix[5], matrix[6],
-           matrix[7], matrix[8]);
 }

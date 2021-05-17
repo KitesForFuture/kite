@@ -1,9 +1,8 @@
 #include <dirent.h>
-#include <stdio.h>
 #include <pwm/motor.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
+#include "esp_log.h"
 #include "i2c/i2c_device.h"
 #include "i2c/cat24c256.h"
 #include "i2c/bmp280.h"
@@ -11,9 +10,12 @@
 #include "nvs_flash.h"
 #include "control/rotation_matrix.h"
 #include "helpers/wifi.h"
+#include "data/flydata.h"
 
 /* #include "pwm/motors.h"
 #include "pwm/pwm_input.h" */
+
+static const char* FLYDATA = "FLYDATA";
 
 struct i2c_config cat24c256 = {{18, 19}, 0x50, 1};
 struct i2c_config bmp280 = {{18, 19}, 0x76, 0};
@@ -56,9 +58,14 @@ extern "C" _Noreturn void app_main(void) {
 
     Bmp280 height_sensor {bmp280, storage.read_float(6 * sizeof(float))};
 
+
+    Flydata flydata {
+        .rotation_matrix {1, 0, 0, 0, 1, 0, 0, 0, 1}
+    };
+
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
     float gravity[3] = {1, 0, 0};
-    RotationMatrix rotation_matrix {gravity};
+    RotationMatrix rotation_matrix {flydata.rotation_matrix, gravity};
 
     // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
     // X-Axis: GYRO chip - FUTURE silk writing
@@ -96,6 +103,7 @@ extern "C" _Noreturn void app_main(void) {
     float degree = -90;
     float increment = 1;
 
+
     while (1) {
         vTaskDelay(10);
 
@@ -105,10 +113,15 @@ extern "C" _Noreturn void app_main(void) {
         orientation_sensor.get_motion(&motion);
         rotation_matrix.update(motion);
 
+        //ESP_LOG_BUFFER_CHAR_LEVEL(FLYDATA, (char*)&flydata, sizeof(flydata), ESP_LOG_INFO);
+
+        // Not ideal as not threadsafe.
+        fwrite(FLYDATA, 1, 8, stdout);
+        fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
+
         //updatePWMInput();
 
-        printf("BMP280 Height: %f\n", height_sensor.get_height());
-
+        //printf("BMP280 Height: %f\n", height_sensor.get_height());
 
         /* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
 
@@ -117,7 +130,7 @@ extern "C" _Noreturn void app_main(void) {
         vTaskDelay(200);
         myServo.set(1);
         vTaskDelay(200);
-         */
+        */
 
         //setSpeed(0,30);
         //setSpeed(1,60);
@@ -130,9 +143,6 @@ extern "C" _Noreturn void app_main(void) {
         if (degree == 90 || degree == -90) {
             increment *= -1;
         }
-
-
-        rotation_matrix.print();
 
     }
 }
