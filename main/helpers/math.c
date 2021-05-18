@@ -119,9 +119,14 @@ void rotate_towards_g(float mat[], float a_init, float b_init, float c_init, flo
 	axis_1 /= norm;
 	axis_2 /= norm;
 	axis_3 /= norm;
+
+    norm = sqrt(a * a + b * b + c * c);
+    a = a/norm;
+    b = b/norm;
+    c = c/norm;
 	
 	// determine the approximate angle between mat'*(a_init, b_init, c_init)' and (a,b,c)'
-	float differenceNorm = sqrt((mat[2]-a)*(mat[2]-a) + (mat[5]-b)*(mat[5]-b) + (mat[8]-c)*(mat[8]-c));
+	float differenceNorm = sqrt((a_init-a)*(a_init-a) + (b_init-b)*(b_init-b) + (c_init-c)*(c_init-c));
 	// multiply by small number, so we move only tiny bit in right direction at every step -> averaging measured acceleration from vibration
 	float angle = differenceNorm*0.001;//When connected to USB, then 0.00004 suffices. When autonomous on battery 0.0004 (10 times larger) does just fine.
 	// 0.00004 works, error 0.0004
