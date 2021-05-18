@@ -1,3 +1,6 @@
+.idea
+cmake-build-debug/
+
 build
 
 # Created by https://www.toptal.com/developers/gitignore/api/cmake,ninja,visualstudio,macos,windows,linux
