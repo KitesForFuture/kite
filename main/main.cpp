@@ -116,7 +116,7 @@ extern "C" _Noreturn void app_main(void) {
         //ESP_LOG_BUFFER_CHAR_LEVEL(FLYDATA, (char*)&flydata, sizeof(flydata), ESP_LOG_INFO);
 
         // Not ideal as not threadsafe.
-        fwrite(FLYDATA, 1, 8, stdout);
+        fwrite(FLYDATA, 1, 7, stdout);
         fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
 
         //updatePWMInput();
