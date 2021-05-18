@@ -21,6 +21,8 @@
 #include "control/landing.c"
 #include "control/elevator_d.c"
 
+#include "data/flydata.h"
+
 #define FIGURE_EIGHT 0
 #define HOVER 1
 #define LANDING 2
@@ -43,13 +45,19 @@
 
 #define TURNING_SPEED 0.75 // in QUARTER TURNS PER SECOND, 2 is too fast, 0.5 seems a bit too slow, but let's try
 
+static const char* FLYDATA = "FLYDATA";
+
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
 
-
-
 void app_main(void)
 {
+
+    struct Flydata flydata = {
+            {1, 0, 0, 0, 1, 0, 0, 0, 1},
+            0
+    };
+    initRotationMatrix(flydata.rotation_matrix);
 
 	init_uptime();
 	setRole(KITE);
@@ -95,6 +103,8 @@ void app_main(void)
         update_bmp280_if_necessary();
         
         updateRotationMatrix();
+        fwrite(FLYDATA, 1, 7, stdout);
+        fwrite((char*)&flydata, sizeof(struct Flydata), 1, stdout);
         
         updatePWMInput();
 		
