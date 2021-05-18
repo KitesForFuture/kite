@@ -6,10 +6,11 @@
 #include "../i2c_devices/mpu6050.h"
 #include "../helpers/timer.h"
 
-float rotation_matrix[9];
+float* rotation_matrix;
 float gyro_in_kite_coords[3];
 
 void updateRotationMatrix();
+void initRotationMatrix(float* matrix);
 
 
 #endif

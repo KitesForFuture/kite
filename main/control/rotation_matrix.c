@@ -24,7 +24,6 @@
 #define gravity_z 0
 
 // rotation of the drone in world coordinates
-float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 float gyro_in_kite_coords[3] = {0,0,0};
 
 struct position_data position = {
@@ -33,6 +32,10 @@ struct position_data position = {
 };
 
 Time mpu_last_update_time = 0;
+
+void initRotationMatrix(float* matrix) {
+    rotation_matrix = matrix;
+}
 
 void updateRotationMatrix(){
 	readMPUData(&position);
