@@ -1,6 +1,7 @@
 #include <esp_log.h>
 #include "rotation_matrix.h"
 #include "../helpers/kitemath.h"
+#include <cstring>
 
 static const char* TAG = "RotationMatrix";
 
@@ -31,7 +32,7 @@ void RotationMatrix::rotate_towards_g(float mat[], float a, float b, float c) {
             (x_gravity_factor - a) * (x_gravity_factor - a) + (y_gravity_factor - b) * (y_gravity_factor - b) + (z_gravity_factor - c) * (z_gravity_factor - c));
     // multiply by small number, so we move only tiny bit in right direction at every step -> averaging measured acceleration from vibration
     float angle = differenceNorm *
-                  0.001;//When connected to USB, then 0.00004 suffices. When autonomous on battery 0.0004 (10 times larger) does just fine.
+                  0.004;//When connected to USB, then 0.00004 suffices. When autonomous on battery 0.0004 (10 times larger) does just fine.
     // 0.00004 works, error 0.0004
     // 0.0004 works, error 0.002 except in battery mode
     // 0.004 works, error 0.01

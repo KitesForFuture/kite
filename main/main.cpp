@@ -60,7 +60,8 @@ extern "C" _Noreturn void app_main(void) {
 
 
     Flydata flydata {
-        .rotation_matrix {1, 0, 0, 0, 1, 0, 0, 0, 1}
+        .rotation_matrix {1, 0, 0, 0, 1, 0, 0, 0, 1},
+        .height = 0.0
     };
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
@@ -111,6 +112,7 @@ extern "C" _Noreturn void app_main(void) {
 
         struct motion_data motion;
         orientation_sensor.get_motion(&motion);
+        //printf("gyro x%f y%f z%f // accel x%f y%f z%f\n", motion.gyro[0], motion.gyro[1], motion.gyro[2], motion.accel[0], motion.accel[1], motion.accel[2]);
         rotation_matrix.update(motion);
 
         //ESP_LOG_BUFFER_CHAR_LEVEL(FLYDATA, (char*)&flydata, sizeof(flydata), ESP_LOG_INFO);
@@ -118,6 +120,7 @@ extern "C" _Noreturn void app_main(void) {
         // Not ideal as not threadsafe.
         fwrite(FLYDATA, 1, 7, stdout);
         fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
+        fwrite("\n", 1, 1, stdout);
 
         //updatePWMInput();
 
