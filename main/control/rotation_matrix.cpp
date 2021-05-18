@@ -90,34 +90,9 @@ void RotationMatrix::update(struct motion_data position) {
     float temp_rotation_matrix[9];
     mat_mult(matrix, diff, temp_rotation_matrix);
 
-
-
-    //memcpy( temp_rotation_matrix, matrix, sizeof(float)*9 );
-
-    /*
-    printf("Matrix Before: %f,%f,%f,%f,%f,%f,%f,%f,%f\n", matrix[0], matrix[1],
-           matrix[2], matrix[3], matrix[4], matrix[5], matrix[6],
-           matrix[7], matrix[8] );
-    printf("Matrix Rotation Applied: %f,%f,%f,%f,%f,%f,%f,%f,%f\n", temp_rotation_matrix[0], temp_rotation_matrix[1],
-           temp_rotation_matrix[2], temp_rotation_matrix[3], temp_rotation_matrix[4], temp_rotation_matrix[5], temp_rotation_matrix[6],
-           temp_rotation_matrix[7], temp_rotation_matrix[8] );
-           */
-
     rotate_towards_g(temp_rotation_matrix, position.accel[0], position.accel[1], position.accel[2]);
-    /*
-    printf("Matrix After G: %f,%f,%f,%f,%f,%f,%f,%f,%f\n", matrix[0], matrix[1],
-           matrix[2], matrix[3], matrix[4], matrix[5], matrix[6],
-           matrix[7], matrix[8] );
-           */
 
     normalize_matrix(matrix);
-    /*
-    printf("Matrix After Normalize: %f,%f,%f,%f,%f,%f,%f,%f,%f\n", matrix[0], matrix[1],
-           matrix[2], matrix[3], matrix[4], matrix[5], matrix[6],
-           matrix[7], matrix[8] );
-           */
-
-    //printf("====================\n");
 
     /*
     ESP_LOGI(TAG, "Values: %f,%f,%f,%f,%f,%f,%f,%f,%f", matrix[0], matrix[1],
