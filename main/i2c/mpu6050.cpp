@@ -41,18 +41,18 @@ void Mpu6050::get_motion_uncalibrated(struct motion_data *out) {
     float gyro_2 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
     float gyro_3 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
     //GYRO X / Y / Z
-    out->gyro[1] = x_mapper(gyro_1, gyro_2, gyro_3);
-    out->gyro[2] = y_mapper(gyro_1, gyro_2, gyro_3);
-    out->gyro[3] = z_mapper(gyro_1, gyro_2, gyro_3);
+    out->gyro[0] = x_mapper(gyro_1, gyro_2, gyro_3);
+    out->gyro[1] = y_mapper(gyro_1, gyro_2, gyro_3);
+    out->gyro[2] = z_mapper(gyro_1, gyro_2, gyro_3);
 
     read_bytes(1, 59, 6, six_axis_raw_data);
     float accel_1 = accel_precision_factor * (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
     float accel_2 = accel_precision_factor * (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
     float accel_3 = accel_precision_factor * (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
     //ACCEL X / Y / Z
-    out->accel[1] = x_mapper(accel_1, accel_2, accel_3);
-    out->accel[2] = y_mapper(accel_1, accel_2, accel_3);
-    out->accel[3] = z_mapper(accel_1, accel_2, accel_3);
+    out->accel[0] = x_mapper(accel_1, accel_2, accel_3);
+    out->accel[1] = y_mapper(accel_1, accel_2, accel_3);
+    out->accel[2] = z_mapper(accel_1, accel_2, accel_3);
 }
 
 void Mpu6050::get_motion(struct motion_data *out) {
