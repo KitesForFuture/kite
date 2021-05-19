@@ -11,6 +11,10 @@
 #include "control/rotation_matrix.h"
 #include "helpers/wifi.h"
 #include "data/flydata.h"
+#include "structures/Vector3.h"
+#include "structures/DataVector3.h"
+#include "structures/Matrix3.h"
+#include "structures/DataMatrix3.h"
 
 /* #include "pwm/motors.h"
 #include "pwm/pwm_input.h" */
@@ -118,9 +122,9 @@ extern "C" _Noreturn void app_main(void) {
         //ESP_LOG_BUFFER_CHAR_LEVEL(FLYDATA, (char*)&flydata, sizeof(flydata), ESP_LOG_INFO);
 
         // Not ideal as not threadsafe.
-        fwrite(FLYDATA, 1, 7, stdout);
-        fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
-        fwrite("\n", 1, 1, stdout);
+        //fwrite(FLYDATA, 1, 7, stdout);
+        //fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
+        //fwrite("\n", 1, 1, stdout);
 
         //updatePWMInput();
 
@@ -146,6 +150,11 @@ extern "C" _Noreturn void app_main(void) {
         if (degree == 90 || degree == -90) {
             increment *= -1;
         }
+
+        DataMatrix3 myMatrix {2,2,2,2,2,2,2,2,2};
+        myMatrix.get(1, true).normalize();
+
+        printf("Values: %f, %f, %f, %f, %f, %f, %f, %f, %f\n", myMatrix.get(0,0), myMatrix.get(0,1), myMatrix.get(0,2), myMatrix.get(1,0), myMatrix.get(1,1), myMatrix.get(1,2), myMatrix.get(2,0), myMatrix.get(2,1), myMatrix.get(2,2));
 
     }
 }
