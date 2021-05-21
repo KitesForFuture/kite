@@ -72,7 +72,7 @@ void app_main(void)
 	initMotors(output_pins, 5);
 	
 	int input_pins[] = {4, 33, 2, 17, 16};
-	initPWMInput(input_pins, 5);
+	//initPWMInput(input_pins, 5);
     
     
     int FLIGHT_MODE = MANUAL;
@@ -254,6 +254,8 @@ void app_main(void)
         //printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
         //printf("%f, %f\n", d_h, h);
         // SENDING DEBUGGING DATA TO GROUND
+        printf("matrix:\n%f,\t%f,\t%f\n%f,\t%f,\t%f\n%f,\t%f,\t%f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
+        
 		sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, CH5, CH6, d_h, h);
     }
 }
