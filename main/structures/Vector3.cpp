@@ -30,3 +30,15 @@ float Vector3::normalize(float epsilon) {
     }
     return norm;
 }
+
+void Vector3::multiply_ip(float factor) {
+    for (int i=0; i<3; i++) {
+        *value_ptrs[i] *= factor;
+    }
+}
+
+void Vector3::substract_ip(Vector3 v) {
+    for (int i=0; i<3; i++) {
+        *value_ptrs[i] -= v.get(i);
+    }
+}

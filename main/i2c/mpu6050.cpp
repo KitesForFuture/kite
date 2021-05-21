@@ -30,48 +30,49 @@ float Mpu6050::get_accel_sensitivity(uint8_t sens) {
     return 0;
 }
 
-void Mpu6050::get_motion_uncalibrated(struct motion_data *out) {
-    //ToDoLeo vector operations & unify with readMPUData
-
+motion_data Mpu6050::get_motion_uncalibrated() {
     uint8_t six_axis_raw_data[6];
 
-    //read acc/gyro data at register 59..., 67...
+    // GYRO
     read_bytes(1, 67, 6, six_axis_raw_data);
-    float gyro_1 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
-    float gyro_2 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
-    float gyro_3 = gyro_precision_factor * (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
-    //GYRO X / Y / Z
-    out->gyro[0] = x_mapper(gyro_1, gyro_2, gyro_3);
-    out->gyro[1] = y_mapper(gyro_1, gyro_2, gyro_3);
-    out->gyro[2] = z_mapper(gyro_1, gyro_2, gyro_3);
+    DataVector3 gyro {
+            (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]),
+            (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]),
+            (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5])
+    };
+    gyro.multiply_ip(gyro_precision_factor);
+    gyro = {
+            x_mapper(gyro),
+            y_mapper(gyro),
+            z_mapper(gyro)
+    };
+    gyro.substract_ip(calibration_data.gyro);
 
+    // ACCEL
     read_bytes(1, 59, 6, six_axis_raw_data);
-    float accel_1 = accel_precision_factor * (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]);
-    float accel_2 = accel_precision_factor * (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]);
-    float accel_3 = accel_precision_factor * (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5]);
-    //ACCEL X / Y / Z
-    out->accel[0] = x_mapper(accel_1, accel_2, accel_3);
-    out->accel[1] = y_mapper(accel_1, accel_2, accel_3);
-    out->accel[2] = z_mapper(accel_1, accel_2, accel_3);
-}
+    DataVector3 accel {
+            (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]),
+            (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]),
+            (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5])
+    };
+    accel.multiply_ip(accel_precision_factor);
+    accel = {
+            x_mapper(accel),
+            y_mapper(accel),
+            z_mapper(accel)
+    };
+    accel.substract_ip(calibration_data.accel);
 
-void Mpu6050::get_motion(struct motion_data *out) {
-    get_motion_uncalibrated(out);
-
-    out->accel[0] -= calibration_data.accel[0];
-    out->accel[1] -= calibration_data.accel[1];
-    out->accel[2] -= calibration_data.accel[2];
-
-    out->gyro[0] -= calibration_data.gyro[0];
-    out->gyro[1] -= calibration_data.gyro[1];
-    out->gyro[2] -= calibration_data.gyro[2];
+    // Return
+    motion_data motion {gyro, accel};
+    return motion;
 }
 
 Mpu6050::Mpu6050(   struct i2c_config i2c_config,
                     struct motion_data calibration_data,
-                    float (*x_mapper)(float, float, float),
-                    float (*y_mapper)(float, float, float),
-                    float (*z_mapper)(float, float, float))
+                    float (*x_mapper)(Vector3),
+                    float (*y_mapper)(Vector3),
+                    float (*z_mapper)(Vector3))
                         :
                     I2cDevice(i2c_config),
                     calibration_data{calibration_data},

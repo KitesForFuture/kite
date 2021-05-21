@@ -64,3 +64,17 @@ void Matrix3::normalize() {
         matrix[6 + i] /= norm;
     }
 }
+
+DataMatrix3 Matrix3::multiply_cp(Matrix3 v) {
+    DataMatrix3 out {0,0,0,0,0,0,0,0,0}
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            out[3 * i + j] = 0;
+            for (int k = 0; k < 3; k++) {
+                out.get(i, j) += a[3 * i + k] * b[3 * k + j];
+            }
+        }
+    }
+}
+
+DataMatrix3 multiply_ip()

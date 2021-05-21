@@ -8,10 +8,14 @@ static const char* TAG = "RotationMatrix";
 // rotates matrix mat such that mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' aligns more with (a,b,c)'
 // (x_gravity_factor, y_gravity_factor, z_gravity_factor) can be initially measured acceleration vector, usually something close to (0,0,1)
 // (a,b,c) can be the currently measured acceleration vector
-void RotationMatrix::rotate_towards_g(float mat[], float a, float b, float c) {
+void RotationMatrix::rotate_towards_g(Matrix3 mat, Vector3 accel) {
     // mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor'
     float tmp_vec[3];
     mat_transp_mult_vec(mat, x_gravity_factor, y_gravity_factor, z_gravity_factor, tmp_vec);
+
+    DataVector3 axis {
+        mat
+    };
 
     // determine the normalized rotation axis mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' x (a,b,c)'
     float axis_1 = tmp_vec[1] * c - tmp_vec[2] * b;
@@ -55,7 +59,35 @@ void RotationMatrix::rotate_towards_g(float mat[], float a, float b, float c) {
     mat_mult_mat_transp(mat, tmp_rot_matrix, matrix);
 }
 
-void RotationMatrix::update(struct motion_data position) {
+void RotationMatrix::apply_movements(DataVector3 gyro, float elapsed_ms) {
+
+    /*
+     * (1) Convert gyro to angles (in rad).
+     * Note that gyro is of type DataVector3 (not Vector3) and hence a copy.
+     * 0.01745329 = pi/180
+     */
+    gyro.multiply_ip(0.01745329 * elapsed_ms);
+
+    // infinitesimal rotation matrix:
+    DataMatrix3 difference {
+        1,
+        -sin(gyro.get(2)),
+        sin(gyro.get(1)),
+        sin(gyro.get(2)),
+        1,
+        -sin(gyro.get(0)),
+        -sin(gyro.get(1)),
+        sin(gyro.get(0)),
+        1
+    };
+
+    matrix.multiply_ip(difference); // ToDo das muss implementiert und das unten entfernt werden.
+
+    float temp_rotation_matrix[9];
+    mat_mult(matrix, diff, temp_rotation_matrix);
+}
+
+void RotationMatrix::update(struct motion_data motion) {
 
     if (!timer.has_laptime()) { // ToDo improve this. It's about skipping the first time
         timer.take();
@@ -63,32 +95,11 @@ void RotationMatrix::update(struct motion_data position) {
     }
     timer.take();
 
-    // matrix based:
-    // rotation-matrix:
-    // angles in radians
-    // 0.01745329 = pi/180
-    float alpha = 0.01745329 * position.gyro[0] * timer.get_laptime() * 0.001;
-    float beta = 0.01745329 * position.gyro[1] * timer.get_laptime() * 0.001;
-    float gamma = 0.01745329 * position.gyro[2] * timer.get_laptime() * 0.001;
-
+    apply_movements(motion.gyro, timer.get_laptime() * 0.001)
     timer.reset();
 
-    // infinitesimal rotation matrix:
-    float diff[9];
-    diff[0] = 1; //maybe can replace by 1 here
-    diff[1] = -sin(gamma);
-    diff[2] = sin(beta);
 
-    diff[3] = sin(gamma);
-    diff[4] = 1;
-    diff[5] = -sin(alpha);
 
-    diff[6] = -sin(beta);
-    diff[7] = sin(alpha);
-    diff[8] = 1;
-
-    float temp_rotation_matrix[9];
-    mat_mult(matrix, diff, temp_rotation_matrix);
 
     rotate_towards_g(temp_rotation_matrix, position.accel[0], position.accel[1], position.accel[2]);
 

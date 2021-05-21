@@ -17,6 +17,8 @@ public:
     float get_norm();
     float normalize();
     float normalize(float epsilon);
+    void multiply_ip(float factor);
+    void substract_ip(Vector3 v);
 
 };
 
