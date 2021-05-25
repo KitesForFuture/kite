@@ -4,6 +4,7 @@
 
 #include "Matrix3.h"
 #include <math.h>
+#include <iterator>
 
 Matrix3::Matrix3(float *matrix) : matrix{matrix} {}
 
@@ -65,16 +66,34 @@ void Matrix3::normalize() {
     }
 }
 
-DataMatrix3 Matrix3::multiply_cp(Matrix3 v) {
-    DataMatrix3 out {0,0,0,0,0,0,0,0,0}
+void Matrix3::multiply_ip(Matrix3 m) {
+    float result[9] = {};
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            out[3 * i + j] = 0;
             for (int k = 0; k < 3; k++) {
-                out.get(i, j) += a[3 * i + k] * b[3 * k + j];
+                result[3 * i + j] += matrix[3 * i + k] * m.matrix[3 * k + j];
             }
         }
     }
+    std::copy(std::begin(result), std::end(result), matrix);
 }
 
-DataMatrix3 multiply_ip()
+void Matrix3::transpose_right_multiply_ip(Matrix3 m) {
+    float result[9] = {};
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            for (int k = 0; k < 3; k++) {
+                result[3 * i + j] += matrix[3 * i + k] * m.matrix[3 * j + k];
+            }
+        }
+    }
+    std::copy(std::begin(result), std::end(result), matrix);
+}
+
+DataVector3 Matrix3::transpose_multiply_cp(Vector3 v) {
+    DataVector3 out {0,0,0};
+    for (int i = 0; i < 3; i++) {
+        out.get(i) = matrix[i] * v.get(0) + matrix[i + 3] * v.get(1) + matrix[i + 6] * v.get(2);
+    }
+    return out;
+}

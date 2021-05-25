@@ -4,7 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "i2c_device.h"
 #include "../structures/DataVector3.h"
-#include "../structures/ector3.h"
+#include "../structures/Vector3.h"
 
 struct motion_data {
     DataVector3 gyro;
@@ -29,11 +29,9 @@ public:
             struct motion_data calibration_data,
             float (*x_mapper)(Vector3),
             float (*y_mapper)(Vector3),
-            float (*z_mapper)(Vector3);
+            float (*z_mapper)(Vector3));
     motion_data get_motion();
 
 };
-
-void mpu6050_get_position(struct motion_data *out);
 
 #endif

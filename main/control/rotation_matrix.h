@@ -12,18 +12,18 @@
 
 class RotationMatrix {
 
-    float x_gravity_factor, y_gravity_factor, z_gravity_factor;
     MsTimer timer {};
     // rotation of the drone in world coordinates
     Matrix3 matrix;
+    DataVector3 init_gravity;
 
-    void apply_movements(Vector3 gyro, float elapsed_ms);
-    void rotate_towards_g(Vector3 accel);
+    void apply_movements(DataVector3 gyro, float elapsed_ms);
+    void rotate_towards_g(DataVector3 accel);
 
 public:
 
-    explicit RotationMatrix(float* matrix, float gravity[]);
-    void update(struct motion_data position);
+    explicit RotationMatrix(Matrix3 matrix, DataVector3 init_gravity);
+    void update(motion_data motion);
 };
 
 #endif

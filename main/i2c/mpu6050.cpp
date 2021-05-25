@@ -30,15 +30,15 @@ float Mpu6050::get_accel_sensitivity(uint8_t sens) {
     return 0;
 }
 
-motion_data Mpu6050::get_motion_uncalibrated() {
+motion_data Mpu6050::get_motion() {
     uint8_t six_axis_raw_data[6];
 
     // GYRO
     read_bytes(1, 67, 6, six_axis_raw_data);
     DataVector3 gyro {
-            (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]),
-            (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]),
-            (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5])
+            (float) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]),
+            (float) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]),
+            (float) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5])
     };
     gyro.multiply_ip(gyro_precision_factor);
     gyro = {
@@ -51,9 +51,9 @@ motion_data Mpu6050::get_motion_uncalibrated() {
     // ACCEL
     read_bytes(1, 59, 6, six_axis_raw_data);
     DataVector3 accel {
-            (int16_t) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]),
-            (int16_t) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]),
-            (int16_t) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5])
+            (float) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]),
+            (float) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]),
+            (float) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5])
     };
     accel.multiply_ip(accel_precision_factor);
     accel = {

@@ -42,3 +42,18 @@ void Vector3::substract_ip(Vector3 v) {
         *value_ptrs[i] -= v.get(i);
     }
 }
+
+void Vector3::cross_product_ip(Vector3 v) {
+    float result [3] = {
+        *value_ptrs[1] * v.get(2) - *value_ptrs[2] * v.get(1),
+        *value_ptrs[2] * v.get(0) - *value_ptrs[0] * v.get(3),
+        *value_ptrs[0] * v.get(1) - *value_ptrs[1] * v.get(0)
+    };
+    for (int i=0; i<3; i++) {
+        *value_ptrs[i] = result[i];
+    }
+}
+
+float Vector3::scalar_product(Vector3 v) {
+    return *value_ptrs[0] * v.get(0) + *value_ptrs[1] * v.get(1) + *value_ptrs[2] * v.get(2);
+}

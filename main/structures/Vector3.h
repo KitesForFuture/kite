@@ -5,7 +5,6 @@
 #ifndef KITE_VECTOR3_H
 #define KITE_VECTOR3_H
 
-
 class Vector3 {
 
     float* value_ptrs[3];
@@ -19,6 +18,8 @@ public:
     float normalize(float epsilon);
     void multiply_ip(float factor);
     void substract_ip(Vector3 v);
+    void cross_product_ip(Vector3 v);
+    float scalar_product(Vector3 v);
 
 };
 

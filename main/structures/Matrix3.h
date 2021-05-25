@@ -6,7 +6,7 @@
 #define KITE_MATRIX3_H
 
 #include "Vector3.h"
-#include "DataMatrix3.h"
+#include "DataVector3.h"
 
 class Matrix3 {
 
@@ -18,7 +18,9 @@ public:
     float& get (int row, int col);
     Vector3 get (int index, bool colwise);
     void normalize();
-    Matrix3::multiply_cp(Matrix3 v);
+    void multiply_ip(Matrix3 m);
+    void transpose_right_multiply_ip(Matrix3 m);
+    DataVector3 transpose_multiply_cp(Vector3 v);
 
 };
 

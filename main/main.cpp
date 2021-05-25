@@ -75,8 +75,9 @@ extern "C" _Noreturn void app_main(void) {
     };
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
-    float gravity[3] = {1, 0, 0};
-    RotationMatrix rotation_matrix {flydata.rotation_matrix, gravity};
+    DataVector3 gravity {1, 0, 0};
+    Matrix3 wrapped { flydata.rotation_matrix };
+    RotationMatrix rotation_matrix { wrapped, gravity};
 
     // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
     // X-Axis: GYRO chip - FUTURE silk writing
@@ -120,16 +121,16 @@ extern "C" _Noreturn void app_main(void) {
 
         height_sensor.update_if_possible();
 
-        motion_data motion {orientation_sensor.get_motion};
+        motion_data motion {orientation_sensor.get_motion()};
         //printf("gyro x%f y%f z%f // accel x%f y%f z%f\n", motion.gyro[0], motion.gyro[1], motion.gyro[2], motion.accel[0], motion.accel[1], motion.accel[2]);
         rotation_matrix.update(motion);
 
         //ESP_LOG_BUFFER_CHAR_LEVEL(FLYDATA, (char*)&flydata, sizeof(flydata), ESP_LOG_INFO);
 
         // Not ideal as not threadsafe.
-        //fwrite(FLYDATA, 1, 7, stdout);
-        //fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
-        //fwrite("\n", 1, 1, stdout);
+        fwrite(FLYDATA, 1, 7, stdout);
+        fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
+        fwrite("\n", 1, 1, stdout);
 
         //updatePWMInput();
 
@@ -155,11 +156,6 @@ extern "C" _Noreturn void app_main(void) {
         if (degree == 90 || degree == -90) {
             increment *= -1;
         }
-
-        DataMatrix3 myMatrix {2,2,2,2,2,2,2,2,2};
-        myMatrix.get(1, true).normalize();
-
-        printf("Values: %f, %f, %f, %f, %f, %f, %f, %f, %f\n", myMatrix.get(0,0), myMatrix.get(0,1), myMatrix.get(0,2), myMatrix.get(1,0), myMatrix.get(1,1), myMatrix.get(1,2), myMatrix.get(2,0), myMatrix.get(2,1), myMatrix.get(2,2));
 
     }
 }
