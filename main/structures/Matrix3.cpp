@@ -6,25 +6,25 @@
 #include <math.h>
 #include <iterator>
 
-Matrix3::Matrix3(float *matrix) : matrix{matrix} {}
+Matrix3::Matrix3(array<float, 9>* values) : values{values} {}
 
 float& Matrix3::get (int row, int col) {
-    return matrix[3*row + col];
+    return (*values)[3*row + col];
 }
 
 Vector3 Matrix3::get (int index, bool colwise) {
     Vector3 to_return {nullptr, nullptr, nullptr};
     if (colwise) {
         to_return = {
-            &matrix[index],
-            &matrix[3+index],
-            &matrix[6+index]
+            &((*values)[index]),
+            &((*values)[3+index]),
+            &((*values)[6+index])
         };
     } else {
         to_return = {
-            &matrix[3*index],
-            &matrix[3*index+1],
-            &matrix[3*index+2]
+            &((*values)[3*index]),
+            &((*values)[3*index+1]),
+            &((*values)[3*index+2])
         };
     }
     return to_return;
@@ -35,65 +35,65 @@ void Matrix3::normalize() {
     // Gram-Schmidt orthogonalization
     // (direction of first column stays constant and always only the latter two are rotated)
 
-    float norm = sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1] + matrix[2] * matrix[2]);
+    float norm = sqrt((*values)[0] * (*values)[0] + (*values)[1] * (*values)[1] + (*values)[2] * (*values)[2]);
     for (int i = 0; i < 3; i++) {
-        matrix[i] /= norm;
+        (*values)[i] /= norm;
     }
 
-    float scalarProd = matrix[0] * matrix[3] + matrix[1] * matrix[4] + matrix[2] * matrix[5];
+    float scalarProd = (*values)[0] * (*values)[3] + (*values)[1] * (*values)[4] + (*values)[2] * (*values)[5];
     for (int i = 0; i < 3; i++) {
-        matrix[3 + i] -= scalarProd * matrix[i];
+        (*values)[3 + i] -= scalarProd * (*values)[i];
     }
 
-    norm = sqrt(matrix[3] * matrix[3] + matrix[4] * matrix[4] + matrix[5] * matrix[5]);
+    norm = sqrt((*values)[3] * (*values)[3] + (*values)[4] * (*values)[4] + (*values)[5] * (*values)[5]);
     for (int i = 0; i < 3; i++) {
-        matrix[3 + i] /= norm;
+        (*values)[3 + i] /= norm;
     }
 
-    scalarProd = matrix[0] * matrix[6] + matrix[1] * matrix[7] + matrix[2] * matrix[8];
+    scalarProd = (*values)[0] * (*values)[6] + (*values)[1] * (*values)[7] + (*values)[2] * (*values)[8];
     for (int i = 0; i < 3; i++) {
-        matrix[6 + i] -= scalarProd * matrix[i];
+        (*values)[6 + i] -= scalarProd * (*values)[i];
     }
 
-    scalarProd = matrix[3] * matrix[6] + matrix[4] * matrix[7] + matrix[5] * matrix[8];
+    scalarProd = (*values)[3] * (*values)[6] + (*values)[4] * (*values)[7] + (*values)[5] * (*values)[8];
     for (int i = 0; i < 3; i++) {
-        matrix[6 + i] -= scalarProd * matrix[3 + i];
+        (*values)[6 + i] -= scalarProd * (*values)[3 + i];
     }
 
-    norm = sqrt(matrix[6] * matrix[6] + matrix[7] * matrix[7] + matrix[8] * matrix[8]);
+    norm = sqrt((*values)[6] * (*values)[6] + (*values)[7] * (*values)[7] + (*values)[8] * (*values)[8]);
     for (int i = 0; i < 3; i++) {
-        matrix[6 + i] /= norm;
+        (*values)[6 + i] /= norm;
     }
 }
 
-void Matrix3::multiply_ip(Matrix3 m) {
-    float result[9] = {};
+array<float, 9> Matrix3::multiply(Matrix3 m) {
+    array<float, 9> result {0};
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             for (int k = 0; k < 3; k++) {
-                result[3 * i + j] += matrix[3 * i + k] * m.matrix[3 * k + j];
+                result[3 * i + j] += (*values)[3 * i + k] * (*m.values)[3 * k + j];
             }
         }
     }
-    std::copy(std::begin(result), std::end(result), matrix);
+    return result;
 }
 
-void Matrix3::transpose_right_multiply_ip(Matrix3 m) {
-    float result[9] = {};
+array<float, 9> Matrix3::transpose_right_multiply(Matrix3 m) {
+    array<float, 9> result {0};
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             for (int k = 0; k < 3; k++) {
-                result[3 * i + j] += matrix[3 * i + k] * m.matrix[3 * j + k];
+                result[3 * i + j] += (*values)[3 * i + k] * (*m.values)[3 * j + k];
             }
         }
     }
-    std::copy(std::begin(result), std::end(result), matrix);
+    return result;
 }
 
-DataVector3 Matrix3::transpose_multiply_cp(Vector3 v) {
-    DataVector3 out {0,0,0};
+array<float, 3> Matrix3::transpose_multiply(Vector3 v) {
+    array<float, 3> out;
     for (int i = 0; i < 3; i++) {
-        out.get(i) = matrix[i] * v.get(0) + matrix[i + 3] * v.get(1) + matrix[i + 6] * v.get(2);
+        out[i] = (*values)[i] * v.get(0) + (*values)[i + 3] * v.get(1) + (*values)[i + 6] * v.get(2);
     }
     return out;
 }

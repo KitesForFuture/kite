@@ -5,6 +5,10 @@
 #ifndef KITE_VECTOR3_H
 #define KITE_VECTOR3_H
 
+#include <array>
+
+using namespace std;
+
 class Vector3 {
 
     float* value_ptrs[3];
@@ -12,14 +16,16 @@ class Vector3 {
 public:
 
     Vector3(float* x_ptr, float* y_ptr, float* z_ptr);
+    Vector3(std::array<float, 3>* values);
     float& get (int index);
     float get_norm();
     float normalize();
     float normalize(float epsilon);
-    void multiply_ip(float factor);
-    void substract_ip(Vector3 v);
-    void cross_product_ip(Vector3 v);
+    std::array<float, 3> multiply (float factor);
+    std::array<float, 3> subtract (Vector3 v);
+    std::array<float, 3> cross_product(Vector3 v);
     float scalar_product(Vector3 v);
+    void set (std::array<float, 3> values);
 
 };
 

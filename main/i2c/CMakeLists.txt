@@ -1,4 +1,5 @@
 include_directories(../helpers)
+include_directories(../structures)
 
 add_library(interchip
         i2c_device.cpp
@@ -18,9 +19,6 @@ add_library(cat24c256
 target_link_libraries(cat24c256 
   PUBLIC interchip
 )
-target_link_libraries(cat24c256
-        PUBLIC datavector3
-)
 
 add_library(mpu6050
         mpu6050.cpp
@@ -28,4 +26,6 @@ add_library(mpu6050
 target_link_libraries(mpu6050 
   PUBLIC kitemath
   PUBLIC interchip
+  PUBLIC vector3
+  PUBLIC matrix3
 )

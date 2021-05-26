@@ -12,9 +12,7 @@
 #include "helpers/wifi.h"
 #include "data/flydata.h"
 #include "structures/Vector3.h"
-#include "structures/DataVector3.h"
 #include "structures/Matrix3.h"
-#include "structures/DataMatrix3.h"
 
 /* #include "pwm/motors.h"
 #include "pwm/pwm_input.h" */

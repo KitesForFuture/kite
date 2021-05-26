@@ -30,52 +30,39 @@ float Mpu6050::get_accel_sensitivity(uint8_t sens) {
     return 0;
 }
 
-motion_data Mpu6050::get_motion() {
-    uint8_t six_axis_raw_data[6];
+array<float, 3> Mpu6050::get_sensor_data(int data_addr, float precision_factor, Vector3 calibration) {
+    uint8_t raw_data[6];
+    read_bytes(1, data_addr, 6, raw_data);
+    array<float, 3> data = {
+            (float) ((raw_data[0] << 8) | raw_data[1]),
+            (float) ((raw_data[2] << 8) | raw_data[3]),
+            (float) ((raw_data[4] << 8) | raw_data[5])
+    };
+    Vector3 vector = Vector3{&data};
+    data = vector.multiply(precision_factor);
+    data[0] = x_mapper(vector);
+    data[1] = y_mapper(vector);
+    data[2] = z_mapper(vector);
+    data = vector.subtract(calibration);
+    return data;
+}
 
-    // GYRO
-    read_bytes(1, 67, 6, six_axis_raw_data);
-    DataVector3 gyro {
-            (float) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]),
-            (float) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]),
-            (float) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5])
+Motion Mpu6050::get_motion() {
+    return Motion {
+    get_sensor_data(67, gyro_precision_factor, gyro_calibration),
+    get_sensor_data(59, accel_precision_factor, accel_calibration)
     };
-    gyro.multiply_ip(gyro_precision_factor);
-    gyro = {
-            x_mapper(gyro),
-            y_mapper(gyro),
-            z_mapper(gyro)
-    };
-    gyro.substract_ip(calibration_data.gyro);
-
-    // ACCEL
-    read_bytes(1, 59, 6, six_axis_raw_data);
-    DataVector3 accel {
-            (float) ((six_axis_raw_data[0] << 8) | six_axis_raw_data[1]),
-            (float) ((six_axis_raw_data[2] << 8) | six_axis_raw_data[3]),
-            (float) ((six_axis_raw_data[4] << 8) | six_axis_raw_data[5])
-    };
-    accel.multiply_ip(accel_precision_factor);
-    accel = {
-            x_mapper(accel),
-            y_mapper(accel),
-            z_mapper(accel)
-    };
-    accel.substract_ip(calibration_data.accel);
-
-    // Return
-    motion_data motion {gyro, accel};
-    return motion;
 }
 
 Mpu6050::Mpu6050(   struct i2c_config i2c_config,
-                    struct motion_data calibration_data,
+                    Motion calibration,
                     float (*x_mapper)(Vector3),
                     float (*y_mapper)(Vector3),
                     float (*z_mapper)(Vector3))
                         :
                     I2cDevice(i2c_config),
-                    calibration_data{calibration_data},
+                    calibration{calibration},
+                    gyro_calibration{&this->calibration.gyro}, accel_calibration{&this->calibration.accel},
                     x_mapper{x_mapper}, y_mapper{y_mapper}, z_mapper{z_mapper}
 {
 
