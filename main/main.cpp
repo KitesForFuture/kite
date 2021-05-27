@@ -74,7 +74,7 @@ extern "C" _Noreturn void app_main(void) {
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
     RotationMatrix rotation_matrix {
-        Matrix3{&flydata.rotation_matrix},
+        &flydata.rotation_matrix,
         array<float, 3> {1, 0, 0} // Gravity
     };
 
