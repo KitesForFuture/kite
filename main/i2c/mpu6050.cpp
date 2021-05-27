@@ -6,28 +6,18 @@
 //sens = 1 <-> +- 500 deg/sec
 //sens = 2 <-> +- 1000 deg/sec
 //sens = 3 <-> +- 2000 deg/sec
-float Mpu6050::get_gyro_sensitivity(uint8_t sens) {
-    // ToDo Leo correct exception handling
-    if (sens < 4 /* && sens >=0 */) { // ToDo Leo can sense be ever smaller than 0? What is it?
-        send_byte(27, 1, 8 * sens);
-        return 250 * smallpow(2, sens) / 32768.0;
-    }
-    printf("setGyroSensitivity(int sens), sensitivity must be between 0 and 3");
-    return 0;
+float Mpu6050::configure_gyro_sensitivity(uint8_t sens) {
+    send_byte(27, 1, 8 * sens);
+    return 250 * smallpow(2, sens) / 32768.0;
 }
 
 //sens = 0 <-> +- 2g
 //sens = 1 <-> +- 4g
 //sens = 2 <-> +- 8g
 //sens = 3 <-> +- 16g
-float Mpu6050::get_accel_sensitivity(uint8_t sens) {
-    // ToDo Leo correct exception handling
-    if (sens < 4 /* && sens >=0 */) { // ToDo Leo can sense be ever smaller than 0? What is it?
-        send_byte(28, 1, 8 * sens);
-        return 2 * 9.81 * smallpow(2, sens) / 32768.0;
-    }
-    printf("setAccelSensitivity(int sens), sensitivity must be between 0 and 3");
-    return 0;
+float Mpu6050::configure_accel_sensitivity(uint8_t sens) {
+    send_byte(28, 1, 8 * sens);
+    return 2 * 9.81 * smallpow(2, sens) / 32768.0;
 }
 
 array<float, 3> Mpu6050::get_sensor_data(int data_addr, float precision_factor, Vector3 calibration) {
@@ -72,6 +62,6 @@ Mpu6050::Mpu6050(   struct i2c_config i2c_config,
     // wake up from sleep mode
     send_byte(1, 107, 0);
 
-    gyro_precision_factor = get_gyro_sensitivity(1);
-    accel_precision_factor = get_accel_sensitivity(2);
+    gyro_precision_factor = configure_gyro_sensitivity(1);
+    accel_precision_factor = configure_accel_sensitivity(2);
 }

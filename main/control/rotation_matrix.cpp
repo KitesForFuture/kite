@@ -8,18 +8,18 @@ static const char* TAG = "RotationMatrix";
 // rotates matrix mat such that mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' aligns more with (a,b,c)'
 // (x_gravity_factor, y_gravity_factor, z_gravity_factor) can be initially measured acceleration vector, usually something close to (0,0,1)
 // (a,b,c) can be the currently measured acceleration vector
-void RotationMatrix::rotate_towards_g(DataVector3 accel) {
+void RotationMatrix::rotate_towards_g(array<float, 3> accel_data) {
 
-    DataVector3 axis {
-        matrix.transpose_multiply_cp(init_gravity)
-    };
-    axis.cross_product_ip(init_gravity);
+    array<float, 3> axis_data = matrix.transpose_multiply(init_gravity);
+    Vector3 axis {&axis_data};
+    axis_data = axis.cross_product(init_gravity);
     axis.normalize();
 
     // determine the approximate angle between mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' and (a,b,c)'
     // normalize accel vector
+    Vector3 accel {&accel_data};
     accel.normalize();
-    accel.substract_ip(init_gravity);
+    accel_data = accel.subtract(init_gravity);
     // multiply by small number, so we move only tiny bit in right direction at every step -> averaging measured acceleration from vibration
     float angle = accel.get_norm() *
                   0.004;//When connected to USB, then 0.00004 suffices. When autonomous on battery 0.0004 (10 times larger) does just fine.
@@ -31,7 +31,7 @@ void RotationMatrix::rotate_towards_g(DataVector3 accel) {
     // ToDoLeo constants / knowledge inside calcualtion.
 
     // rotation matrix
-    DataMatrix3 difference {
+    array<float, 9> difference {
         1,
         -axis.get(2) * sin(angle),
         axis.get(1) * sin(angle),
@@ -43,20 +43,21 @@ void RotationMatrix::rotate_towards_g(DataVector3 accel) {
         1
     };
 
-    matrix.transpose_right_multiply_ip(difference);
+    *matrix_data_ptr = matrix.transpose_right_multiply(Matrix3{&difference});
 }
 
-void RotationMatrix::apply_movements(DataVector3 gyro, float elapsed_ms) {
+void RotationMatrix::apply_movements(array<float, 3> gyro_data, float elapsed_ms) {
 
+    Vector3 gyro {&gyro_data};
     /*
      * Convert gyro to angles (in rad).
      * Note that gyro is of type DataVector3 (not Vector3) and hence a copy.
      * 0.01745329 = pi/180
      */
-    gyro.multiply_ip(0.01745329 * elapsed_ms);
+    gyro_data = gyro.multiply(0.01745329 * elapsed_ms);
 
     // infinitesimal rotation matrix:
-    DataMatrix3 difference {
+    array<float, 9> difference {
         1,
         -sin(gyro.get(2)),
         sin(gyro.get(1)),
@@ -68,10 +69,10 @@ void RotationMatrix::apply_movements(DataVector3 gyro, float elapsed_ms) {
         1
     };
 
-    matrix.multiply_ip(difference);
+    *matrix_data_ptr = matrix.multiply(Matrix3{&difference});
 }
 
-void RotationMatrix::update(struct motion_data motion) {
+void RotationMatrix::update(Motion motion) {
 
     if (!timer.has_laptime()) { // ToDo improve this. It's about skipping the first time
         timer.take();
@@ -94,6 +95,6 @@ void RotationMatrix::update(struct motion_data motion) {
 }
 
 
-RotationMatrix::RotationMatrix(Matrix3 matrix, DataVector3 init_gravity) : matrix{matrix}, init_gravity{init_gravity} {
-    this->init_gravity.normalize();
+RotationMatrix::RotationMatrix(array<float, 9>* matrix_data_ptr, array<float, 3> init_gravity_data) : matrix_data_ptr{matrix_data_ptr}, matrix{Matrix3{matrix_data_ptr}}, init_gravity_data{init_gravity_data}, init_gravity{Vector3{&this->init_gravity_data}} {
+    Vector3{&this->init_gravity_data}.normalize();
 }

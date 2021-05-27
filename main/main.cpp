@@ -47,13 +47,13 @@ extern "C" _Noreturn void app_main(void) {
 
     Cat24c256 storage {cat24c256};
 
-    struct motion_data mpu_calibration = {
-            .gyro {
+    Motion mpu_calibration = {
+            {
                 storage.read_float(0 * sizeof(float)),
                 storage.read_float(1 * sizeof(float)),
                 storage.read_float(2 * sizeof(float))
             },
-            .accel {
+            {
                 storage.read_float(3 * sizeof(float)),
                 storage.read_float(4 * sizeof(float)),
                 storage.read_float(5 * sizeof(float))
@@ -73,9 +73,10 @@ extern "C" _Noreturn void app_main(void) {
     };
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
-    DataVector3 gravity {1, 0, 0};
-    Matrix3 wrapped { flydata.rotation_matrix };
-    RotationMatrix rotation_matrix { wrapped, gravity};
+    RotationMatrix rotation_matrix {
+        Matrix3{&flydata.rotation_matrix},
+        array<float, 3> {1, 0, 0} // Gravity
+    };
 
     // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
     // X-Axis: GYRO chip - FUTURE silk writing
@@ -119,7 +120,7 @@ extern "C" _Noreturn void app_main(void) {
 
         height_sensor.update_if_possible();
 
-        motion_data motion {orientation_sensor.get_motion()};
+        Motion motion {orientation_sensor.get_motion()};
         //printf("gyro x%f y%f z%f // accel x%f y%f z%f\n", motion.gyro[0], motion.gyro[1], motion.gyro[2], motion.accel[0], motion.accel[1], motion.accel[2]);
         rotation_matrix.update(motion);
 

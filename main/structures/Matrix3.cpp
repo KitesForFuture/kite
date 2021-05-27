@@ -6,7 +6,7 @@
 #include <math.h>
 #include <iterator>
 
-Matrix3::Matrix3(array<float, 9>* values) : values{values} {}
+Matrix3::Matrix3(array<float, 9>* values_ptr) : values{values_ptr} {}
 
 float& Matrix3::get (int row, int col) {
     return (*values)[3*row + col];

@@ -22,8 +22,8 @@ class Mpu6050: protected I2cDevice {
     float gyro_precision_factor;    //factor needed to get to deg/sec
     float accel_precision_factor;    //factor needed to get to m/s
 
-    float get_gyro_sensitivity(uint8_t sens);
-    float get_accel_sensitivity(uint8_t sens);
+    float configure_gyro_sensitivity(uint8_t sens);
+    float configure_accel_sensitivity(uint8_t sens);
     array<float, 3> get_sensor_data(int data_addr, float precision_factor, Vector3 calibration);
 
 public:

@@ -14,7 +14,7 @@ class Matrix3 {
 
 public:
 
-    Matrix3(array<float, 9>* values);
+    Matrix3(array<float, 9>* values_ptr);
     float& get (int row, int col);
     Vector3 get (int index, bool colwise);
     void normalize();
