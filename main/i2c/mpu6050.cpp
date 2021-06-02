@@ -20,39 +20,39 @@ float Mpu6050::configure_accel_sensitivity(uint8_t sens) {
     return 2 * 9.81 * smallpow(2, sens) / 32768.0;
 }
 
-array<float, 3> Mpu6050::get_sensor_data(int data_addr, float precision_factor, Vector3 calibration) {
+array<float, 3> Mpu6050::get_sensor_data(int data_addr, float precision_factor, array<float, 3>& cal) {
     uint8_t raw_data[6];
     read_bytes(1, data_addr, 6, raw_data);
     array<float, 3> data = {
-            (float) ((raw_data[0] << 8) | raw_data[1]),
-            (float) ((raw_data[2] << 8) | raw_data[3]),
-            (float) ((raw_data[4] << 8) | raw_data[5])
+            (float) ((int16_t) ((raw_data[0] << 8) | raw_data[1])),
+            (float) ((int16_t) ((raw_data[2] << 8) | raw_data[3])),
+            (float) ((int16_t) ((raw_data[4] << 8) | raw_data[5]))
     };
-    Vector3 vector = Vector3{&data};
-    data = vector.multiply(precision_factor);
-    data[0] = x_mapper(vector);
-    data[1] = y_mapper(vector);
-    data[2] = z_mapper(vector);
-    data = vector.subtract(calibration);
+    data = Vector3::multiply(data, precision_factor);
+    data = {
+        x_mapper(data),
+        y_mapper(data),
+        z_mapper(data)
+    };
+    data = Vector3::subtract(data, cal);
     return data;
 }
 
 Motion Mpu6050::get_motion() {
     return Motion {
-    get_sensor_data(67, gyro_precision_factor, gyro_calibration),
-    get_sensor_data(59, accel_precision_factor, accel_calibration)
+    get_sensor_data(67, gyro_precision_factor, calibration.gyro),
+    get_sensor_data(59, accel_precision_factor, calibration.accel)
     };
 }
 
 Mpu6050::Mpu6050(   struct i2c_config i2c_config,
                     Motion calibration,
-                    float (*x_mapper)(Vector3),
-                    float (*y_mapper)(Vector3),
-                    float (*z_mapper)(Vector3))
+                    float (*x_mapper)(array<float, 3>&),
+                    float (*y_mapper)(array<float, 3>&),
+                    float (*z_mapper)(array<float, 3>&))
                         :
                     I2cDevice(i2c_config),
                     calibration{calibration},
-                    gyro_calibration{&this->calibration.gyro}, accel_calibration{&this->calibration.accel},
                     x_mapper{x_mapper}, y_mapper{y_mapper}, z_mapper{z_mapper}
 {
 

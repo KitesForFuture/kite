@@ -23,11 +23,11 @@ struct i2c_config cat24c256 = {{18, 19}, 0x50, 1};
 struct i2c_config bmp280 = {{18, 19}, 0x76, 0};
 struct i2c_config mpu6050 = {{14, 25}, 104, 0};
 
-float x_mapper(Vector3 v) { return -1 * v.get(1); }
+float x_mapper(array<float, 3>& v) { return -1 * v[1]; }
 
-float y_mapper(Vector3 v) { return v.get(0); }
+float y_mapper(array<float, 3>& v) { return v[0]; }
 
-float z_mapper(Vector3 v) { return v.get(2); }
+float z_mapper(array<float, 3>& v) { return v[2]; }
 
 extern "C" _Noreturn void app_main(void) {
 
@@ -74,7 +74,7 @@ extern "C" _Noreturn void app_main(void) {
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
     RotationMatrix rotation_matrix {
-        &flydata.rotation_matrix,
+        flydata.rotation_matrix,
         array<float, 3> {1, 0, 0} // Gravity
     };
 
