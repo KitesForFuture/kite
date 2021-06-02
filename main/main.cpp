@@ -127,13 +127,15 @@ extern "C" _Noreturn void app_main(void) {
         //ESP_LOG_BUFFER_CHAR_LEVEL(FLYDATA, (char*)&flydata, sizeof(flydata), ESP_LOG_INFO);
 
         // Not ideal as not threadsafe.
-        fwrite(FLYDATA, 1, 7, stdout);
-        fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
-        fwrite("\n", 1, 1, stdout);
+
 
         //updatePWMInput();
 
-        //printf("BMP280 Height: %f\n", height_sensor.get_height());
+        flydata.height = height_sensor.get_height();
+
+        fwrite(FLYDATA, 1, 7, stdout);
+        fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
+        fwrite("\n", 1, 1, stdout);
 
         /* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
 
