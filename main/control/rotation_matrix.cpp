@@ -1,6 +1,6 @@
 #include <esp_log.h>
 #include "rotation_matrix.h"
-#include "../helpers/kitemath.h"
+#include "cmath"
 #include <cstring>
 
 static const char* TAG = "RotationMatrix";
@@ -8,30 +8,18 @@ static const char* TAG = "RotationMatrix";
 // rotates matrix mat such that mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' aligns more with (a,b,c)'
 // (x_gravity_factor, y_gravity_factor, z_gravity_factor) can be initially measured acceleration vector, usually something close to (0,0,1)
 // (a,b,c) can be the currently measured acceleration vector
-void RotationMatrix::rotate_towards_g(float mat[], float a, float b, float c) {
-    // mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor'
-    float tmp_vec[3];
-    mat_transp_mult_vec(mat, x_gravity_factor, y_gravity_factor, z_gravity_factor, tmp_vec);
+void RotationMatrix::rotate_towards_g(array<float, 3> accel) {
 
-    // determine the normalized rotation axis mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' x (a,b,c)'
-    float axis_1 = tmp_vec[1] * c - tmp_vec[2] * b;
-    float axis_2 = tmp_vec[2] * a - tmp_vec[0] * c;
-    float axis_3 = tmp_vec[0] * b - tmp_vec[1] * a;
-    float norm = sqrt(axis_1 * axis_1 + axis_2 * axis_2 + axis_3 * axis_3);
-    axis_1 /= norm;
-    axis_2 /= norm;
-    axis_3 /= norm;
+    array<float, 3> axis = Matrix3::transpose_multiply(matrix, init_gravity);
+    axis = Vector3::cross_product(axis, init_gravity);
+    Vector3::normalize(axis);
 
     // determine the approximate angle between mat'*(x_gravity_factor, y_gravity_factor, z_gravity_factor)' and (a,b,c)'
     // normalize accel vector
-    norm = sqrt(a * a + b * b + c * c);
-    a = a/norm;
-    b = b/norm;
-    c = c/norm;
-    float differenceNorm = sqrt(
-            (x_gravity_factor - a) * (x_gravity_factor - a) + (y_gravity_factor - b) * (y_gravity_factor - b) + (z_gravity_factor - c) * (z_gravity_factor - c));
+    Vector3::normalize(accel);
+    accel = Vector3::subtract(accel, init_gravity);
     // multiply by small number, so we move only tiny bit in right direction at every step -> averaging measured acceleration from vibration
-    float angle = differenceNorm *
+    float angle = Vector3::get_norm(accel) *
                   0.004;//When connected to USB, then 0.00004 suffices. When autonomous on battery 0.0004 (10 times larger) does just fine.
     // 0.00004 works, error 0.0004
     // 0.0004 works, error 0.002 except in battery mode
@@ -41,21 +29,47 @@ void RotationMatrix::rotate_towards_g(float mat[], float a, float b, float c) {
     // ToDoLeo constants / knowledge inside calcualtion.
 
     // rotation matrix
-    float tmp_rot_matrix[9];
-    tmp_rot_matrix[0] = 1;
-    tmp_rot_matrix[1] = -axis_3 * sin(angle);
-    tmp_rot_matrix[2] = axis_2 * sin(angle);
-    tmp_rot_matrix[3] = axis_3 * sin(angle);
-    tmp_rot_matrix[4] = 1;
-    tmp_rot_matrix[5] = -axis_1 * sin(angle);
-    tmp_rot_matrix[6] = -axis_2 * sin(angle);
-    tmp_rot_matrix[7] = axis_1 * sin(angle);
-    tmp_rot_matrix[8] = 1;
+    array<float, 9> difference {
+        1,
+        -axis[2] * sin(angle),
+        axis[1] * sin(angle),
+        axis[2] * sin(angle),
+        1,
+        -axis[0] * sin(angle),
+        -axis[1] * sin(angle),
+        axis[0] * sin(angle),
+        1
+    };
 
-    mat_mult_mat_transp(mat, tmp_rot_matrix, matrix);
+    matrix = Matrix3::transpose_right_multiply(matrix, difference);
 }
 
-void RotationMatrix::update(struct motion_data position) {
+void RotationMatrix::apply_movements(array<float, 3> gyro, float elapsed_sec) {
+
+    /*
+     * Convert gyro to angles (in rad).
+     * Note that gyro is of type DataVector3 (not Vector3) and hence a copy.
+     * 0.01745329 = pi/180
+     */
+    gyro = Vector3::multiply(gyro, 0.01745329 * elapsed_sec);
+
+    // infinitesimal rotation matrix:
+    array<float, 9> difference {
+        1,
+        -sin(gyro[2]),
+        sin(gyro[1]),
+        sin(gyro[2]),
+        1,
+        -sin(gyro[0]),
+        -sin(gyro[1]),
+        sin(gyro[0]),
+        1
+    };
+
+    matrix = Matrix3::multiply(matrix, difference);
+}
+
+void RotationMatrix::update(Motion& motion) {
 
     if (!timer.has_laptime()) { // ToDo improve this. It's about skipping the first time
         timer.take();
@@ -63,48 +77,15 @@ void RotationMatrix::update(struct motion_data position) {
     }
     timer.take();
 
-    // matrix based:
-    // rotation-matrix:
-    // angles in radians
-    // 0.01745329 = pi/180
-    float alpha = 0.01745329 * position.gyro[0] * timer.get_laptime() * 0.001;
-    float beta = 0.01745329 * position.gyro[1] * timer.get_laptime() * 0.001;
-    float gamma = 0.01745329 * position.gyro[2] * timer.get_laptime() * 0.001;
-
+    apply_movements(motion.gyro, timer.get_laptime() * 0.001);
     timer.reset();
 
-    // infinitesimal rotation matrix:
-    float diff[9];
-    diff[0] = 1; //maybe can replace by 1 here
-    diff[1] = -sin(gamma);
-    diff[2] = sin(beta);
+    rotate_towards_g(motion.accel);
 
-    diff[3] = sin(gamma);
-    diff[4] = 1;
-    diff[5] = -sin(alpha);
-
-    diff[6] = -sin(beta);
-    diff[7] = sin(alpha);
-    diff[8] = 1;
-
-    float temp_rotation_matrix[9];
-    mat_mult(matrix, diff, temp_rotation_matrix);
-
-    rotate_towards_g(temp_rotation_matrix, position.accel[0], position.accel[1], position.accel[2]);
-
-    normalize_matrix(matrix);
-
-    /*
-    ESP_LOGI(TAG, "Values: %f,%f,%f,%f,%f,%f,%f,%f,%f", matrix[0], matrix[1],
-             matrix[2], matrix[3], matrix[4], matrix[5], matrix[6],
-             matrix[7], matrix[8] );
-    */
+    Matrix3::normalize(matrix);
 }
 
 
-RotationMatrix::RotationMatrix(float matrix[], float gravity[]) : matrix{matrix} {
-    normalize(gravity, 3);
-    x_gravity_factor = gravity[0];
-    y_gravity_factor = gravity[1];
-    z_gravity_factor = gravity[2];
+RotationMatrix::RotationMatrix(array<float, 9>& matrix, array<float, 3> init_gravity) : matrix{matrix}, init_gravity{init_gravity} {
+    Vector3::normalize(this->init_gravity);
 }

@@ -5,10 +5,12 @@
 #ifndef KITE_FLYDATA_H
 #define KITE_FLYDATA_H
 
+#include <array>
+using namespace std;
 
 struct Flydata {
 
-    float rotation_matrix[9];
+    array<float, 9> rotation_matrix;
     float height;
 
 };

@@ -4,20 +4,24 @@
 #include "freertos/FreeRTOS.h"
 #include "../i2c/mpu6050.h"
 #include "../helpers/timer.h"
+#include "../structures/Matrix3.h"
+#include "../structures/Vector3.h"
+
 
 class RotationMatrix {
 
-    float x_gravity_factor, y_gravity_factor, z_gravity_factor;
     MsTimer timer {};
     // rotation of the drone in world coordinates
-    float* matrix;
+    array<float, 9>& matrix;
+    array<float, 3> init_gravity;
 
-    void rotate_towards_g(float mat[], float a, float b, float c);
+    void apply_movements(array<float, 3> gyro, float elapsed_sec);
+    void rotate_towards_g(array<float, 3> accel);
 
 public:
 
-    explicit RotationMatrix(float* matrix, float gravity[]);
-    void update(struct motion_data position);
+    RotationMatrix(array<float, 9>& matrix, array<float, 3> init_gravity);
+    void update(Motion& motion);
 };
 
 #endif

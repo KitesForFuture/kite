@@ -1,6 +1,10 @@
 idf_component_register(SRCS "main.cpp"
                     INCLUDE_DIRS ".")
 
+add_subdirectory(structures)
+target_link_libraries(${COMPONENT_LIB} PUBLIC vector3)
+target_link_libraries(${COMPONENT_LIB} PUBLIC matrix3)
+
 add_subdirectory(data)
 target_link_libraries(${COMPONENT_LIB} PUBLIC flydata)
 

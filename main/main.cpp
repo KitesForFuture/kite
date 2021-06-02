@@ -11,6 +11,8 @@
 #include "control/rotation_matrix.h"
 #include "helpers/wifi.h"
 #include "data/flydata.h"
+#include "structures/Vector3.h"
+#include "structures/Matrix3.h"
 
 /* #include "pwm/motors.h"
 #include "pwm/pwm_input.h" */
@@ -21,11 +23,11 @@ struct i2c_config cat24c256 = {{18, 19}, 0x50, 1};
 struct i2c_config bmp280 = {{18, 19}, 0x76, 0};
 struct i2c_config mpu6050 = {{14, 25}, 104, 0};
 
-float x_mapper(float v1, float v2, float v3) { return -1 * v2; }
+float x_mapper(array<float, 3>& v) { return -1 * v[1]; }
 
-float y_mapper(float v1, float v2, float v3) { return v1; }
+float y_mapper(array<float, 3>& v) { return v[0]; }
 
-float z_mapper(float v1, float v2, float v3) { return v3; }
+float z_mapper(array<float, 3>& v) { return v[2]; }
 
 extern "C" _Noreturn void app_main(void) {
 
@@ -45,11 +47,17 @@ extern "C" _Noreturn void app_main(void) {
 
     Cat24c256 storage {cat24c256};
 
-    struct motion_data mpu_calibration = {
-            {storage.read_float(0 * sizeof(float)), storage.read_float(1 * sizeof(float)), storage.read_float(
-                    2 * sizeof(float))}, //ToDoLeo make pretty
-            {storage.read_float(3 * sizeof(float)), storage.read_float(4 * sizeof(float)), storage.read_float(
-                    5 * sizeof(float))}
+    Motion mpu_calibration = {
+            {
+                storage.read_float(0 * sizeof(float)),
+                storage.read_float(1 * sizeof(float)),
+                storage.read_float(2 * sizeof(float))
+            },
+            {
+                storage.read_float(3 * sizeof(float)),
+                storage.read_float(4 * sizeof(float)),
+                storage.read_float(5 * sizeof(float))
+            }
     };
     printf("storage-readings: %f, %f, %f, %f, %f, %f\n", storage.read_float(0 * sizeof(float)),
            storage.read_float(1 * sizeof(float)), storage.read_float(2 * sizeof(float)),
@@ -65,8 +73,10 @@ extern "C" _Noreturn void app_main(void) {
     };
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
-    float gravity[3] = {1, 0, 0};
-    RotationMatrix rotation_matrix {flydata.rotation_matrix, gravity};
+    RotationMatrix rotation_matrix {
+        flydata.rotation_matrix,
+        array<float, 3> {1, 0, 0} // Gravity
+    };
 
     // COORDINATE SYSTEM OF MPU (in vector subtraction notation):
     // X-Axis: GYRO chip - FUTURE silk writing
@@ -110,8 +120,7 @@ extern "C" _Noreturn void app_main(void) {
 
         height_sensor.update_if_possible();
 
-        struct motion_data motion;
-        orientation_sensor.get_motion(&motion);
+        Motion motion {orientation_sensor.get_motion()};
         //printf("gyro x%f y%f z%f // accel x%f y%f z%f\n", motion.gyro[0], motion.gyro[1], motion.gyro[2], motion.accel[0], motion.accel[1], motion.accel[2]);
         rotation_matrix.update(motion);
 
