@@ -4,7 +4,7 @@
 
 #include "freertos/FreeRTOS.h"
 
-void delay_ms(int64_t milliseconds);
+void delay_ms(uint32_t milliseconds);
 
 class MsTimer {
 

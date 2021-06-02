@@ -1,27 +1,30 @@
 #ifndef I2C_DEVICES_BMP280
 #define I2C_DEVICES_BMP280
 
-#include "i2c_device.h"
 #include "../helpers/timer.h"
+#include "i2c_device.h"
+#include "bmp280_driver.h"
 
 class Bmp280: protected I2cDevice {
 
-    float minus_dp_by_dt;
-    float initial_smoothed_temperature {0};
-    float initial_smoothed_pressure {0};
-    float current_smoothed_temperature {0};
-    float current_smoothed_pressure {0};
-    MsTimer timer;
+    static Bmp280 * singleton;
+    static int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
+    static int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
 
-    void start_measurement();
-    uint32_t get_temperature();
+    bmp280_dev bmp {
+        .dev_id=BMP280_I2C_ADDR_PRIM,
+        .intf =BMP280_I2C_INTF,
+        .read=Bmp280::i2c_reg_read,
+        .write=Bmp280::i2c_reg_write,
+        .delay_ms=delay_ms,
+    };
+    float initial_pressure;
+
     float get_pressure();
 
 public:
 
-    Bmp280(struct i2c_config i2c_config, float minus_dp_by_dt);
-    int update_if_possible();
-    float get_pressure_diff();
+    explicit Bmp280(i2c_config i2c_config);
     float get_height();
 
 };

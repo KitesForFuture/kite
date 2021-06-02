@@ -64,7 +64,7 @@ extern "C" _Noreturn void app_main(void) {
            storage.read_float(3 * sizeof(float)), storage.read_float(4 * sizeof(float)),
            storage.read_float(5 * sizeof(float)));
 
-    Bmp280 height_sensor {bmp280, storage.read_float(6 * sizeof(float))};
+    Bmp280 height_sensor {bmp280};
 
 
     Flydata flydata {
@@ -105,11 +105,6 @@ extern "C" _Noreturn void app_main(void) {
      */
     Motor myServo {27, 400, 2400};
 
-    int test;
-    printf("BMP280 Pressure Diff: ");
-    test = height_sensor.update_if_possible();
-    printf("%i\n", test);
-
 
     float degree = -90;
     float increment = 1;
@@ -117,8 +112,6 @@ extern "C" _Noreturn void app_main(void) {
 
     while (1) {
         vTaskDelay(10);
-
-        height_sensor.update_if_possible();
 
         Motion motion {orientation_sensor.get_motion()};
         //printf("gyro x%f y%f z%f // accel x%f y%f z%f\n", motion.gyro[0], motion.gyro[1], motion.gyro[2], motion.accel[0], motion.accel[1], motion.accel[2]);

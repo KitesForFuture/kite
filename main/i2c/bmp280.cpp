@@ -1,72 +1,79 @@
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "stdio.h"
 #include "bmp280.h"
+#include "stdexcept"
 
-#define  UPDATE_INTERVAL_MS 50
-#define  SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT 0.2
-#define  SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT 0.2
-#define  INITIAL_MEASUREMENT_CYCLE_COUNT 5
-#define  WARM_UP_PERIOD_MS 500
+Bmp280 * Bmp280::singleton {nullptr};
 
-void Bmp280::start_measurement() {
-    // chip_addr, register, precision(0x25 least precise, takes 9 ms, 0x5D most precise, takes 45ms)
-    send_byte(1, 0xF4, 0x5D);
-}
-
-uint32_t Bmp280::get_temperature() {
-    uint8_t result[3];
-    read_bytes(1, 0xFA, 3, result);
-    return (uint32_t) ((result[0] << 16) | (result[1] << 8) | result[2]);
-}
-
-float Bmp280::get_pressure() {
-    uint8_t result[3];
-    read_bytes(1, 0xF7, 3, result);
-    uint32_t bmp280_raw_pressure_reading = (uint32_t) ((result[0] << 16) | (result[1] << 8) | result[2]);
-    return 1365.3 - 0.00007555555555 * (float) (bmp280_raw_pressure_reading);
-}
-
-Bmp280::Bmp280(struct i2c_config i2c_config, float minus_dp_by_dt) : I2cDevice(i2c_config), minus_dp_by_dt {minus_dp_by_dt} {
-    delay_ms(WARM_UP_PERIOD_MS);
-    // Setup current values to be not 0 (that would worsen the following smoothening process)
-    start_measurement();
-    delay_ms(UPDATE_INTERVAL_MS);
-    current_smoothed_temperature = (float) get_temperature();
-    current_smoothed_pressure = get_pressure();
-
-    // Setup smoothed values
-    start_measurement();
-    for (int i = 0; i < INITIAL_MEASUREMENT_CYCLE_COUNT; i++) {
-        delay_ms(UPDATE_INTERVAL_MS);
-        update_if_possible();
-    }
-    initial_smoothed_temperature = current_smoothed_temperature;
-    initial_smoothed_pressure = current_smoothed_pressure;
-}
-
-int Bmp280::update_if_possible() {
-    if (timer.take() >= UPDATE_INTERVAL_MS) {
-        // current_smoothed_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothed_temperature;
-        current_smoothed_temperature = SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT * (float) get_temperature() +
-                                       (1 - SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) * current_smoothed_temperature;
-        current_smoothed_pressure = SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT * get_pressure() +
-                                    (1 - SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) * current_smoothed_pressure;
-
-        timer.reset();
-        start_measurement();
-        return 1;
-    }
+int8_t Bmp280::i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length) {
+    (*singleton).read_bytes(1, reg_addr, length, reg_data);
     return 0;
 }
 
-// DIFFERENCE IN ATMOSPHERIC PRESSURE SINCE BOOT
-float Bmp280::get_pressure_diff() {
-    float delta_temperature = current_smoothed_temperature - initial_smoothed_temperature;
-    float delta_pressure = current_smoothed_pressure - initial_smoothed_pressure;
-    return delta_pressure + delta_temperature * minus_dp_by_dt;
+int8_t Bmp280::i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length) {
+    (*singleton).send_bytes(1, reg_addr, length, reg_data);
+    return 0;
 }
 
-// HEIGHT DIFFERENCE SINCE BOOT AS MEASURED USING ATMOSPHERIC PRESSURE
+Bmp280::Bmp280(i2c_config i2c_config) : I2cDevice(i2c_config) {
+
+    if (singleton != nullptr) {
+        printf( "Current BMP280 wrapper only allows for one sensor at a time." );
+        /* Reason:
+         * bmp280_dev struct requires pointers to an i2c read and write implementation.
+         * In the current approach to handle i2c communication, this is an object instance function.
+         * Hence we can't pass a pointer. That's why we have proxy functions (see above).
+         * As we don't expect to ever have multiple BMP280 we avoid a registry and lookups.
+         */
+    }
+    singleton = this;
+
+    bmp280_init(&bmp);
+
+    /*bmp280_config conf {
+        .os_temp =BMP280_OS_2X, // Temperature Oversampling
+        .os_pres =BMP280_OS_16X, // Pressure Oversampling
+        .odr =BMP280_ODR_0_5_MS, // Standby Period
+        .filter=BMP280_FILTER_COEFF_16, // IIR Coefficient
+    };
+    rslt = bmp280_set_config(&conf, &bmp);
+    print_rslt(" bmp280_set_config status", rslt);
+
+    rslt = bmp280_set_power_mode(BMP280_NORMAL_MODE, &bmp);
+    print_rslt(" bmp280_set_power_mode status", rslt); */
+
+    // 001 100 00
+    uint8_t reg [] {48};
+    send_bytes(1, 0xf5, 1, reg);
+    reg[0] = 0;
+    read_bytes(1, 0xf5, 1, reg);
+    printf("Register 0xf5: %i\n", reg[0]);
+
+    reg[0] = 87;
+    send_bytes(1, 0xf4, 1, reg);
+    reg[0] = 0;
+    read_bytes(1, 0xf4, 1, reg);
+    printf("Register 0xf4: %i\n", reg[0]);
+
+    vTaskDelay(100); //ToDo
+    initial_pressure = get_pressure();
+    printf("Initial %f\n", initial_pressure);
+}
+
+float Bmp280::get_pressure() {
+
+    int8_t rslt;
+
+    // Raw data
+    bmp280_uncomp_data ucomp_data;
+    bmp280_get_uncomp_data(&ucomp_data, &bmp);
+
+    // Compensated Data
+    double result;
+    bmp280_get_comp_pres_double(&result, ucomp_data.uncomp_press, &bmp);
+
+    return result;
+}
+
 float Bmp280::get_height() {
-    return -10 * get_pressure_diff();
+    return (get_pressure() - initial_pressure) * -0.08;
 }
