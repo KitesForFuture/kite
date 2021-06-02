@@ -1,6 +1,14 @@
 #include "freertos/FreeRTOS.h"
-#include "../helpers/kitemath.h"
 #include "mpu6050.h"
+#include "cmath"
+
+int smallpow(int x, int p){
+    int ret = 1;
+    for(int i = 0; i < p; i++){
+        ret *= x;
+    }
+    return ret;
+}
 
 //sens = 0 <-> +- 250 deg/sec
 //sens = 1 <-> +- 500 deg/sec

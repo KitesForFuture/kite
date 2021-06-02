@@ -1,6 +1,6 @@
 #include <esp_log.h>
 #include "rotation_matrix.h"
-#include "../helpers/kitemath.h"
+#include "cmath"
 #include <cstring>
 
 static const char* TAG = "RotationMatrix";
