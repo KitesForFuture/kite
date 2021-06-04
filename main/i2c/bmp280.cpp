@@ -43,7 +43,7 @@ Bmp280::Bmp280(i2c_config i2c_config) : I2cDevice(i2c_config) {
         init_pressures[i] = get_pressure();
     }
     sort(begin(init_pressures), end(init_pressures));
-    initial_pressure = init_pressures[4];
+    initial_pressure = init_pressures[4]; // median fom 9 measurements
 }
 
 float Bmp280::get_pressure() {
