@@ -1,6 +1,10 @@
 #include "stdio.h"
 #include "bmp280.h"
 #include "stdexcept"
+#include <array>
+#include <algorithm>
+
+using namespace std;
 
 Bmp280 * Bmp280::singleton {nullptr};
 
@@ -32,9 +36,14 @@ Bmp280::Bmp280(i2c_config i2c_config) : I2cDevice(i2c_config) {
     send_byte(1, 0xf4, 0b01010111); // xxx (Temp Oversampling) xxx (Pressure Oversampling) xx (Power Mode)
     send_byte(1, 0xf5, 0b00010000); // xxx (Standby Duration) xxx (IIR config) x (reserved bit) x (some SPI config)
 
-    delay_ms(1000);
-    initial_pressure = get_pressure();
-    printf("Initial %f\n", initial_pressure);
+    delay_ms(100);
+
+    array<float, 9> init_pressures {};
+    for (int i=0; i<9; i++) {
+        init_pressures[i] = get_pressure();
+    }
+    sort(begin(init_pressures), end(init_pressures));
+    initial_pressure = init_pressures[4];
 }
 
 float Bmp280::get_pressure() {
