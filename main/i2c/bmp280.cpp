@@ -29,39 +29,15 @@ Bmp280::Bmp280(i2c_config i2c_config) : I2cDevice(i2c_config) {
 
     bmp280_init(&bmp);
 
-    /*bmp280_config conf {
-        .os_temp =BMP280_OS_2X, // Temperature Oversampling
-        .os_pres =BMP280_OS_16X, // Pressure Oversampling
-        .odr =BMP280_ODR_0_5_MS, // Standby Period
-        .filter=BMP280_FILTER_COEFF_16, // IIR Coefficient
-    };
-    rslt = bmp280_set_config(&conf, &bmp);
-    print_rslt(" bmp280_set_config status", rslt);
+    send_byte(1, 0xf4, 0b01010111); // xxx (Temp Oversampling) xxx (Pressure Oversampling) xx (Power Mode)
+    send_byte(1, 0xf5, 0b00010000); // xxx (Standby Duration) xxx (IIR config) x (reserved bit) x (some SPI config)
 
-    rslt = bmp280_set_power_mode(BMP280_NORMAL_MODE, &bmp);
-    print_rslt(" bmp280_set_power_mode status", rslt); */
-
-    // 001 100 00
-    uint8_t reg [] {48};
-    send_bytes(1, 0xf5, 1, reg);
-    reg[0] = 0;
-    read_bytes(1, 0xf5, 1, reg);
-    printf("Register 0xf5: %i\n", reg[0]);
-
-    reg[0] = 87;
-    send_bytes(1, 0xf4, 1, reg);
-    reg[0] = 0;
-    read_bytes(1, 0xf4, 1, reg);
-    printf("Register 0xf4: %i\n", reg[0]);
-
-    vTaskDelay(100); //ToDo
+    delay_ms(1000);
     initial_pressure = get_pressure();
     printf("Initial %f\n", initial_pressure);
 }
 
 float Bmp280::get_pressure() {
-
-    int8_t rslt;
 
     // Raw data
     bmp280_uncomp_data ucomp_data;
