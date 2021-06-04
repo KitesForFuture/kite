@@ -1,5 +1,6 @@
 #include <dirent.h>
 #include <pwm/motor.h>
+#include <esp_vfs_dev.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -64,12 +65,12 @@ extern "C" _Noreturn void app_main(void) {
            storage.read_float(3 * sizeof(float)), storage.read_float(4 * sizeof(float)),
            storage.read_float(5 * sizeof(float)));
 
-    Bmp280 height_sensor {bmp280, storage.read_float(6 * sizeof(float))};
+    Bmp280 height_sensor {bmp280};
 
 
     Flydata flydata {
-        .rotation_matrix {1, 0, 0, 0, 1, 0, 0, 0, 1},
-        .height = 0.0
+        .rotation_matrix {1,0,0,0,1,0,0,0,1},
+        .height = 0
     };
 
     // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
@@ -105,20 +106,15 @@ extern "C" _Noreturn void app_main(void) {
      */
     Motor myServo {27, 400, 2400};
 
-    int test;
-    printf("BMP280 Pressure Diff: ");
-    test = height_sensor.update_if_possible();
-    printf("%i\n", test);
-
 
     float degree = -90;
     float increment = 1;
 
+    esp_vfs_dev_uart_port_set_rx_line_endings(CONFIG_ESP_CONSOLE_UART_NUM, ESP_LINE_ENDINGS_LF);
+    esp_vfs_dev_uart_port_set_tx_line_endings(CONFIG_ESP_CONSOLE_UART_NUM, ESP_LINE_ENDINGS_LF);
 
     while (1) {
         vTaskDelay(10);
-
-        height_sensor.update_if_possible();
 
         Motion motion {orientation_sensor.get_motion()};
         //printf("gyro x%f y%f z%f // accel x%f y%f z%f\n", motion.gyro[0], motion.gyro[1], motion.gyro[2], motion.accel[0], motion.accel[1], motion.accel[2]);
@@ -133,9 +129,11 @@ extern "C" _Noreturn void app_main(void) {
 
         flydata.height = height_sensor.get_height();
 
+        //flydata.rotation_matrix = {1};
+
         fwrite(FLYDATA, 1, 7, stdout);
-        fwrite((char*)&flydata, sizeof(Flydata), 1, stdout);
-        fwrite("\n", 1, 1, stdout);
+        fwrite(&flydata, sizeof(Flydata), 1, stdout);
+        fflush(stdout);
 
         /* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
 

@@ -2,21 +2,27 @@ include_directories(../helpers)
 include_directories(../structures)
 
 add_library(interchip
-        i2c_device.cpp
+    i2c_device.cpp
+)
+
+add_library(bmp280_driver
+    bmp280_driver.cpp
 )
 
 add_library(bmp280
-        bmp280.cpp
+    bmp280.cpp
 )
-target_link_libraries(bmp280 
-  PUBLIC timer
-  PUBLIC interchip
+target_link_libraries(bmp280
+    PUBLIC bmp280_driver
+    PUBLIC interchip
+    PUBLIC timer
 )
 
+
 add_library(cat24c256
-        cat24c256.cpp
+    cat24c256.cpp
 )
-target_link_libraries(cat24c256 
+target_link_libraries(cat24c256
   PUBLIC interchip
 )
 
