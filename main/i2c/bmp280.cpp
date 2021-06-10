@@ -36,7 +36,7 @@ Bmp280::Bmp280(i2c_config i2c_config) : I2cDevice(i2c_config) {
     send_byte(1, 0xf4, 0b01010111); // xxx (Temp Oversampling) xxx (Pressure Oversampling) xx (Power Mode)
     send_byte(1, 0xf5, 0b00010000); // xxx (Standby Duration) xxx (IIR config) x (reserved bit) x (some SPI config)
 
-    array<float, 9> init_pressures {};
+    array<float, 5> init_pressures {};
     for (int i=0; i<5; i++) {
         delay_ms(100);
         init_pressures[i] = get_pressure();

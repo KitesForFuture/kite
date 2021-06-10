@@ -30,21 +30,14 @@ float y_mapper(array<float, 3>& v) { return v[0]; }
 
 float z_mapper(array<float, 3>& v) { return v[2]; }
 
+
+
 extern "C" _Noreturn void app_main(void) {
 
-    /*nvs_flash_init(); // Required for WiFi at least.
+    nvs_flash_init(); // Required for WiFi at least.
 
-    wifi_sta_config_t wifi_config {
-            "KiteReceiver",
-            "KiteReceiver",
-            .threshold = { .authmode = WIFI_AUTH_WPA2_PSK },
-            .pmf_cfg = {
-                    .capable = true,
-                    .required = false
-            },
-    };
-    init_wifi(wifi_config);
-    */
+    Wifi::init(array<uint8_t, 6>{48, 174, 164, 157, 56, 141});
+
 
     Cat24c256 storage {cat24c256};
 
@@ -134,6 +127,7 @@ extern "C" _Noreturn void app_main(void) {
         fwrite(FLYDATA, 1, 7, stdout);
         fwrite(&flydata, sizeof(Flydata), 1, stdout);
         fflush(stdout);
+        Wifi::send((uint8_t*)&flydata, sizeof(Flydata));
 
         /* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
 
