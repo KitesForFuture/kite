@@ -30,52 +30,14 @@ float y_mapper(array<float, 3>& v) { return v[0]; }
 
 float z_mapper(array<float, 3>& v) { return v[2]; }
 
-void on_data_sent (const uint8_t *mac_addr, esp_now_send_status_t status) {
-    printf("MAC: %i", *mac_addr);
-    if (status == 0) {
-        printf("ESPNOW: SEND_OK");
-    }
-    else {
-        printf("ESPNOW: SEND_FAILED");
-    }
-}
+
 
 extern "C" _Noreturn void app_main(void) {
 
     nvs_flash_init(); // Required for WiFi at least.
 
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
-    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
-    ESP_ERROR_CHECK( esp_wifi_start());
-    ESP_ERROR_CHECK( esp_wifi_set_protocol(static_cast<wifi_interface_t>(ESP_IF_WIFI_STA), WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_LR) );
-    ESP_ERROR_CHECK( esp_now_init() );
+    Wifi::init(array<uint8_t, 6>{48, 174, 164, 157, 56, 141});
 
-    esp_now_peer_info peer {
-            .peer_addr {48, 174, 164, 157, 56, 141},
-            .channel = 0,
-            .ifidx = static_cast<wifi_interface_t>(ESP_IF_WIFI_STA),
-            .encrypt = false,
-    };
-    ESP_ERROR_CHECK(esp_now_add_peer(&peer));
-
-    esp_now_register_send_cb(on_data_sent);
-
-    /*
-    wifi_sta_config_t wifi_config {
-            "KiteReceiver",
-            "KiteReceiver",
-            .threshold = { .authmode = WIFI_AUTH_WPA2_PSK },
-            .pmf_cfg = {
-                    .capable = true,
-                    .required = false
-            },
-    };
-    init_wifi(wifi_config);
-    */
 
     Cat24c256 storage {cat24c256};
 
@@ -165,7 +127,7 @@ extern "C" _Noreturn void app_main(void) {
         fwrite(FLYDATA, 1, 7, stdout);
         fwrite(&flydata, sizeof(Flydata), 1, stdout);
         fflush(stdout);
-        flydata.send();
+        Wifi::send((uint8_t*)&flydata, sizeof(Flydata));
 
         /* printf("pwm-input: %f, %f, %f, %f\n", getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), getPWMInputMinus1to1normalized(3)); */
 

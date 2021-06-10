@@ -1,11 +1,19 @@
 #ifndef KITE_WIFI_H
 #define KITE_WIFI_H
 
-#include "esp_event.h"
-#include "esp_netif.h"
-#include "esp_wifi.h"
-#include "esp_log.h"
-#include "esp_system.h"
-#include "esp_now.h"
+#include <array>
+
+using namespace std;
+
+class Wifi {
+
+    static array<uint8_t , 6> destination;
+
+public:
+
+    static void init(array<uint8_t, 6> destination_mac);
+    static void send(uint8_t *data, size_t len);
+
+};
 
 #endif //KITE_WIFI_H
