@@ -12,6 +12,7 @@ struct Flydata {
 
     array<float, 9> rotation_matrix;
     float height;
+    void send();
 
 };
 
