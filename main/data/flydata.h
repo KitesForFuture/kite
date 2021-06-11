@@ -13,6 +13,9 @@ struct Flydata {
     array<float, 9> rotation_matrix;
     float height;
 
+    // ToDo
+    // Cycletime, Accel, Gyro, Calculated Mtion, Calvulasted G-Correction
+
 };
 
 

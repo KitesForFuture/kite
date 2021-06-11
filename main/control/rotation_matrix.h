@@ -3,14 +3,12 @@
 
 #include "freertos/FreeRTOS.h"
 #include "../i2c/mpu6050.h"
-#include "../helpers/timer.h"
 #include "../structures/Matrix3.h"
 #include "../structures/Vector3.h"
 
 
 class RotationMatrix {
 
-    MsTimer timer {};
     // rotation of the drone in world coordinates
     array<float, 9>& matrix;
     array<float, 3> init_gravity;
@@ -21,7 +19,7 @@ class RotationMatrix {
 public:
 
     RotationMatrix(array<float, 9>& matrix, array<float, 3> init_gravity);
-    void update(Motion& motion);
+    void update(Motion& motion, float elapsed_sec);
 };
 
 #endif
