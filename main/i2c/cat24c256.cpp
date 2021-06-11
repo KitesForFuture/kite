@@ -6,7 +6,7 @@ union Conversion {
     uint8_t c[sizeof(float)];
 };
 
-Cat24c256::Cat24c256(struct i2c_config i2c_config) : I2cDevice(i2c_config) {}
+Cat24c256::Cat24c256(I2cConfig i2c_config) : I2cDevice(i2c_config) {}
 
 void Cat24c256::write_float(float number, int address) {
     Conversion conversion {};

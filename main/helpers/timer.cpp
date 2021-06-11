@@ -5,23 +5,16 @@ void delay_ms(uint32_t milliseconds) {
     vTaskDelay(milliseconds / portTICK_PERIOD_MS);
 }
 
-MsTimer::MsTimer() {
-    reset();
+CycleTimer::CycleTimer() {
+    start = esp_timer_get_time();
 }
 
-float MsTimer::take() {
-    laptime_ms = 0.001 * (float)esp_timer_get_time() - start_ms;
-    return laptime_ms;
+void CycleTimer::end_cycle() {
+    int64_t now = esp_timer_get_time();
+    cycle_sec = 0.000001 * (now - start);
+    start = now;
 }
 
-bool MsTimer::has_laptime() {
-    return laptime_ms > 0;
-}
-
-float MsTimer::get_laptime() {
-    return laptime_ms;
-}
-
-void MsTimer::reset() {
-    start_ms = 0.001 * (float) esp_timer_get_time();
+float CycleTimer::get_seconds() {
+    return cycle_sec;
 }

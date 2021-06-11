@@ -2,7 +2,7 @@
 #define I2C_DEVICES_BMP280
 
 #include "../helpers/timer.h"
-#include "i2c_device.h"
+#include "i2cdevice.h"
 #include "bmp280_driver.h"
 
 class Bmp280: protected I2cDevice {
@@ -24,7 +24,7 @@ class Bmp280: protected I2cDevice {
 
 public:
 
-    explicit Bmp280(i2c_config i2c_config);
+    explicit Bmp280(I2cConfig i2c_config);
     float get_height();
 
 };

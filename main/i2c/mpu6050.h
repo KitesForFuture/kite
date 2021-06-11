@@ -3,7 +3,7 @@
 
 #include <array>
 #include "freertos/FreeRTOS.h"
-#include "i2c_device.h"
+#include "i2cdevice.h"
 #include "../structures/Vector3.h"
 using namespace std;
 
@@ -14,12 +14,10 @@ struct Motion {
 
 class Mpu6050: protected I2cDevice {
 
-    // HOW TO CALIBRATE:
-    // output acc_calibrationx,y,z preferably via wifi, set accel_offset_* in constants.c to the midpoints between highest and lowest reading.
     Motion calibration;
     float (*x_mapper)(array<float, 3>&), (*y_mapper)(array<float, 3>&), (*z_mapper)(array<float, 3>&);
-    float gyro_precision_factor;    //factor needed to get to deg/sec
-    float accel_precision_factor;    //factor needed to get to m/s
+    float gyro_precision_factor;     // factor needed to get to deg/sec
+    float accel_precision_factor;    // factor needed to get to m/s
 
     float configure_gyro_sensitivity(uint8_t sens);
     float configure_accel_sensitivity(uint8_t sens);
@@ -27,7 +25,7 @@ class Mpu6050: protected I2cDevice {
 
 public:
 
-    Mpu6050(struct i2c_config i2c_config,
+    Mpu6050(I2cConfig i2c_config,
             Motion calibration,
             float (*x_mapper)(array<float, 3>&),
             float (*y_mapper)(array<float, 3>&),

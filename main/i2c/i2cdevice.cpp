@@ -1,4 +1,4 @@
-#include "i2c_device.h"
+#include "i2cdevice.h"
 #include "esp_err.h"
 
 #define I2X_FREQUENCY 100000
@@ -7,11 +7,11 @@
 #define ACK_CHECK_EN 0x1            /*!< I2C master will check ack from slave*/
 
 
-i2c_bus I2cDevice::port0 = {-1, -1};
-i2c_bus I2cDevice::port1 = {-1, -1};
+I2cBus I2cDevice::port0 = {-1, -1};
+I2cBus I2cDevice::port1 = {-1, -1};
 
 
-int I2cDevice::get_port_num(struct i2c_bus bus) {
+int I2cDevice::get_port_num(struct I2cBus bus) {
     if (bus.sda == port0.sda && bus.scl == port0.scl) {
         return 0;
     } else if (bus.sda == port1.sda && bus.scl == port1.scl) {
@@ -20,7 +20,7 @@ int I2cDevice::get_port_num(struct i2c_bus bus) {
     return -1;
 }
 
-I2cDevice::I2cDevice (struct i2c_config config) : device{config} {
+I2cDevice::I2cDevice (I2cConfig config) : device{config} {
 
     bool isPortInitialised = true;
     int current_port = get_port_num(config.bus);

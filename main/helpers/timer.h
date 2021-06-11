@@ -6,18 +6,16 @@
 
 void delay_ms(uint32_t milliseconds);
 
-class MsTimer {
+class CycleTimer {
 
-    int64_t start_ms;
-    int64_t laptime_ms {-1};
+    int64_t start;
+    float cycle_sec {-1};
 
 public:
 
-    MsTimer();
-    float take();
-    bool has_laptime();
-    float get_laptime();
-    void reset();
+    CycleTimer();
+    void end_cycle();
+    float get_seconds();
 };
 
 #endif

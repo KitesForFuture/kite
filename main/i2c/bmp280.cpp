@@ -18,7 +18,7 @@ int8_t Bmp280::i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_da
     return 0;
 }
 
-Bmp280::Bmp280(i2c_config i2c_config) : I2cDevice(i2c_config) {
+Bmp280::Bmp280(I2cConfig i2c_config) : I2cDevice(i2c_config) {
 
     if (singleton != nullptr) {
         printf( "Current BMP280 wrapper only allows for one sensor at a time." );
@@ -33,8 +33,10 @@ Bmp280::Bmp280(i2c_config i2c_config) : I2cDevice(i2c_config) {
 
     bmp280_init(&bmp);
 
-    send_byte(1, 0xf4, 0b01010111); // xxx (Temp Oversampling) xxx (Pressure Oversampling) xx (Power Mode)
-    send_byte(1, 0xf5, 0b00010000); // xxx (Standby Duration) xxx (IIR config) x (reserved bit) x (some SPI config)
+    // xxx (Temp Oversampling) xxx (Pressure Oversampling) xx (Power Mode)
+    send_byte(1, 0xf4, 0b01010111);
+    // xxx (Standby Duration) xxx (IIR config) x (reserved bit) x (some SPI config)
+    send_byte(1, 0xf5, 0b00010000);
 
     array<float, 5> init_pressures {};
     for (int i=0; i<5; i++) {
@@ -48,7 +50,7 @@ Bmp280::Bmp280(i2c_config i2c_config) : I2cDevice(i2c_config) {
 float Bmp280::get_pressure() {
 
     // Raw data
-    bmp280_uncomp_data ucomp_data;
+    bmp280_uncomp_data ucomp_data {};
     bmp280_get_uncomp_data(&ucomp_data, &bmp);
 
     // Compensated Data
