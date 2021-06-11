@@ -39,7 +39,7 @@ extern "C" _Noreturn void app_main(void) {
     nvs_flash_init(); // Required for WiFi at least.
     Wifi::init(Config::wifi_destination_mac);
     Bmp280 height_sensor {Config::bmp280};
-    Mpu6050 orientation_sensor {Config::mpu6050, Config::mpu_calibration, Config::x_mapper, Config::y_mapper, Config::z_mapper};
+    Mpu6050 motion_sensor {Config::mpu6050, Config::mpu_calibration, Config::x_mapper, Config::y_mapper, Config::z_mapper};
     Motor myServo {27, 400, 2400};
 
     // Init cycle-timer
@@ -51,7 +51,7 @@ extern "C" _Noreturn void app_main(void) {
 
         vTaskDelay(10);
 
-        Motion motion {orientation_sensor.get_motion()};
+        Motion motion {motion_sensor.get_motion()};
         position.update(motion, timer.get_seconds());
 
 
