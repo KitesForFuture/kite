@@ -24,7 +24,7 @@ class I2cDevice {
     static void handle_error(esp_err_t ret);
     static int get_port_num(struct I2cBus bus);
 
-    struct I2cConfig device;
+    I2cConfig device;
 
 public:
 

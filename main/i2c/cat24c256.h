@@ -6,7 +6,7 @@
 class Cat24c256: protected I2cDevice {
 public:
 
-    explicit Cat24c256(struct I2cConfig i2c_config);
+    explicit Cat24c256(I2cConfig i2c_config);
     void write_float(float number, int address);
     float read_float(int address);
 

@@ -20,7 +20,7 @@ int I2cDevice::get_port_num(struct I2cBus bus) {
     return -1;
 }
 
-I2cDevice::I2cDevice (struct I2cConfig config) : device{config} {
+I2cDevice::I2cDevice (I2cConfig config) : device{config} {
 
     bool isPortInitialised = true;
     int current_port = get_port_num(config.bus);

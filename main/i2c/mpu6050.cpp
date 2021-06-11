@@ -53,7 +53,7 @@ Motion Mpu6050::get_motion() {
     };
 }
 
-Mpu6050::Mpu6050(   struct I2cConfig i2c_config,
+Mpu6050::Mpu6050(   I2cConfig i2c_config,
                     Motion calibration,
                     float (*x_mapper)(array<float, 3>&),
                     float (*y_mapper)(array<float, 3>&),
