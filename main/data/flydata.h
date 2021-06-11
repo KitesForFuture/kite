@@ -6,15 +6,22 @@
 #define KITE_FLYDATA_H
 
 #include <array>
+#include "../i2c/mpu6050.h"
+#include "../control/position.h"
+
 using namespace std;
 
 struct Flydata {
 
-    array<float, 9> rotation_matrix;
-    float height;
+    float cycle_sec;
 
-    // ToDo
-    // Cycletime, Accel, Gyro, Calculated Mtion, Calvulasted G-Correction
+    // Sensor values
+    float height;
+    Motion motion;
+
+    // Calculated state
+    PositionUpdate update;
+    array<float, 9> position;
 
 };
 

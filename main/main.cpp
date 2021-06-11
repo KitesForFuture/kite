@@ -26,11 +26,13 @@ extern "C" _Noreturn void app_main(void) {
 
     // Init data-structures
     Flydata flydata {
-            .rotation_matrix {1,0,0,0,1,0,0,0,1},
-            .height = 0
+        .height = 0,
+        .motion {},
+        .update {},
+        .position {1,0,0,0,1,0,0,0,1},
     };
     Position position {
-            flydata.rotation_matrix,
+            flydata.position,
             array<float, 3> {1, 0, 0},
             Config::accel_gravity_weight
     };
@@ -51,13 +53,13 @@ extern "C" _Noreturn void app_main(void) {
 
         vTaskDelay(10);
 
-        Motion motion {motion_sensor.get_motion()};
-        position.update(motion, timer.get_seconds());
+        flydata.cycle_sec = timer.get_seconds();
+        flydata.height = height_sensor.get_height();
+        flydata.motion = motion_sensor.get_motion();
+        flydata.update = position.update(flydata.motion, timer.get_seconds());
 
 
         //updatePWMInput();
-
-        flydata.height = height_sensor.get_height();
 
 
         fwrite(FLYDATA, 1, 7, stdout);
