@@ -15,6 +15,7 @@ public:
     static I2cConfig bmp280;
     static I2cConfig mpu6050;
     static array<uint8_t, 6> wifi_destination_mac;
+    static float accel_gravity_weight;
     static Motion mpu_calibration;
 
     static void init();

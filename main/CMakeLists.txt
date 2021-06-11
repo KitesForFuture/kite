@@ -20,7 +20,7 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC bmp280)
 target_link_libraries(${COMPONENT_LIB} PUBLIC mpu6050)
 
 add_subdirectory(control)
-target_link_libraries(${COMPONENT_LIB} PUBLIC rotation_matrix)
+target_link_libraries(${COMPONENT_LIB} PUBLIC position)
 
 add_subdirectory(pwm)
 target_link_libraries(${COMPONENT_LIB} PUBLIC pwm)

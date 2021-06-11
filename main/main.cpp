@@ -6,7 +6,7 @@
 #include "i2c/bmp280.h"
 #include "i2c/mpu6050.h"
 #include "nvs_flash.h"
-#include "control/rotation_matrix.h"
+#include "control/position.h"
 #include "helpers/wifi.h"
 #include "data/flydata.h"
 #include "structures/Vector3.h"
@@ -29,9 +29,10 @@ extern "C" _Noreturn void app_main(void) {
             .rotation_matrix {1,0,0,0,1,0,0,0,1},
             .height = 0
     };
-    RotationMatrix rotation_matrix {
+    Position position {
             flydata.rotation_matrix,
-            array<float, 3> {1, 0, 0}
+            array<float, 3> {1, 0, 0},
+            Config::accel_gravity_weight
     };
 
     // Init hardware
@@ -51,7 +52,7 @@ extern "C" _Noreturn void app_main(void) {
         vTaskDelay(10);
 
         Motion motion {orientation_sensor.get_motion()};
-        rotation_matrix.update(motion, timer.get_seconds());
+        position.update(motion, timer.get_seconds());
 
 
         //updatePWMInput();
