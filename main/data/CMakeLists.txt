@@ -1,10 +1,10 @@
 include_directories(../i2c)
 include_directories(../position)
 
-add_library(flydata
-        flydata.cpp
+add_library(FlyData
+        FlyData.cpp
 )
-target_link_libraries(flydata
-        PUBLIC mpu6050
-        PUBLIC position
+target_link_libraries(FlyData
+        PUBLIC Mpu6050
+        PUBLIC Position
 )

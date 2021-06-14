@@ -1,9 +1,9 @@
 #ifndef I2C_DEVICES_BMP280
 #define I2C_DEVICES_BMP280
 
-#include "../helpers/timer.h"
-#include "i2cdevice.h"
-#include "bmp280_driver.h"
+#include "../helpers/Timer.h"
+#include "I2cDevice.h"
+#include "Bmp280Driver.h"
 
 class Bmp280: protected I2cDevice {
 

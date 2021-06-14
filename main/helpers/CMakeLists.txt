@@ -1,7 +1,7 @@
-add_library(timer
-        timer.cpp
+add_library(Timer
+        Timer.cpp
 )
 
-add_library(wifi
-        wifi.cpp
-        )
+add_library(Wifi
+        Wifi.cpp
+)

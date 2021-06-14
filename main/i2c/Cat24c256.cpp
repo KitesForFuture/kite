@@ -1,5 +1,5 @@
 #include "freertos/FreeRTOS.h"
-#include "cat24c256.h"
+#include "Cat24c256.h"
 
 union Conversion {
     float f;

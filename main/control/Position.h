@@ -2,7 +2,7 @@
 #define ROTATION_MATRIX_FILE
 
 #include "freertos/FreeRTOS.h"
-#include "../i2c/mpu6050.h"
+#include "../i2c/Mpu6050.h"
 #include "../structures/Matrix3.h"
 #include "../structures/Vector3.h"
 

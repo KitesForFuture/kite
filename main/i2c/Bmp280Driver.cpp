@@ -34,7 +34,7 @@
 * @date	2020-01-10
 * @version	v3.3.4
 *
-*/#include "bmp280_driver.h"
+*/#include "Bmp280Driver.h"
 
 /********************** Static function declarations ************************/
 

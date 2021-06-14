@@ -1,5 +1,5 @@
 #include "freertos/FreeRTOS.h"
-#include "motor.h"
+#include "Motor.h"
 #include "driver/ledc.h"
 
 int Motor::next_free_channel {0};
