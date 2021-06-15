@@ -1,17 +1,17 @@
 #include <dirent.h>
-#include <pwm/motor.h>
+#include <pwm/Motor.h>
 #include <esp_vfs_dev.h>
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "i2c/bmp280.h"
-#include "i2c/mpu6050.h"
+#include "i2c/Bmp280.h"
+#include "i2c/Mpu6050.h"
 #include "nvs_flash.h"
-#include "control/position.h"
-#include "helpers/wifi.h"
-#include "data/flydata.h"
+#include "control/Position.h"
+#include "helpers/Wifi.h"
+#include "data/FlyData.h"
 #include "structures/Vector3.h"
-#include "helpers/timer.h"
-#include "config.h"
+#include "helpers/Timer.h"
+#include "Config.h"
 
 static const char* FLYDATA = "FLYDATA";
 
@@ -25,7 +25,7 @@ extern "C" _Noreturn void app_main(void) {
     Config::init();
 
     // Init data-structures
-    Flydata flydata {
+    FlyData flydata {
         .height = 0,
         .motion {},
         .update {},
@@ -63,9 +63,9 @@ extern "C" _Noreturn void app_main(void) {
 
 
         fwrite(FLYDATA, 1, 7, stdout);
-        fwrite(&flydata, sizeof(Flydata), 1, stdout);
+        fwrite(&flydata, sizeof(FlyData), 1, stdout);
         fflush(stdout);
-        Wifi::send((uint8_t*)&flydata, sizeof(Flydata));
+        Wifi::send((uint8_t*)&flydata, sizeof(FlyData));
 
         /*
         myServo.set(0);

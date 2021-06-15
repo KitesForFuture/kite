@@ -6,12 +6,12 @@
 #define KITE_FLYDATA_H
 
 #include <array>
-#include "../i2c/mpu6050.h"
-#include "../control/position.h"
+#include "../i2c/Mpu6050.h"
+#include "../control/Position.h"
 
 using namespace std;
 
-struct Flydata {
+struct FlyData {
 
     float cycle_sec;
 

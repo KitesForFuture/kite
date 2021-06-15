@@ -1,7 +1,7 @@
 #ifndef I2C_DEVICES_CAT24C256
 #define I2C_DEVICES_CAT24C256
 
-#include "i2cdevice.h"
+#include "I2cDevice.h"
 
 class Cat24c256: protected I2cDevice {
 public:

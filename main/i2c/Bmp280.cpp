@@ -1,5 +1,5 @@
 #include "stdio.h"
-#include "bmp280.h"
+#include "Bmp280.h"
 #include "stdexcept"
 #include <array>
 #include <algorithm>

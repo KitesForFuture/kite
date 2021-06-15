@@ -37,7 +37,7 @@
 */#ifndef __BMP280_H__
 #define __BMP280_H__
 
-#include "bmp280_driver_devs.h"
+#include "Bmp280DriverDevs.h"
 
 /*! CPP guard */
 #ifdef __cplusplus

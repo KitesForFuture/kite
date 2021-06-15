@@ -2,8 +2,8 @@
 // Created by Leonard Koll on 11.06.21.
 //
 
-#include "config.h"
-#include "i2c/cat24c256.h"
+#include "Config.h"
+#include "i2c/Cat24c256.h"
 
 I2cConfig Config::cat24c256 = {{18, 19}, 0x50, 1};
 I2cConfig Config::bmp280 = {{18, 19}, 0x76, 0};

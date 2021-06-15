@@ -1,3 +1,3 @@
-add_library(pwm
-        motor.cpp
-        )
+add_library(Motor
+        Motor.cpp
+)

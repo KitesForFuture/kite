@@ -1,4 +1,4 @@
-#include "position.h"
+#include "Position.h"
 #include "cmath"
 
 // Align model gravitation with measured gravitation.

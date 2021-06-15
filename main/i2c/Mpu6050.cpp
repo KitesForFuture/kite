@@ -1,5 +1,5 @@
 #include "freertos/FreeRTOS.h"
-#include "mpu6050.h"
+#include "Mpu6050.h"
 #include "cmath"
 
 int smallpow(int x, int p){

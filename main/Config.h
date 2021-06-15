@@ -5,8 +5,8 @@
 #ifndef KITE_CONFIG_H
 #define KITE_CONFIG_H
 
-#include "i2c/i2cdevice.h"
-#include "i2c/mpu6050.h"
+#include "i2c/I2cDevice.h"
+#include "i2c/Mpu6050.h"
 
 class Config {
 public:

@@ -3,7 +3,7 @@
 
 #include <array>
 #include "freertos/FreeRTOS.h"
-#include "i2cdevice.h"
+#include "I2cDevice.h"
 #include "../structures/Vector3.h"
 using namespace std;
 
