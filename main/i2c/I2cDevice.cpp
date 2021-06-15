@@ -1,4 +1,4 @@
-#include "i2cdevice.h"
+#include "I2cDevice.h"
 #include "esp_err.h"
 
 #define I2X_FREQUENCY 100000
