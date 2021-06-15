@@ -5,14 +5,16 @@
 // Measured gravitation results from averaging accel values over many iterations.
 void Position::rotate_towards_g(array<float, 3> accel, PositionUpdate& out) {
 
+    // acceleration was measured by a sensor mounted on the kite, hence:
+    array<float, 3> accel_in_model_coordinates {Matrix3::transpose_multiply(matrix, accel)};
+
     // Compute rotation axis
-    out.g_correction_axis = Matrix3::transpose_multiply(matrix, init_gravity);
-    out.g_correction_axis = Vector3::cross_product(out.g_correction_axis, init_gravity);
+    out.g_correction_axis = Vector3::cross_product(accel_in_model_coordinates, init_gravity);
     Vector3::normalize(out.g_correction_axis);
 
     // Compute rotation angle
-    Vector3::normalize(accel);
-    accel = Vector3::subtract(accel, init_gravity);
+    Vector3::normalize(accel_in_model_coordinates);
+    accel = Vector3::subtract(accel_in_model_coordinates, init_gravity);
     out.g_correction_angle = Vector3::get_norm(accel) * accel_gravity_weight;
 
     // Compute infinitesimal rotation matrix from given axis and angle
