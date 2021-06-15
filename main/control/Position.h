@@ -14,7 +14,15 @@ struct PositionUpdate {
 
 class Position {
 
-    // rotation of the drone in world coordinates
+    /* rotation of the drone in world coordinates
+     * Columns:
+     *      X - longitudinal axis (Längsachse)
+     *      Y - lateral axis      (Querachse)
+     *      Z - yaw axis          (Hochachse)
+     * Rows:
+     *      X - Real Gravitation
+     *      Y/Z resemble the earths surface
+     */
     array<float, 9>& matrix;
     array<float, 3> init_gravity;
     float accel_gravity_weight;
