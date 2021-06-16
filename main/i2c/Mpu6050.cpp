@@ -62,6 +62,6 @@ Mpu6050::Mpu6050(   I2cConfig i2c_config,
     // wake up from sleep mode
     send_byte(1, 107, 0);
 
-    gyro_precision_factor = configure_gyro_sensitivity(1);
-    accel_precision_factor = configure_accel_sensitivity(2);
+    gyro_precision_factor = configure_gyro_sensitivity(0);
+    accel_precision_factor = configure_accel_sensitivity(0);
 }

@@ -47,11 +47,12 @@ extern "C" _Noreturn void app_main(void) {
     // Init cycle-timer
     CycleTimer timer {};
 
+    int counter = 0;
     while (true) {
 
         timer.end_cycle();
 
-        vTaskDelay(10);
+        vTaskDelay(1);
 
         flydata.cycle_sec = timer.get_seconds();
         flydata.height = height_sensor.get_height();
@@ -61,11 +62,16 @@ extern "C" _Noreturn void app_main(void) {
 
         //updatePWMInput();
 
+        if (counter==20) {
+            fwrite(FLYDATA, 1, 7, stdout);
+            fwrite(&flydata, sizeof(FlyData), 1, stdout);
+            fflush(stdout);
+            counter=0;
+        } else {
+            counter++;
+        }
 
-        fwrite(FLYDATA, 1, 7, stdout);
-        fwrite(&flydata, sizeof(FlyData), 1, stdout);
-        fflush(stdout);
-        Wifi::send((uint8_t*)&flydata, sizeof(FlyData));
+        //Wifi::send((uint8_t*)&flydata, sizeof(FlyData));
 
         /*
         myServo.set(0);

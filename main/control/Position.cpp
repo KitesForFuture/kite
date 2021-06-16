@@ -10,6 +10,7 @@ void Position::rotate_towards_g(array<float, 3> accel, PositionUpdate& out) {
 
     // Compute rotation axis
     out.g_correction_axis = Vector3::cross_product(gravitation_in_kite_coordinates, accel);
+    out.g_correction_axis = Matrix3::multiply(matrix, out.g_correction_axis);
     Vector3::normalize(out.g_correction_axis);
 
     // Compute rotation angle
@@ -32,7 +33,7 @@ void Position::rotate_towards_g(array<float, 3> accel, PositionUpdate& out) {
     };
 
     // Apply
-    matrix = Matrix3::multiply(matrix, difference);
+    matrix = Matrix3::transpose_right_multiply(matrix, difference);
 }
 
 // Calculation new position based on gyro measurements
@@ -62,7 +63,7 @@ PositionUpdate Position::update(Motion& motion, float elapsed_sec) {
 
     PositionUpdate update {};
 
-    //apply_movements(motion.gyro, elapsed_sec, update);
+    apply_movements(motion.gyro, elapsed_sec, update);
     rotate_towards_g(motion.accel, update);
     Matrix3::normalize(matrix);
 
