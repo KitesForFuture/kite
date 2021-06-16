@@ -18,6 +18,7 @@ public:
     static void set (array<float, 9>& m, int index, bool colwise, array<float, 3>& v);
     static void normalize(array<float, 9>& m);
     static array<float, 9> multiply(array<float, 9>& m1, array<float, 9>& m2);
+    static array<float, 3> multiply(array<float, 9>& m, array<float, 3>& v);
     static array<float, 9> transpose_right_multiply(array<float, 9>& m1, array<float, 9>& m2);
     static array<float, 3> transpose_multiply(array<float, 9>& m, array<float, 3>& v);
 

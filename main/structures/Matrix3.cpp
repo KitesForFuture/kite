@@ -82,6 +82,14 @@ array<float, 9> Matrix3::multiply(array<float, 9>& m1, array<float, 9>& m2) {
     return out;
 }
 
+array<float, 3> Matrix3::multiply(array<float, 9>& m, array<float, 3>& v) {
+    array<float, 3> out {0};
+    for (int i = 0; i < 3; i++) {
+        out[i] = m[3*i + 0] * v[0] + m[3*i + 1] * v[1] + m[3*i + 2] * v[2];
+    }
+    return out;
+}
+
 array<float, 9> Matrix3::transpose_right_multiply(array<float, 9>& m1, array<float, 9>& m2) {
     array<float, 9> out {0};
     for (int i = 0; i < 3; i++) {
