@@ -7,7 +7,7 @@
 //sens = 2 <-> +- 1000 deg/sec
 //sens = 3 <-> +- 2000 deg/sec
 float Mpu6050::configure_gyro_sensitivity(uint8_t sens) {
-    send_byte(27, 1, 8 * sens);
+    send_byte(1, 27, 8*sens);
     return 250 * powf(2, sens) / 32768.0;
 }
 
@@ -16,7 +16,7 @@ float Mpu6050::configure_gyro_sensitivity(uint8_t sens) {
 //sens = 2 <-> +- 8g
 //sens = 3 <-> +- 16g
 float Mpu6050::configure_accel_sensitivity(uint8_t sens) {
-    send_byte(28, 1, 8 * sens);
+    send_byte(1, 28, 8*sens);
     return 2 * 9.81 * powf(2, sens) / 32768.0;
 }
 
@@ -57,15 +57,10 @@ Mpu6050::Mpu6050(   I2cConfig i2c_config,
 {
 
     // Enable DLPF (cut off low frequencies using a Digital Low Pass Filter)
-    send_byte(1, 26, 3);
-    //vTaskDelay(10);
 
     // wake up from sleep mode
     send_byte(1, 107, 0);
-    //vTaskDelay(10);
 
-    gyro_precision_factor = configure_gyro_sensitivity(0);
-    //vTaskDelay(10);
-    accel_precision_factor = configure_accel_sensitivity(0);
-    //vTaskDelay(10);
+    gyro_precision_factor = configure_gyro_sensitivity(1);
+    accel_precision_factor = configure_accel_sensitivity(2);
 }

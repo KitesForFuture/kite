@@ -64,7 +64,7 @@ extern "C" _Noreturn void app_main(void) {
         //updatePWMInput();
 
 
-        if (counter==20) {
+        if (counter==15) {
             fwrite(FLYDATA, 1, 7, stdout);
             fwrite(&flydata, sizeof(FlyData), 1, stdout);
             fflush(stdout);
@@ -72,6 +72,7 @@ extern "C" _Noreturn void app_main(void) {
         } else {
             counter++;
         }
+
 
         //Wifi::send((uint8_t*)&flydata, sizeof(FlyData));
 
