@@ -29,12 +29,12 @@ array<float, 3> Mpu6050::get_sensor_data(int data_addr, float precision_factor, 
             (float) ((int16_t) ((raw_data[4] << 8) | raw_data[5]))
     };
     data = Vector3::multiply(data, precision_factor);
+    data = Vector3::subtract(data, cal);
     data = {
         x_mapper(data),
         y_mapper(data),
         z_mapper(data)
     };
-    data = Vector3::subtract(data, cal);
     return data;
 }
 
@@ -58,10 +58,14 @@ Mpu6050::Mpu6050(   I2cConfig i2c_config,
 
     // Enable DLPF (cut off low frequencies using a Digital Low Pass Filter)
     send_byte(1, 26, 3);
+    //vTaskDelay(10);
 
     // wake up from sleep mode
     send_byte(1, 107, 0);
+    //vTaskDelay(10);
 
     gyro_precision_factor = configure_gyro_sensitivity(0);
+    //vTaskDelay(10);
     accel_precision_factor = configure_accel_sensitivity(0);
+    //vTaskDelay(10);
 }

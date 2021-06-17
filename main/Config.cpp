@@ -9,7 +9,7 @@ I2cConfig Config::cat24c256 = {{18, 19}, 0x50, 1};
 I2cConfig Config::bmp280 = {{18, 19}, 0x76, 0};
 I2cConfig Config::mpu6050 = {{14, 25}, 104, 0};
 array<uint8_t, 6> Config::wifi_destination_mac = {48, 174, 164, 157, 56, 141};
-float Config::accel_gravity_weight = 0.005;
+float Config::accel_gravity_weight = 0.001;
 Motion Config::mpu_calibration = {};
 
 void Config::init() {
@@ -18,18 +18,16 @@ void Config::init() {
 
     mpu_calibration = {
             {
-                    storage.read_float(0 * sizeof(float)),
-                    storage.read_float(1 * sizeof(float)),
-                    storage.read_float(2 * sizeof(float))
-            },
-            {
                     storage.read_float(3 * sizeof(float)),
                     storage.read_float(4 * sizeof(float)),
                     storage.read_float(5 * sizeof(float))
+            },
+            {
+                    storage.read_float(0 * sizeof(float)),
+                    storage.read_float(1 * sizeof(float)),
+                    storage.read_float(2 * sizeof(float))
             }
     };
-
-    mpu_calibration = {{0,0,0},{0,0,0}};
 
     printf("Gyro calibration:  (%f, %f, %f)\n", mpu_calibration.gyro[0], mpu_calibration.gyro[1], mpu_calibration.gyro[2]);
     printf("Accel calibration: (%f, %f, %f)\n", mpu_calibration.accel[0], mpu_calibration.accel[1], mpu_calibration.accel[2]);

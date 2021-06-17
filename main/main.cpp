@@ -60,7 +60,9 @@ extern "C" _Noreturn void app_main(void) {
         flydata.update = position.update(flydata.motion, timer.get_seconds());
 
 
+
         //updatePWMInput();
+
 
         if (counter==20) {
             fwrite(FLYDATA, 1, 7, stdout);
