@@ -5,15 +5,17 @@
 // Measured gravitation results from averaging accel values over many iterations.
 void Position::rotate_towards_g(array<float, 3> accel, PositionUpdate& out) {
 
+    // acceleration was measured by a sensor mounted on the kite, hence:
+    array<float, 3> accel_in_world_coordinates {Matrix3::multiply(matrix, accel)};
+
     // Compute rotation axis
-    out.g_correction_axis = Matrix3::transpose_multiply(matrix, init_gravity);
-    out.g_correction_axis = Vector3::cross_product(out.g_correction_axis, init_gravity);
-    Vector3::normalize(out.g_correction_axis);
+    out.g_correction_axis = Vector3::cross_product(accel_in_world_coordinates, init_gravity);
+    Vector3::normalize(out.g_correction_axis, 0.000001);
 
     // Compute rotation angle
-    Vector3::normalize(accel);
-    accel = Vector3::subtract(accel, init_gravity);
-    out.g_correction_angle = Vector3::get_norm(accel) * accel_gravity_weight;
+    Vector3::normalize(accel_in_world_coordinates);
+    array<float, 3> rotation_vector { Vector3::subtract(accel_in_world_coordinates, init_gravity) };
+    out.g_correction_angle = Vector3::get_norm(rotation_vector) * accel_gravity_weight;
 
     // Compute infinitesimal rotation matrix from given axis and angle
     array<float, 9> difference {
@@ -29,7 +31,7 @@ void Position::rotate_towards_g(array<float, 3> accel, PositionUpdate& out) {
     };
 
     // Apply
-    matrix = Matrix3::transpose_right_multiply(matrix, difference);
+    matrix = Matrix3::multiply(difference, matrix);
 }
 
 // Calculation new position based on gyro measurements

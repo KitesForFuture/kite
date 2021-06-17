@@ -43,6 +43,14 @@ array<float, 3> Vector3::subtract (array<float, 3>& v1, array<float, 3>& v2) {
     };
 }
 
+array<float, 3> Vector3::add (array<float, 3>& v1, array<float, 3>& v2) {
+    return array<float, 3> {
+            v1[0] + v2[0],
+            v1[1] + v2[1],
+            v1[2] + v2[2]
+    };
+}
+
 array<float, 3> Vector3::cross_product(array<float, 3>& v1, array<float, 3>& v2) {
     return array<float, 3> {
         v1[1] * v2[2] - v1[2] * v2[1],

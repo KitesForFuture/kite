@@ -18,6 +18,7 @@ public:
     static float normalize(array<float, 3>& v, float epsilon);
     static array<float, 3> multiply (array<float, 3>& v, float factor);
     static array<float, 3> subtract (array<float, 3>& v1, array<float, 3>& v2);
+    static array<float, 3> add (array<float, 3>& v1, array<float, 3>& v2);
     static array<float, 3> cross_product(array<float, 3>& v1, array<float, 3>& v2);
     static float scalar_product(array<float, 3>& v1, array<float, 3>& v2);
 
