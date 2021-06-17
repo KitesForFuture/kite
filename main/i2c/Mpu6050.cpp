@@ -57,6 +57,7 @@ Mpu6050::Mpu6050(   I2cConfig i2c_config,
 {
 
     // Enable DLPF (cut off low frequencies using a Digital Low Pass Filter)
+    send_byte(1, 26, 3);
 
     // wake up from sleep mode
     send_byte(1, 107, 0);
