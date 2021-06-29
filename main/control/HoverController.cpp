@@ -25,12 +25,11 @@ ControlParameters HoverController::get_control_parameters(array<float, 9>& posit
                 config.elevon_p_factor, config.elevon_d_factor
             )
     };
-    if (fabs(config.elevon_p_factor * (last_elevon_angle - angle_elevon)) < 1) {
+    if (fabs(last_elevon_angle - angle_elevon) < 1) {
         angle_elevon = last_elevon_angle;
     } else {
         last_elevon_angle = angle_elevon;
     }
-    printf("Elevon angle %f\n", angle_elevon);
 
     float angle_rudder {
             get_angle(
@@ -54,7 +53,6 @@ ControlParameters HoverController::get_control_parameters(array<float, 9>& posit
     };
 }
 
-// ToDo improve so that switch_sign can be removed
 float HoverController::get_angle(array<float, 9>& position_matrix, array<float, 3>& gyro, int relevant_axis_index, int other_axis_index, float tilt_angle, float p_factor, float d_factor) {
 
     array<float, 3> relevant_axis { Matrix3::get(position_matrix, relevant_axis_index, true) };
