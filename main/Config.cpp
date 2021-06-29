@@ -12,6 +12,14 @@ array<uint8_t, 6> Config::wifi_destination_mac = {48, 174, 164, 157, 56, 141};
 float Config::accel_gravity_weight = 0.001;
 array<float, 3> Config::normalized_gravitation = {1, 0, 0};
 Motion Config::mpu_calibration = {};
+HoverControllerConfig Config::hover_controller_config {
+    0,
+    0,
+    1,
+    0.44,
+    0.2,
+    0.56,
+};
 
 void Config::init() {
 

@@ -6,13 +6,14 @@
  * Next:
  * - getHoverHeightControl
  * - fly
- * - ToDos
  */
 
 #include "HoverController.h"
 #include "math.h"
 
-HoverController::HoverController(array<float, 3> normalized_gravitation) : FlightController(normalized_gravitation) {}
+HoverController::HoverController(array<float, 3> normalized_gravitation, HoverControllerConfig config) :
+        FlightController(normalized_gravitation), config{config}
+{}
 
 void HoverController::fly(array<float, 9>& position_matrix, array<float, 3>& gyro) {
 
@@ -20,27 +21,28 @@ void HoverController::fly(array<float, 9>& position_matrix, array<float, 3>& gyr
         get_angle(
                 position_matrix, gyro,
                 1, 2,
-                backwards_tilt_angle,
-                elevon_p_factor, elevon_d_factor
+                config.backwards_tilt_angle,
+                config.elevon_p_factor, config.elevon_d_factor,
+                true
             )
     };
-    // ToDo: Verify if semantic change is ok. PID used to came AFTER this:
-    if (fabs(elevon_p_factor * (last_elevon_angle - elevon_angle)) < 1) {
+    if (fabs(config.elevon_p_factor * (last_elevon_angle - elevon_angle)) < 1) {
         elevon_angle = last_elevon_angle;
     } else {
         last_elevon_angle = elevon_angle;
     }
+    printf("Elevon angle %f\n", elevon_angle);
 
     float rudder_angle {
             get_angle(
                     position_matrix, gyro,
                     2, 1,
-                    sidewards_tilt_angle,
-                    rudder_p_factor, rudder_d_factor
+                    config.sidewards_tilt_angle,
+                    config.rudder_p_factor, config.rudder_d_factor,
+                    false
             )
     };
-    // ToDo: Verify if semantic change is ok. PID used to came AFTER this:
-    if (fabs(rudder_p_factor * (last_rudder_angle - rudder_angle)) < 1) {
+    if (fabs(config.rudder_p_factor * (last_rudder_angle - rudder_angle)) < 1) {
         rudder_angle = last_rudder_angle;
     } else {
         last_rudder_angle = rudder_angle;
@@ -48,7 +50,8 @@ void HoverController::fly(array<float, 9>& position_matrix, array<float, 3>& gyr
 
 }
 
-float HoverController::get_angle(array<float, 9>& position_matrix, array<float, 3>& gyro, int relevant_axis_index, int other_axis_index, float tilt_angle, float p_factor, float d_factor) {
+// ToDo improve so that switch_sign can be removed
+float HoverController::get_angle(array<float, 9>& position_matrix, array<float, 3>& gyro, int relevant_axis_index, int other_axis_index, float tilt_angle, float p_factor, float d_factor, bool switch_sign) {
 
     array<float, 3> relevant_axis { Matrix3::get(position_matrix, relevant_axis_index, true) };
     array<float, 3> other_axis { Matrix3::get(position_matrix, other_axis_index, true) };
@@ -58,17 +61,16 @@ float HoverController::get_angle(array<float, 9>& position_matrix, array<float, 
     if (Matrix3::get(position_matrix,0,0) > 0.1
         || fabs(relevant_axis[0]) < fabs(other_axis[0]))
     {
-        delta = get_position_delta(position_matrix, relevant_axis);
+        delta = get_position_delta(position_matrix, relevant_axis, switch_sign);
         delta -= tilt_angle;
     }
-    // ToDo Vorzeichen ist bei unterschiedlichen aufrufen unterscheidlich
     return p_factor * delta + d_factor * gyro[relevant_axis_index];
 }
 
-float HoverController::get_position_delta(array<float, 9>& position_matrix, array<float,3>& relevant_axis) {
+// ToDo improve so that switch_sign can be removed
+float HoverController::get_position_delta(array<float, 9>& position_matrix, array<float,3>& relevant_axis, bool switch_sign) {
 
     // neutral_position is where the left wing (the back) would land if only rudder (elevon) is used.
-    // ToDo In case of Elevator (position matrix col index 1), normalized graviation was negative.
     array<float, 3> neutral_position {
         Vector3::cross_product(relevant_axis, normalized_gravitation)
     };
@@ -81,6 +83,11 @@ float HoverController::get_position_delta(array<float, 9>& position_matrix, arra
     float orientation {
         Vector3::scalar_product(roll_axis, neutral_position)
     };
+
+    // ToDo improve so that switch_sign can be removed
+    if (switch_sign) {
+        orientation *= -1;
+    }
 
     /*  Calculate current angle
      *  Note:

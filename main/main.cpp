@@ -40,12 +40,15 @@ extern "C" _Noreturn void app_main(void) {
 
     // Init hardware
     nvs_flash_init(); // Required for WiFi at least.
-    Wifi::init(Config::wifi_destination_mac);
+    //Wifi::init(Config::wifi_destination_mac);
     Bmp280 height_sensor {Config::bmp280};
     Mpu6050 motion_sensor {Config::mpu6050, Config::mpu_calibration, Config::x_mapper, Config::y_mapper, Config::z_mapper};
     Motor myServo {27, 400, 2400};
 
-    HoverController hoverController {Config::normalized_gravitation};
+    HoverController hoverController {
+        Config::normalized_gravitation,
+        Config::hover_controller_config
+    };
 
     // Init cycle-timer
     CycleTimer timer {};
@@ -66,7 +69,7 @@ extern "C" _Noreturn void app_main(void) {
 
         //updatePWMInput();
 
-
+        /*
         if (counter==15) {
             fwrite(FLYDATA, 1, 7, stdout);
             fwrite(&flydata, sizeof(FlyData), 1, stdout);
@@ -75,6 +78,7 @@ extern "C" _Noreturn void app_main(void) {
         } else {
             counter++;
         }
+         */
 
         hoverController.fly(flydata.position, flydata.motion.gyro);
         //Wifi::send((uint8_t*)&flydata, sizeof(FlyData));

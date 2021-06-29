@@ -7,6 +7,7 @@
 
 #include "i2c/I2cDevice.h"
 #include "i2c/Mpu6050.h"
+#include "control/HoverController.h"
 
 class Config {
 public:
@@ -18,6 +19,7 @@ public:
     static float accel_gravity_weight;
     static array<float, 3> normalized_gravitation;
     static Motion mpu_calibration;
+    static HoverControllerConfig hover_controller_config;
 
     static void init();
 
