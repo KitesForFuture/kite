@@ -21,6 +21,8 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC Mpu6050)
 
 add_subdirectory(control)
 target_link_libraries(${COMPONENT_LIB} PUBLIC Position)
+target_link_libraries(${COMPONENT_LIB} PUBLIC FlightController)
+target_link_libraries(${COMPONENT_LIB} PUBLIC HoverController)
 
 add_subdirectory(pwm)
 target_link_libraries(${COMPONENT_LIB} PUBLIC Motor)

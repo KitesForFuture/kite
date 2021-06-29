@@ -16,6 +16,7 @@ public:
     static I2cConfig mpu6050;
     static array<uint8_t, 6> wifi_destination_mac;
     static float accel_gravity_weight;
+    static array<float, 3> normalized_gravitation;
     static Motion mpu_calibration;
 
     static void init();

@@ -24,7 +24,7 @@ class Position {
      *      Y/Z resemble the earths surface
      */
     array<float, 9>& matrix;
-    array<float, 3> init_gravity;
+    array<float, 3> normalized_gravitation;
     float accel_gravity_weight;
 
     void apply_movements(array<float, 3> gyro, float elapsed_sec, PositionUpdate& out);
@@ -32,7 +32,7 @@ class Position {
 
 public:
 
-    Position(array<float, 9>& matrix, array<float, 3> init_gravity, float accel_gravity_weight);
+    Position(array<float, 9>& matrix, array<float, 3> normalized_gravitation, float accel_gravity_weight);
     PositionUpdate update(Motion& motion, float elapsed_sec);
 };
 

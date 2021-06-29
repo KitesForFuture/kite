@@ -8,12 +8,14 @@
 
 #include "FlightController.h"
 
+/*
 class EightController: public FlightController {
 public:
 
     void fly() override;
 
 };
+ */
 
 
 #endif //KITE_EIGHTCONTROLLER_H

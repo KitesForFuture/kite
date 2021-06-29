@@ -4,6 +4,4 @@
 
 #include "ManualController.h"
 
-void ManualController::fly() {
-    FlightController::fly();
-}
+

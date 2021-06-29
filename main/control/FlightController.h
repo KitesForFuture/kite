@@ -5,12 +5,24 @@
 #ifndef KITE_FLIGHTCONTROLLER_H
 #define KITE_FLIGHTCONTROLLER_H
 
+#include <array>
+#include "Position.h"
+
+using namespace std;
+
 
 class FlightController {
+
+protected:
+
+    array<float, 3> normalized_gravitation;
+
+    float safe_acos(float x);
+
 public:
 
-    virtual void fly ();
-
+    explicit FlightController(array<float, 3> normalized_gravitation);
+    virtual void fly(array<float, 9>& position_matrix, array<float, 3>& gyro) = 0;
 };
 
 

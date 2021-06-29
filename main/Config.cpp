@@ -10,6 +10,7 @@ I2cConfig Config::bmp280 = {{18, 19}, 0x76, 0};
 I2cConfig Config::mpu6050 = {{14, 25}, 104, 1};
 array<uint8_t, 6> Config::wifi_destination_mac = {48, 174, 164, 157, 56, 141};
 float Config::accel_gravity_weight = 0.001;
+array<float, 3> Config::normalized_gravitation = {1, 0, 0};
 Motion Config::mpu_calibration = {};
 
 void Config::init() {

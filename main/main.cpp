@@ -1,6 +1,7 @@
 #include <dirent.h>
 #include <pwm/Motor.h>
 #include <esp_vfs_dev.h>
+#include <control/HoverController.h>
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "i2c/Bmp280.h"
@@ -33,7 +34,7 @@ extern "C" _Noreturn void app_main(void) {
     };
     Position position {
             flydata.position,
-            array<float, 3> {1, 0, 0},
+            Config::normalized_gravitation,
             Config::accel_gravity_weight
     };
 
@@ -43,6 +44,8 @@ extern "C" _Noreturn void app_main(void) {
     Bmp280 height_sensor {Config::bmp280};
     Mpu6050 motion_sensor {Config::mpu6050, Config::mpu_calibration, Config::x_mapper, Config::y_mapper, Config::z_mapper};
     Motor myServo {27, 400, 2400};
+
+    HoverController hoverController {Config::normalized_gravitation};
 
     // Init cycle-timer
     CycleTimer timer {};
@@ -73,7 +76,7 @@ extern "C" _Noreturn void app_main(void) {
             counter++;
         }
 
-
+        hoverController.fly(flydata.position, flydata.motion.gyro);
         //Wifi::send((uint8_t*)&flydata, sizeof(FlyData));
 
         /*

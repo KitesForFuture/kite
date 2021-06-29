@@ -3,7 +3,3 @@
 //
 
 #include "EightController.h"
-
-void EightController::fly() {
-    FlightController::fly();
-}
