@@ -19,6 +19,12 @@ HoverControllerConfig Config::hover_controller_config {
     -0.44 * 0.2,
     0.2 * 100,
     -0.56 * 0.2,
+    0.25 * 10,
+    1 * 1,
+    7,
+    25,
+    100,
+    2.5,
 };
 
 void Config::init() {

@@ -46,8 +46,9 @@ extern "C" _Noreturn void app_main(void) {
     Mpu6050 motion_sensor {Config::mpu6050, Config::mpu_calibration, Config::x_mapper, Config::y_mapper, Config::z_mapper};
     ServoMotor elevon {27, 400, 2400, -90, 90};
     ServoMotor rudder {26, 400, 2400, -90, 90};
+    Motor propeller {12, 400, 2400};
 
-    HoverController hoverController {
+    HoverController active_controller {
         Config::normalized_gravitation,
         Config::hover_controller_config
     };
@@ -64,6 +65,7 @@ extern "C" _Noreturn void app_main(void) {
 
         flydata.cycle_sec = timer.get_seconds();
         flydata.height = height_sensor.get_height();
+        flydata.height_derivative = height_sensor.get_height_derivative();
         flydata.motion = motion_sensor.get_motion();
         flydata.update = position.update(flydata.motion, timer.get_seconds());
 
@@ -85,10 +87,11 @@ extern "C" _Noreturn void app_main(void) {
         fflush(stdout);
 
         ControlParameters control_parameters {
-            hoverController.get_control_parameters(flydata.position, flydata.motion.gyro)
+                active_controller.get_control_parameters(flydata.position, flydata.motion.gyro, flydata.height, flydata.height_derivative, timer.get_seconds())
         };
         elevon.set_angle(control_parameters.angle_elevon);
         rudder.set_angle(control_parameters.angle_rudder);
+        propeller.set(control_parameters.speed_propeller);
 
         /*
         myServo.set(0);

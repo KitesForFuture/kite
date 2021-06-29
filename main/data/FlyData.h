@@ -17,6 +17,7 @@ struct FlyData {
 
     // Sensor values
     float height;
+    float height_derivative;
     Motion motion;
 
     // Calculated state

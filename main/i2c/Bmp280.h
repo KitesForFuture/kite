@@ -19,6 +19,9 @@ class Bmp280: protected I2cDevice {
         .delay_ms=delay_ms,
     };
     float initial_pressure;
+    float last_height;
+    float height_derivative {0};
+    CycleTimer timer;
 
     float get_pressure();
 
@@ -26,6 +29,7 @@ public:
 
     explicit Bmp280(I2cConfig i2c_config);
     float get_height();
+    float get_height_derivative();
 
 };
 

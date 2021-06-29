@@ -11,11 +11,18 @@
 #include "HoverController.h"
 #include "math.h"
 
+float sign(float x){
+    if(x < 0)
+        return -1;
+    else
+        return 1;
+}
+
 HoverController::HoverController(array<float, 3> normalized_gravitation, HoverControllerConfig config) :
         FlightController(normalized_gravitation), config{config}
 {}
 
-ControlParameters HoverController::get_control_parameters(array<float, 9>& position_matrix, array<float, 3>& gyro) {
+ControlParameters HoverController::get_control_parameters(array<float, 9>& position_matrix, array<float, 3>& gyro, float height, float height_derivative, float elapsed_sec) {
 
     float angle_elevon {
         get_angle(
@@ -25,6 +32,7 @@ ControlParameters HoverController::get_control_parameters(array<float, 9>& posit
                 config.elevon_p_factor, config.elevon_d_factor
             )
     };
+    // Remove jittering
     if (fabs(last_elevon_angle - angle_elevon) < 1) {
         angle_elevon = last_elevon_angle;
     } else {
@@ -39,6 +47,7 @@ ControlParameters HoverController::get_control_parameters(array<float, 9>& posit
                     config.rudder_p_factor, config.rudder_d_factor
             )
     };
+    // Remove jittering
     if (fabs(last_rudder_angle - angle_rudder) < 1) {
         angle_rudder = last_rudder_angle;
     } else {
@@ -48,8 +57,7 @@ ControlParameters HoverController::get_control_parameters(array<float, 9>& posit
     return ControlParameters {
         angle_elevon,
         angle_rudder,
-        0,
-        0,
+        config.neutral_propeller_speed + get_propeller_speed(height, height_derivative, elapsed_sec)
     };
 }
 
@@ -99,4 +107,32 @@ float HoverController::get_position_delta(array<float, 9>& position_matrix, arra
     } else {
         return 1.5*M_PI - safe_acos(orientation);
     }
+}
+
+float HoverController::get_propeller_speed(float h, float d_h, float elapsed_sec) {
+
+    // target_height IS WHERE THE PD-CONTROLLER ATTEMPTS TO KEEP THE KITE AT.
+    // target_height GOES TO goal_height at rate_of_climb, except if:
+    // - actual height h can't keep up with target_height
+
+    if(elapsed_sec == 0) return 0;
+    // HOW MUCH DOES TARGET HEIGHT CHANGE
+    float target_height_update = config.rate_of_climb * elapsed_sec;
+
+    // DON'T OVERSHOOT TARGET HEIGHT OVER GOAL HEIGHT
+    if(fabs(config.goal_height_meters - target_height) < target_height_update) target_height_update = fabs(config.goal_height_meters - target_height);
+
+    float update_sign = sign(config.goal_height_meters - target_height);
+
+    target_height += target_height_update*update_sign;
+
+    // BOUND |target_height - h|
+    if(target_height > h + config.target_height_bound_meters) target_height = h + config.target_height_bound_meters;
+    if(target_height < h - config.target_height_bound_meters) target_height = h - config.target_height_bound_meters;
+
+    float P = target_height - h;
+    float D = -d_h;
+    //printf("rate_of_climb = %f, d_t = %f, P= %f, D=%f, target_h = %f, goal_h = %f, C = %f\n",rate_of_climb, d_t, P, D, target_height, goal_height, P_HEIGHT*p_height_factor*P - D_HEIGHT*d_height_factor*D);
+
+    return config.propeller_p_factor*P + config.propeller_d_factor*D;
 }

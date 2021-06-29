@@ -13,8 +13,7 @@ using namespace std;
 struct ControlParameters {
     float angle_elevon;
     float angle_rudder;
-    float speed_propeller_left;
-    float speed_propeller_right;
+    float speed_propeller;
 };
 
 class FlightController {
@@ -28,7 +27,7 @@ protected:
 public:
 
     explicit FlightController(array<float, 3> normalized_gravitation);
-    virtual ControlParameters get_control_parameters(array<float, 9>& position_matrix, array<float, 3>& gyro) = 0;
+    virtual ControlParameters get_control_parameters(array<float, 9>& position_matrix, array<float, 3>& gyro, float height, float height_derivative, float elapsed_sec) = 0;
 };
 
 

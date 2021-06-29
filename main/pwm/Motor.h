@@ -7,7 +7,7 @@
 
 class Motor {
 
-    static double duty_interval_micro_seconds;
+    static float duty_interval_micro_seconds;
     static int next_free_channel;
 
     int channel;
@@ -17,7 +17,7 @@ class Motor {
 public:
 
     Motor(int gpio, int min_pulse_width_micro_seconds, int max_pulse_width_micro_seconds);
-    void set(double spectrum_ratio); // [0-1] to select [min_pulse_width_microseconds - max_pulse_width_micro_seconds]
+    void set(float spectrum_ratio); // [0-1] to select [min_pulse_width_microseconds - max_pulse_width_micro_seconds]
 
 };
 
