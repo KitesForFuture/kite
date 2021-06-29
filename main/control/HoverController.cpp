@@ -15,43 +15,47 @@ HoverController::HoverController(array<float, 3> normalized_gravitation, HoverCo
         FlightController(normalized_gravitation), config{config}
 {}
 
-void HoverController::fly(array<float, 9>& position_matrix, array<float, 3>& gyro) {
+ControlParameters HoverController::get_control_parameters(array<float, 9>& position_matrix, array<float, 3>& gyro) {
 
-    float elevon_angle {
+    float angle_elevon {
         get_angle(
                 position_matrix, gyro,
                 1, 2,
                 config.backwards_tilt_angle,
-                config.elevon_p_factor, config.elevon_d_factor,
-                true
+                config.elevon_p_factor, config.elevon_d_factor
             )
     };
-    if (fabs(config.elevon_p_factor * (last_elevon_angle - elevon_angle)) < 1) {
-        elevon_angle = last_elevon_angle;
+    if (fabs(config.elevon_p_factor * (last_elevon_angle - angle_elevon)) < 1) {
+        angle_elevon = last_elevon_angle;
     } else {
-        last_elevon_angle = elevon_angle;
+        last_elevon_angle = angle_elevon;
     }
-    printf("Elevon angle %f\n", elevon_angle);
+    printf("Elevon angle %f\n", angle_elevon);
 
-    float rudder_angle {
+    float angle_rudder {
             get_angle(
                     position_matrix, gyro,
                     2, 1,
                     config.sidewards_tilt_angle,
-                    config.rudder_p_factor, config.rudder_d_factor,
-                    false
+                    config.rudder_p_factor, config.rudder_d_factor
             )
     };
-    if (fabs(config.rudder_p_factor * (last_rudder_angle - rudder_angle)) < 1) {
-        rudder_angle = last_rudder_angle;
+    if (fabs(last_rudder_angle - angle_rudder) < 1) {
+        angle_rudder = last_rudder_angle;
     } else {
-        last_rudder_angle = rudder_angle;
+        last_rudder_angle = angle_rudder;
     }
 
+    return ControlParameters {
+        angle_elevon,
+        angle_rudder,
+        0,
+        0,
+    };
 }
 
 // ToDo improve so that switch_sign can be removed
-float HoverController::get_angle(array<float, 9>& position_matrix, array<float, 3>& gyro, int relevant_axis_index, int other_axis_index, float tilt_angle, float p_factor, float d_factor, bool switch_sign) {
+float HoverController::get_angle(array<float, 9>& position_matrix, array<float, 3>& gyro, int relevant_axis_index, int other_axis_index, float tilt_angle, float p_factor, float d_factor) {
 
     array<float, 3> relevant_axis { Matrix3::get(position_matrix, relevant_axis_index, true) };
     array<float, 3> other_axis { Matrix3::get(position_matrix, other_axis_index, true) };
@@ -61,14 +65,13 @@ float HoverController::get_angle(array<float, 9>& position_matrix, array<float, 
     if (Matrix3::get(position_matrix,0,0) > 0.1
         || fabs(relevant_axis[0]) < fabs(other_axis[0]))
     {
-        delta = get_position_delta(position_matrix, relevant_axis, switch_sign);
+        delta = get_position_delta(position_matrix, relevant_axis);
         delta -= tilt_angle;
     }
     return p_factor * delta + d_factor * gyro[relevant_axis_index];
 }
 
-// ToDo improve so that switch_sign can be removed
-float HoverController::get_position_delta(array<float, 9>& position_matrix, array<float,3>& relevant_axis, bool switch_sign) {
+float HoverController::get_position_delta(array<float, 9>& position_matrix, array<float,3>& relevant_axis) {
 
     // neutral_position is where the left wing (the back) would land if only rudder (elevon) is used.
     array<float, 3> neutral_position {
@@ -83,11 +86,6 @@ float HoverController::get_position_delta(array<float, 9>& position_matrix, arra
     float orientation {
         Vector3::scalar_product(roll_axis, neutral_position)
     };
-
-    // ToDo improve so that switch_sign can be removed
-    if (switch_sign) {
-        orientation *= -1;
-    }
 
     /*  Calculate current angle
      *  Note:

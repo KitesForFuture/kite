@@ -25,13 +25,13 @@ class HoverController: public FlightController {
     float last_elevon_angle {0};
     float last_rudder_angle {0};
 
-    float get_position_delta(array<float, 9>& position_matrix, array<float,3>& relevant_axis, bool switch_sign);
-    float get_angle(array<float, 9>& position_matrix, array<float, 3>& gyro, int relevant_axis_index, int other_axis_index, float tilt_angle, float p_factor, float d_factor, bool switch_sign);
+    float get_position_delta(array<float, 9>& position_matrix, array<float,3>& relevant_axis);
+    float get_angle(array<float, 9>& position_matrix, array<float, 3>& gyro, int relevant_axis_index, int other_axis_index, float tilt_angle, float p_factor, float d_factor);
 
 public:
 
     explicit HoverController(array<float, 3> normalized_gravitation, HoverControllerConfig config);
-    void fly(array<float, 9>& position_matrix, array<float, 3>& gyro) override;
+    ControlParameters get_control_parameters(array<float, 9>& position_matrix, array<float, 3>& gyro) override;
 
 };
 

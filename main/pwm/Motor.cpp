@@ -36,6 +36,8 @@ min_pulse_width_micro_seconds {min_pulse_width_micro_seconds}, max_pulse_width_m
 }
 
 void Motor::set(double spectrum_ratio) {
+    spectrum_ratio = spectrum_ratio > 1 ? 1 : spectrum_ratio;
+    spectrum_ratio = spectrum_ratio < 0 ? 0 : spectrum_ratio;
     auto pulse_width_micro_seconds = (max_pulse_width_micro_seconds - min_pulse_width_micro_seconds) * spectrum_ratio + min_pulse_width_micro_seconds;
     auto duty = pulse_width_micro_seconds / duty_interval_micro_seconds;
     ledc_set_duty(LEDC_HIGH_SPEED_MODE, static_cast<ledc_channel_t>(channel), static_cast<uint32_t>(duty));

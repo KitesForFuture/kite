@@ -29,3 +29,4 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC HoverController)
 
 add_subdirectory(pwm)
 target_link_libraries(${COMPONENT_LIB} PUBLIC Motor)
+target_link_libraries(${COMPONENT_LIB} PUBLIC ServoMotor)

@@ -2,6 +2,7 @@
 #include <pwm/Motor.h>
 #include <esp_vfs_dev.h>
 #include <control/HoverController.h>
+#include <pwm/ServoMotor.h>
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "i2c/Bmp280.h"
@@ -43,7 +44,8 @@ extern "C" _Noreturn void app_main(void) {
     //Wifi::init(Config::wifi_destination_mac);
     Bmp280 height_sensor {Config::bmp280};
     Mpu6050 motion_sensor {Config::mpu6050, Config::mpu_calibration, Config::x_mapper, Config::y_mapper, Config::z_mapper};
-    Motor myServo {27, 400, 2400};
+    ServoMotor elevon {27, 400, 2400, -90, 90};
+    ServoMotor rudder {26, 400, 2400, -90, 90};
 
     HoverController hoverController {
         Config::normalized_gravitation,
@@ -73,15 +75,20 @@ extern "C" _Noreturn void app_main(void) {
         if (counter==15) {
             fwrite(FLYDATA, 1, 7, stdout);
             fwrite(&flydata, sizeof(FlyData), 1, stdout);
-            fflush(stdout);
+
             counter=0;
         } else {
             counter++;
         }
          */
-
-        hoverController.fly(flydata.position, flydata.motion.gyro);
         //Wifi::send((uint8_t*)&flydata, sizeof(FlyData));
+        fflush(stdout);
+
+        ControlParameters control_parameters {
+            hoverController.get_control_parameters(flydata.position, flydata.motion.gyro)
+        };
+        elevon.set_angle(control_parameters.angle_elevon);
+        rudder.set_angle(control_parameters.angle_rudder);
 
         /*
         myServo.set(0);
