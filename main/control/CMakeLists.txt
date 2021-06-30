@@ -32,7 +32,3 @@ add_library(LandingController
 add_library(ManualController
         ManualController.cpp
 )
-
-add_library(StateMachine
-        StateMachine.cpp
-)

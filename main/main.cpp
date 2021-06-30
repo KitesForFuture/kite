@@ -108,14 +108,15 @@ extern "C" _Noreturn void app_main(void) {
         fflush(stdout);
 
         ControlParameters control_parameters {
-                modes.get_active().get_control_parameters(flydata.position, flydata.motion.gyro, flydata.height, flydata.height_derivative, timer.get_seconds())
+                (*modes.get_active())
+                    .get_control_parameters(flydata.position, flydata.motion.gyro, flydata.height, flydata.height_derivative, timer.get_seconds())
         };
         elevon.set_angle(control_parameters.angle_elevon);
         rudder.set_angle(control_parameters.angle_rudder);
         printf("Propeller: %f ", control_parameters.speed_propeller);
         propeller.set(control_parameters.speed_propeller);
 
-        if (modes.get_active().is_done()) {
+        if ((*modes.get_active()).is_done()) {
             modes.next();
         }
 

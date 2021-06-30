@@ -20,9 +20,31 @@ public:
 
     StateMachine(array<T*, size> states, array<int, size> default_transitions);
     void next();
-    T get_active();
+    T* get_active();
     void set_active(int index);
 
 };
+
+template<typename T, int size>
+StateMachine<T, size>::StateMachine(array<T*, size> states, array<int, size> default_transitions) :
+        states{states}, default_transitions{default_transitions}
+{}
+
+template<typename T, int size>
+void StateMachine<T, size>::next() {
+    active_index = default_transitions[active_index];
+}
+
+template<typename T, int size>
+T* StateMachine<T, size>::get_active() {
+    return states[active_index];
+}
+
+template<typename T, int size>
+void StateMachine<T, size>::set_active(int index) {
+    if (index >= 0 && index < size) {
+        active_index = index;
+    }
+}
 
 #endif //KITE_STATEMACHINE_H
