@@ -10,6 +10,7 @@ class FlightController {
 public:
 
     virtual void fly ();
+    virtual bool is_done();
 
 };
 

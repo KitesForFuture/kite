@@ -12,6 +12,7 @@ class HoverController: public FlightController {
 public:
 
     void fly() override;
+    bool is_done() override;
 
 };
 

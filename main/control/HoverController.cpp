@@ -7,3 +7,8 @@
 void HoverController::fly() {
     FlightController::fly();
 }
+
+bool HoverController::is_done() {
+    // ToDo
+    return false;
+}

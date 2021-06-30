@@ -1,6 +1,12 @@
 #include <dirent.h>
 #include <pwm/Motor.h>
 #include <esp_vfs_dev.h>
+#include <control/StateMachine.h>
+#include <control/FlightController.h>
+#include <control/HoverController.h>
+#include <control/EightController.h>
+#include <control/LandingController.h>
+#include <control/ManualController.h>
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "i2c/Bmp280.h"
@@ -43,6 +49,16 @@ extern "C" _Noreturn void app_main(void) {
     Bmp280 height_sensor {Config::bmp280};
     Mpu6050 motion_sensor {Config::mpu6050, Config::mpu_calibration, Config::x_mapper, Config::y_mapper, Config::z_mapper};
     Motor myServo {27, 400, 2400};
+
+    StateMachine<FlightController, 4> modes {
+        array<FlightController, 4> {
+            HoverController{},
+            EightController{},
+            LandingController{},
+            ManualController{},
+        },
+        array<int, 4> {1, 2, 1, 0}
+    };
 
     // Init cycle-timer
     CycleTimer timer {};
