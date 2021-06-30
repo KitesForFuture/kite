@@ -47,6 +47,7 @@ extern "C" _Noreturn void app_main(void) {
     ServoMotor elevon {27, 400, 2400, -90, 90};
     ServoMotor rudder {26, 400, 2400, -90, 90};
     Motor propeller {12, 400, 2400};
+    //Motor propeller {12, 1000, 2000};
 
     HoverController active_controller {
         Config::normalized_gravitation,
@@ -91,6 +92,7 @@ extern "C" _Noreturn void app_main(void) {
         };
         elevon.set_angle(control_parameters.angle_elevon);
         rudder.set_angle(control_parameters.angle_rudder);
+        printf("Propeller: %f ", control_parameters.speed_propeller);
         propeller.set(control_parameters.speed_propeller);
 
         /*

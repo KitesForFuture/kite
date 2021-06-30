@@ -69,6 +69,8 @@ float Bmp280::get_height() {
 
 float Bmp280::get_height_derivative() {
 
+    timer.measure();
+
     if(timer.get_seconds() < 0.01) return height_derivative; // DON'T RECALCULATE IF LAST READING IS TOO RECENT / TIME STEP TOO SMALL
 
     height_derivative = 0.6*height_derivative + (0.4* (get_height() - last_height)/timer.get_seconds()); // SLIGHT SMOOTHING

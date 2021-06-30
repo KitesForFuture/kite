@@ -22,7 +22,7 @@ struct HoverControllerConfig {
     float target_height_bound_meters;
     float neutral_propeller_speed;
     float goal_height_meters;
-    float rate_of_climb;
+    float rate_of_climb_meters_per_sec;
 };
 
 class HoverController: public FlightController {

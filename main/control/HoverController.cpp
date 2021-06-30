@@ -117,7 +117,7 @@ float HoverController::get_propeller_speed(float h, float d_h, float elapsed_sec
 
     if(elapsed_sec == 0) return 0;
     // HOW MUCH DOES TARGET HEIGHT CHANGE
-    float target_height_update = config.rate_of_climb * elapsed_sec;
+    float target_height_update = config.rate_of_climb_meters_per_sec * elapsed_sec;
 
     // DON'T OVERSHOOT TARGET HEIGHT OVER GOAL HEIGHT
     if(fabs(config.goal_height_meters - target_height) < target_height_update) target_height_update = fabs(config.goal_height_meters - target_height);
@@ -132,7 +132,7 @@ float HoverController::get_propeller_speed(float h, float d_h, float elapsed_sec
 
     float P = target_height - h;
     float D = -d_h;
-    //printf("rate_of_climb = %f, d_t = %f, P= %f, D=%f, target_h = %f, goal_h = %f, C = %f\n",rate_of_climb, d_t, P, D, target_height, goal_height, P_HEIGHT*p_height_factor*P - D_HEIGHT*d_height_factor*D);
+    printf("rate_of_climb = %f, d_t = %f, P= %f, D=%f, target_h = %f, goal_h = %f, C = %f, h = %f, d_h = %f\n",config.rate_of_climb_meters_per_sec, elapsed_sec, P, D, target_height, config.goal_height_meters, config.propeller_p_factor*P - config.propeller_d_factor*D, h, d_h);
 
     return config.propeller_p_factor*P + config.propeller_d_factor*D;
 }
