@@ -28,7 +28,7 @@ public:
 
     explicit FlightController(array<float, 3> normalized_gravitation);
     virtual ControlParameters get_control_parameters(array<float, 9>& position_matrix, array<float, 3>& gyro, float height, float height_derivative, float elapsed_sec) = 0;
-    virtual bool is_done();
+    virtual bool is_done() = 0;
 
 };
 

@@ -12,13 +12,13 @@ using namespace std;
 template<typename T, int size>
 class StateMachine {
 
-    array<T, size> states;
+    array<T*, size> states;
     array<int, size> default_transitions; // Indices into states
     int active_index {0};
 
 public:
 
-    StateMachine(array<T, size> states, array<int, size> default_transitions);
+    StateMachine(array<T*, size> states, array<int, size> default_transitions);
     void next();
     T get_active();
     void set_active(int index);

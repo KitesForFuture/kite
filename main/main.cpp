@@ -3,6 +3,9 @@
 #include <esp_vfs_dev.h>
 #include <control/HoverController.h>
 #include <pwm/ServoMotor.h>
+#include <control/EightController.h>
+#include <control/LandingController.h>
+#include <control/ManualController.h>
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "i2c/Bmp280.h"
@@ -14,6 +17,7 @@
 #include "structures/Vector3.h"
 #include "helpers/Timer.h"
 #include "Config.h"
+#include "control/StateMachine.h"
 
 static const char* FLYDATA = "FLYDATA";
 
@@ -49,9 +53,25 @@ extern "C" _Noreturn void app_main(void) {
     Motor propeller {12, 400, 2400};
     //Motor propeller {12, 1000, 2000};
 
-    HoverController active_controller {
-        Config::normalized_gravitation,
-        Config::hover_controller_config
+
+    HoverController hover {
+            Config::normalized_gravitation,
+            Config::hover_controller_config
+    };
+    EightController eight {
+            Config::normalized_gravitation
+    };
+    LandingController landing {
+            Config::normalized_gravitation
+    };
+    ManualController manual {
+            Config::normalized_gravitation
+    };
+    StateMachine<FlightController, 4> modes {
+            array<FlightController*, 4> {
+               &hover, &eight, &landing, &manual
+            },
+            array<int, 4> {1, 2, 1, 0}
     };
 
     // Init cycle-timer
@@ -88,12 +108,16 @@ extern "C" _Noreturn void app_main(void) {
         fflush(stdout);
 
         ControlParameters control_parameters {
-                active_controller.get_control_parameters(flydata.position, flydata.motion.gyro, flydata.height, flydata.height_derivative, timer.get_seconds())
+                modes.get_active().get_control_parameters(flydata.position, flydata.motion.gyro, flydata.height, flydata.height_derivative, timer.get_seconds())
         };
         elevon.set_angle(control_parameters.angle_elevon);
         rudder.set_angle(control_parameters.angle_rudder);
         printf("Propeller: %f ", control_parameters.speed_propeller);
         propeller.set(control_parameters.speed_propeller);
+
+        if (modes.get_active().is_done()) {
+            modes.next();
+        }
 
         /*
         myServo.set(0);

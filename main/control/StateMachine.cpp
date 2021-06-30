@@ -5,7 +5,7 @@
 #include "StateMachine.h"
 
 template<typename T, int size>
-StateMachine<T, size>::StateMachine(array<T, size> states, array<int, size> default_transitions) :
+StateMachine<T, size>::StateMachine(array<T*, size> states, array<int, size> default_transitions) :
     states{states}, default_transitions{default_transitions}
 {}
 
@@ -16,7 +16,7 @@ void StateMachine<T, size>::next() {
 
 template<typename T, int size>
 T StateMachine<T, size>::get_active() {
-    return states[active_index];
+    return *states[active_index];
 }
 
 template<typename T, int size>

@@ -8,14 +8,17 @@
 
 #include "FlightController.h"
 
-/*
+
 class LandingController: public FlightController {
+
 public:
 
-    void fly() override;
+    explicit LandingController(array<float, 3> normalized_gravitation);
+    ControlParameters get_control_parameters(array<float, 9>& position_matrix, array<float, 3>& gyro, float height, float height_derivative, float elapsed_sec) override;
+    bool is_done() override;
 
 };
-*/
+
 
 
 #endif //KITE_LANDINGCONTROLLER_H
