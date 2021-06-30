@@ -17,6 +17,9 @@ add_library(FlightController
 add_library(HoverController
         HoverController.cpp
 )
+target_link_libraries(HoverController
+        PUBLIC FlightController
+    )
 
 add_library(EightController
         EightController.cpp

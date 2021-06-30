@@ -62,3 +62,15 @@ array<float, 3> Vector3::cross_product(array<float, 3>& v1, array<float, 3>& v2)
 float Vector3::scalar_product(array<float, 3>& v1, array<float, 3>& v2) {
     return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
 }
+
+float Vector3::angle(array<float, 3> &v1, array<float, 3> &v2) {
+    return angle(v1, v2, false);
+}
+
+float Vector3::angle(array<float, 3> &v1, array<float, 3> &v2, bool is_unit_vectors) {
+    float norm_product {1};
+    if (!is_unit_vectors) {
+        norm_product = get_norm(v1) * get_norm(v2);
+    }
+    return acos(scalar_product(v1,v2) / norm_product);
+}

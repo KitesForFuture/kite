@@ -1,12 +1,8 @@
 #include <dirent.h>
 #include <pwm/Motor.h>
 #include <esp_vfs_dev.h>
-#include <control/StateMachine.h>
-#include <control/FlightController.h>
 #include <control/HoverController.h>
-#include <control/EightController.h>
-#include <control/LandingController.h>
-#include <control/ManualController.h>
+#include <pwm/ServoMotor.h>
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "i2c/Bmp280.h"
@@ -39,25 +35,23 @@ extern "C" _Noreturn void app_main(void) {
     };
     Position position {
             flydata.position,
-            array<float, 3> {1, 0, 0},
+            Config::normalized_gravitation,
             Config::accel_gravity_weight
     };
 
     // Init hardware
     nvs_flash_init(); // Required for WiFi at least.
-    Wifi::init(Config::wifi_destination_mac);
+    //Wifi::init(Config::wifi_destination_mac);
     Bmp280 height_sensor {Config::bmp280};
     Mpu6050 motion_sensor {Config::mpu6050, Config::mpu_calibration, Config::x_mapper, Config::y_mapper, Config::z_mapper};
-    Motor myServo {27, 400, 2400};
+    ServoMotor elevon {27, 400, 2400, -90, 90};
+    ServoMotor rudder {26, 400, 2400, -90, 90};
+    Motor propeller {12, 400, 2400};
+    //Motor propeller {12, 1000, 2000};
 
-    StateMachine<FlightController, 4> modes {
-        array<FlightController, 4> {
-            HoverController{},
-            EightController{},
-            LandingController{},
-            ManualController{},
-        },
-        array<int, 4> {1, 2, 1, 0}
+    HoverController active_controller {
+        Config::normalized_gravitation,
+        Config::hover_controller_config
     };
 
     // Init cycle-timer
@@ -72,6 +66,7 @@ extern "C" _Noreturn void app_main(void) {
 
         flydata.cycle_sec = timer.get_seconds();
         flydata.height = height_sensor.get_height();
+        flydata.height_derivative = height_sensor.get_height_derivative();
         flydata.motion = motion_sensor.get_motion();
         flydata.update = position.update(flydata.motion, timer.get_seconds());
 
@@ -79,18 +74,26 @@ extern "C" _Noreturn void app_main(void) {
 
         //updatePWMInput();
 
-
+        /*
         if (counter==15) {
             fwrite(FLYDATA, 1, 7, stdout);
             fwrite(&flydata, sizeof(FlyData), 1, stdout);
-            fflush(stdout);
+
             counter=0;
         } else {
             counter++;
         }
-
-
+         */
         //Wifi::send((uint8_t*)&flydata, sizeof(FlyData));
+        fflush(stdout);
+
+        ControlParameters control_parameters {
+                active_controller.get_control_parameters(flydata.position, flydata.motion.gyro, flydata.height, flydata.height_derivative, timer.get_seconds())
+        };
+        elevon.set_angle(control_parameters.angle_elevon);
+        rudder.set_angle(control_parameters.angle_rudder);
+        printf("Propeller: %f ", control_parameters.speed_propeller);
+        propeller.set(control_parameters.speed_propeller);
 
         /*
         myServo.set(0);

@@ -18,3 +18,8 @@ void CycleTimer::end_cycle() {
 float CycleTimer::get_seconds() {
     return cycle_sec;
 }
+
+void CycleTimer::measure() {
+    int64_t now = esp_timer_get_time();
+    cycle_sec = 0.000001 * (now - start);
+}

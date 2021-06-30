@@ -15,6 +15,7 @@ public:
 
     CycleTimer();
     void end_cycle();
+    void measure();
     float get_seconds();
 };
 
