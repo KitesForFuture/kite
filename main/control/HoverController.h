@@ -40,6 +40,7 @@ public:
 
     explicit HoverController(array<float, 3> normalized_gravitation, HoverControllerConfig config);
     ControlParameters get_control_parameters(array<float, 9>& position_matrix, array<float, 3>& gyro, float height, float height_derivative, float elapsed_sec) override;
+    bool is_done() override;
 
 };
 

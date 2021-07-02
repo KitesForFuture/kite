@@ -136,3 +136,8 @@ float HoverController::get_propeller_speed(float h, float d_h, float elapsed_sec
 
     return config.propeller_p_factor*P + config.propeller_d_factor*D;
 }
+
+bool HoverController::is_done() {
+    // ToDo
+    return false;
+}
