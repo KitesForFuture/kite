@@ -8,12 +8,14 @@
 
 #include "FlightController.h"
 
+/*
 class ManualController: public FlightController {
 public:
 
     void fly() override;
 
 };
+*/
 
 
 #endif //KITE_MANUALCONTROLLER_H

@@ -3,7 +3,3 @@
 //
 
 #include "LandingController.h"
-
-void LandingController::fly() {
-    FlightController::fly();
-}

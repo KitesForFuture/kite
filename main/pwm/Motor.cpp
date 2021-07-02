@@ -3,7 +3,7 @@
 #include "driver/ledc.h"
 
 int Motor::next_free_channel {0};
-double Motor::duty_interval_micro_seconds { ((float)1000000/(float)FREQ_HZ) / pow(2, DUTY_RESOLUTION) };
+float Motor::duty_interval_micro_seconds { (float) (((float)1000000/(float)FREQ_HZ) / pow(2, DUTY_RESOLUTION)) };
 
 Motor::Motor(int gpio, int min_pulse_width_micro_seconds, int max_pulse_width_micro_seconds) :
 min_pulse_width_micro_seconds {min_pulse_width_micro_seconds}, max_pulse_width_micro_seconds {max_pulse_width_micro_seconds}
@@ -35,7 +35,9 @@ min_pulse_width_micro_seconds {min_pulse_width_micro_seconds}, max_pulse_width_m
     ledc_channel_config(&channel_config);
 }
 
-void Motor::set(double spectrum_ratio) {
+void Motor::set(float spectrum_ratio) {
+    spectrum_ratio = spectrum_ratio > 1 ? 1 : spectrum_ratio;
+    spectrum_ratio = spectrum_ratio < 0 ? 0 : spectrum_ratio;
     auto pulse_width_micro_seconds = (max_pulse_width_micro_seconds - min_pulse_width_micro_seconds) * spectrum_ratio + min_pulse_width_micro_seconds;
     auto duty = pulse_width_micro_seconds / duty_interval_micro_seconds;
     ledc_set_duty(LEDC_HIGH_SPEED_MODE, static_cast<ledc_channel_t>(channel), static_cast<uint32_t>(duty));

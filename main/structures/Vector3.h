@@ -21,6 +21,8 @@ public:
     static array<float, 3> add (array<float, 3>& v1, array<float, 3>& v2);
     static array<float, 3> cross_product(array<float, 3>& v1, array<float, 3>& v2);
     static float scalar_product(array<float, 3>& v1, array<float, 3>& v2);
+    static float angle(array<float, 3>& v1, array<float, 3>& v2);
+    static float angle(array<float, 3>& v1, array<float, 3>& v2, bool is_unit_vectors);
 
 };
 

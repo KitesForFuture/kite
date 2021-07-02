@@ -45,6 +45,9 @@ Bmp280::Bmp280(I2cConfig i2c_config) : I2cDevice(i2c_config) {
     }
     sort(begin(init_pressures), end(init_pressures));
     initial_pressure = init_pressures[2]; // median fom 5 measurements
+
+    last_height = get_height();
+    timer.end_cycle();
 }
 
 float Bmp280::get_pressure() {
@@ -62,4 +65,18 @@ float Bmp280::get_pressure() {
 
 float Bmp280::get_height() {
     return (get_pressure() - initial_pressure) * -0.08;
+}
+
+float Bmp280::get_height_derivative() {
+
+    timer.measure();
+
+    if(timer.get_seconds() < 0.01) return height_derivative; // DON'T RECALCULATE IF LAST READING IS TOO RECENT / TIME STEP TOO SMALL
+
+    height_derivative = 0.6*height_derivative + (0.4* (get_height() - last_height)/timer.get_seconds()); // SLIGHT SMOOTHING
+
+    last_height = get_height();
+    timer.end_cycle();
+
+    return height_derivative;
 }

@@ -9,12 +9,12 @@ void Position::rotate_towards_g(array<float, 3> accel, PositionUpdate& out) {
     array<float, 3> accel_in_world_coordinates {Matrix3::multiply(matrix, accel)};
 
     // Compute rotation axis
-    out.g_correction_axis = Vector3::cross_product(accel_in_world_coordinates, init_gravity);
+    out.g_correction_axis = Vector3::cross_product(accel_in_world_coordinates, normalized_gravitation);
     Vector3::normalize(out.g_correction_axis, 0.000001);
 
     // Compute rotation angle
     Vector3::normalize(accel_in_world_coordinates);
-    array<float, 3> rotation_vector { Vector3::subtract(accel_in_world_coordinates, init_gravity) };
+    array<float, 3> rotation_vector { Vector3::subtract(accel_in_world_coordinates, normalized_gravitation) };
     out.g_correction_angle = Vector3::get_norm(rotation_vector) * accel_gravity_weight;
 
     // Compute infinitesimal rotation matrix from given axis and angle
@@ -69,8 +69,5 @@ PositionUpdate Position::update(Motion& motion, float elapsed_sec) {
 }
 
 
-Position::Position(array<float, 9>& matrix, array<float, 3> init_gravity, float accel_gravity_weight)
-: matrix{matrix}, init_gravity{init_gravity}, accel_gravity_weight{accel_gravity_weight} {
-    // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
-    Vector3::normalize(this->init_gravity);
-}
+Position::Position(array<float, 9>& matrix, array<float, 3> normalized_gravitation, float accel_gravity_weight)
+: matrix{matrix}, normalized_gravitation{normalized_gravitation}, accel_gravity_weight{accel_gravity_weight} {}
