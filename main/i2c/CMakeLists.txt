@@ -4,6 +4,9 @@ include_directories(../structures)
 add_library(I2cDevice
         I2cDevice.cpp
 )
+target_link_libraries(I2cDevice
+        PUBLIC Timer
+)
 
 add_library(Bmp280Driver
         Bmp280Driver.cpp
