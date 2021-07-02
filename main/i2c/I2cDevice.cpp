@@ -1,3 +1,4 @@
+#include <Timer.h>
 #include "I2cDevice.h"
 #include "esp_err.h"
 
@@ -96,6 +97,8 @@ void I2cDevice::send_bytes(int data_addr_len, uint16_t data_addr, int data_len, 
     i2c_cmd_link_delete(cmd);
 
     handle_error(ret);
+
+    delay_ms(1);
 }
 
 void I2cDevice::send_byte(int data_addr_len, uint16_t data_addr, uint8_t data) {
