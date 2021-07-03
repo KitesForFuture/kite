@@ -211,12 +211,20 @@ void app_main(void)
         	//rudder_angle = getRudderControl(target_angle, TURNING_SPEED, (float)(pow(5,CH5)), (float)(pow(5,CH5)), SINGULARITY_AT_BOTTOM); //TODO: CH5,CH6 here for P/D
 		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl((float)(pow(5,CH6)));
 		    
-		    if(h > 70){FLIGHT_MODE = LANDING;}
+		    if(h > 70 && fabs(slowly_changing_target_angle) < 0.1){FLIGHT_MODE = LANDING;}
 		    
         } else if (FLIGHT_MODE == LANDING) {
         
-			rudder_angle = getLandingRudderControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
-			elevon_angle_right = elevon_angle_left = -50 + 90*CH2 + getGlideElevatorControl(1*(float)(pow(5,CH6))); // TODO: find right angle for stall landing
+			rudder_angle = 0.2*gyro_in_kite_coords[2];//getLandingRudderControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
+			
+			float elevator = MAX_SERVO_DEFLECTION*CH2 + getLandingElevatorControl(1*(float)(pow(5,CH6)), 1*(float)(pow(5,CH6)));
+			
+			float aileron = getLandingAileronControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5)));
+			
+			//elevon_angle_right = elevon_angle_left = -50 + 90*CH2 + getGlideElevatorControl(1*(float)(pow(5,CH6))); // TODO: find right angle for stall landing
+			elevon_angle_right = elevator + aileron;
+			elevon_angle_left = elevator - aileron;
+			
 			
 			if(CH1 < -0.8 || CH1 > 0.8) {FINAL_LANDING = true;}
 			if(h < 50 && !FINAL_LANDING){FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); /*GROUND_STATION_MIN_TENSION = 0; propeller_speed=0; propeller_diff=0;*/}

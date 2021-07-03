@@ -3,6 +3,39 @@
 
 #define D_RUDDER 0.2
 
+float getLandingElevatorControl(float p_elevator_factor, float d_elevator_factor){
+	
+	// 1	nose straight up
+	// 0	nose horizontal
+	// -1	nose straight down
+	float nose_horizon = rotation_matrix[0];//scalarProductOfMatrices(x, up_vector, 3);
+	float angle = safe_acos(nose_horizon) - 3.1415926535 * 0.5;
+	
+	
+	return 100 * p_elevator_factor * angle - 0.2*d_elevator_factor*gyro_in_kite_coords[1];
+}
+
+float getLandingAileronControl(float p_factor, float d_factor){
+	// 1	nose straight up
+	// 0	nose horizontal
+	// -1	nose straight down
+	float nose_horizon = rotation_matrix[0];//scalarProductOfMatrices(x, up_vector, 3);
+	
+	if(fabs(nose_horizon) > 0.75){
+		return 0;
+	}else{
+		// 1	left wing straight up
+		// 0	left wing horizontal
+		// -1	left wing straight down
+		float left_wing_horizon = rotation_matrix[1];
+		float angle = safe_acos(left_wing_horizon) - 3.1415926535 * 0.5;
+		return 100 * p_factor * angle + 0.2 * d_factor * gyro_in_kite_coords[0];
+	}
+	
+}
+
+// TODO: REMOVE AS NOT USED??
+
 float getLandingRudderControl(float p_rudder_factor, float d_rudder_factor){
 	
 	float x[] = {rotation_matrix[0], rotation_matrix[3], rotation_matrix[6]};
