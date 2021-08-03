@@ -72,7 +72,7 @@ void app_main(void)
 	initMotors(output_pins, 5);
 	
 	int input_pins[] = {4, 33, 2, 17, 16};
-	initPWMInput(input_pins, 5);
+	//TODO: initPWMInput(input_pins, 5);
     
     
     int FLIGHT_MODE = MANUAL;
@@ -97,7 +97,7 @@ void app_main(void)
         
         updateRotationMatrix();
         
-        updatePWMInput();
+        //TODO:updatePWMInput();
 		
 		float h = getHeight();// + 0.047*propeller_speed; // TODO: this is a hack to offset the airflow caused pressure difference at the sensor
 	    float d_h = getHeightDerivative();
@@ -110,6 +110,13 @@ void app_main(void)
         float CH5 = getPWMInputMinus1to1normalized(3);
         float CH6 = getPWMInputMinus1to1normalized(4);
         
+        //TODO:
+        CH1 = 0;
+        CH2 = 0;
+        CH3 = 0;
+        // CH4 not used
+        CH5 = 0;
+        CH6 = 0;
         
         float rudder_angle = 0;
         float elevon_angle_left = 0;
@@ -123,7 +130,7 @@ void app_main(void)
         float propeller_diff = 0;
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
-        //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
+        FLIGHT_MODE = LANDING; // TODO delete this debugging line
         if (FLIGHT_MODE == HOVER) {
         
         	
@@ -217,7 +224,7 @@ void app_main(void)
         } else if (FLIGHT_MODE == LANDING) {
         	
         	
-        	rudder_angle = getLandingRudderControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
+        	rudder_angle = getLandingRudderControl(1*(float)(pow(5,CH5)), 2*(float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
 			
 			
 			float elevator = getLandingElevatorControl(MAX_SERVO_DEFLECTION * CH2, 1*(float)(pow(5,CH6)), 1*(float)(pow(5,CH6)));
@@ -248,32 +255,6 @@ void app_main(void)
     	    }
         
         
-        } else if (FLIGHT_MODE == OLD_LANDING) {
-        
-			rudder_angle = MAX_SERVO_DEFLECTION * CH1 + 0.2*gyro_in_kite_coords[2];//getLandingRudderControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
-			
-			float elevator = MAX_SERVO_DEFLECTION * CH2 + getLandingElevatorControl(1*(float)(pow(5,CH6)), 1*(float)(pow(5,CH6)));
-			
-			float aileron = getLandingAileronControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5)));
-			
-			//elevon_angle_right = elevon_angle_left = -50 + 90*CH2 + getGlideElevatorControl(1*(float)(pow(5,CH6))); // TODO: find right angle for stall landing
-			elevon_angle_right = elevator + aileron;
-			elevon_angle_left = elevator - aileron;
-			
-			
-			if(CH1 < -0.8 || CH1 > 0.8) {FINAL_LANDING = true;}
-			if(h < 50 && !FINAL_LANDING){FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); /*GROUND_STATION_MIN_TENSION = 0; propeller_speed=0; propeller_diff=0;*/}
-		    if(h < 10){FLIGHT_MODE = HOVER; goal_height = -10; rate_of_climb = 0.5;}
-		    if(h < 5){FLIGHT_MODE = HOVER; goal_height = -10; rate_of_climb = 0.3;}
-        	
-        } else if (FLIGHT_MODE == MANUAL) {
-        	
-        	rudder_angle = MAX_SERVO_DEFLECTION*CH1;
-        	elevon_angle_right = elevon_angle_left = MAX_SERVO_DEFLECTION*(CH2) + getGlideElevatorControl(1*(float)(pow(5,CH6))); // TODO: determine right values experimentally (also use in LANDING and FIGURE_EIGTH mode), then use CH5,CH6 for Rudder-D/P gains in Landing and Figure-8-Mode, (float)(pow(5,CH5))
-        	
-        	propeller_speed = MAX_PROPELLER_SPEED*CH3;
-        	
-        	if(CH3 > 0.9) FLIGHT_MODE = HOVER;
         }
         
         // DON'T LET SERVOS BREAK THE KITE

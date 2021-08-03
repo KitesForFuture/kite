@@ -13,7 +13,7 @@ static float wind_direction[] = {0,0};
 static Time z_axis_last_update_time = 0;
 
 static Time target_angle_delta_timer = 0;
-float reset_slowly_changing_target_angle_timer(){target_angle_delta_timer = 0;}
+void reset_slowly_changing_target_angle_timer(){target_angle_delta_timer = 0;}
 float get_slowly_changing_target_angle(float target_angle, float turning_speed){
 	
     static float slowly_changing_target_angle = 0;

@@ -16,6 +16,7 @@ float getLandingElevatorControl(float dive_angle, float p_elevator_factor, float
 	return 100 * p_elevator_factor * angle - 0.2*d_elevator_factor*gyro_in_kite_coords[1];
 }
 
+//TODO: this is not used
 float getLandingAileronControl(float p_factor, float d_factor){
 	// 1	nose straight up
 	// 0	nose horizontal
@@ -39,12 +40,12 @@ float getLandingRudderControl(float p_rudder_factor, float d_rudder_factor){
 	
 	float z[] = {rotation_matrix[2], rotation_matrix[5], rotation_matrix[8]};
 	
-	// 1	belly straight down
-	// 0	belly horizontal
-	// -1	belly straight up
+	// 1	back straight up
+	// 0	back horizontal
+	// -1	back straight down
 	//TODO: test
-	float belly_horizon = rotation_matrix[2];//<x, (1,0,0)>
-	printf("\nbelly_horizon = %f, ", belly_horizon);
+	float back_horizon = rotation_matrix[2];//<x, (1,0,0)>
+	printf("\nback_horizon = %f, ", back_horizon);
 	
 	// neutral_left_wing_pos is where we want the left wing
 	float neutral_left_wing_pos[3];
@@ -61,10 +62,10 @@ float getLandingRudderControl(float p_rudder_factor, float d_rudder_factor){
 	
 	float alpha = 0;
 	// CALCULATE CURRENT ANGLE
-	if(belly_horizon > 0){
+	if(back_horizon > 0){
 		alpha = safe_acos(roll_orientation) - 3.1415926535*0.5;
 	}else{
-		if(forward_backward_orientation > 0/*going left*/){
+		if(roll_orientation > 0/*going left*/){
 			alpha = - 3.1415926535*0.5 - safe_acos(roll_orientation);
 		}else{
 			alpha = 3.1415926535*1.5 - safe_acos(roll_orientation);
@@ -76,11 +77,11 @@ float getLandingRudderControl(float p_rudder_factor, float d_rudder_factor){
 	
 	//printf("alpha - dive_angle = %f\n", alpha);
 	// IF UPSIDE DOWN, DON'T CONTROL RUDDER
-	if(belly_horizon < 0.1)/*|<z, (1,0,0)>| > |<y, (1,0,0)>|*/){
+	if(back_horizon < 0.5){
 		alpha = 0;
 	}
 	
-	return - P_ELEVATOR*p_factor*alpha - D_ELEVATOR*d_factor*gyro_in_kite_coords[2];
+	return - P_ELEVATOR*p_rudder_factor*alpha + D_ELEVATOR*d_rudder_factor*gyro_in_kite_coords[2];
 	
 }
 
