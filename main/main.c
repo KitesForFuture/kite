@@ -43,6 +43,8 @@
 
 #define TURNING_SPEED 0.75 // in QUARTER TURNS PER SECOND, 2 is too fast, 0.5 seems a bit too slow, but let's try
 
+#define DIVING_ANGULAR_VELOCITY 0.75 // if 0, turning is maximum fast (possibly and probably causing a stall)
+
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
 
@@ -80,7 +82,8 @@ void app_main(void)
     
     float sideways_flying_time = INITIAL_SIDEWAYS_FLYING_TIME;
     Time sideways_flying_timer = 0;
-    Time descend_timer = 0;
+    Time descend_timer = start_timer();
+    Time prepare_landing_timer = 0;
     int turn_delayed = 0;
     
     float GROUND_STATION_MIN_TENSION = 1;
@@ -99,7 +102,7 @@ void app_main(void)
         
         //TODO:updatePWMInput();
 		
-		float h = getHeight();// + 0.047*propeller_speed; // TODO: this is a hack to offset the airflow caused pressure difference at the sensor
+		float h = getHeight();// + 0.047*propeller_speed; // this is a possible hack to offset the airflow caused pressure difference at the sensor, if the propeller airflow influences the sensor. currently the propellers are far enough apart, so this is not neccessary.
 	    float d_h = getHeightDerivative();
 		
         // READING RC SIGNALS
@@ -131,8 +134,10 @@ void app_main(void)
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
         FLIGHT_MODE = LANDING; // TODO delete this debugging line
-        if (FLIGHT_MODE == HOVER) {
         
+        float PREPARE_LANDING = false;
+        
+        if (FLIGHT_MODE == HOVER) {
         	
         	rudder_angle = 0;//getHoverRudderControl(HOVER_RUDDER_OFFSET, 1.5, 3.6);
 		    
@@ -160,6 +165,9 @@ void app_main(void)
 		    if(h < 45) GROUND_STATION_MIN_TENSION = 1; else GROUND_STATION_MIN_TENSION = 0;
 		    
 		    
+		    
+		    
+		    
         } else if (FLIGHT_MODE == FIGURE_EIGHT) {
         	
         	//printf("time = %f, time_goal = %f, CH1 = %f\n", query_timer_seconds(sideways_flying_timer), sideways_flying_time, CH1);
@@ -182,7 +190,6 @@ void app_main(void)
 		    		
 		    	}else if(query_timer_seconds(sideways_flying_timer) > sideways_flying_time){ // IF TIME TO TURN
 		    		
-		    		
 		    		if(turn_delayed == 1){ // IF TURN HAS BEEN DELAYED
 		    		
 						//UPDATE TURN TIME
@@ -194,16 +201,17 @@ void app_main(void)
 					//TURN
 		    		DIRECTION *= -1;
 		    		sideways_flying_timer = start_timer();
-		    		
 		    	}
         	}
-        	
         	
         	// z-axis angle (how much the plane is rolled)
         	// 0 ... no roll, kite line straight up
         	// pi/2 ... 90 degree roll angle
         	float z_axis_angle = safe_acos(rotation_matrix[2]); // between 0 and pi/2
         	float RC_requested_angle = (1-CH2)*3.1415926535*0.25; // between 0 and pi/2
+        	if(PREPARE_LANDING == true){
+        		RC_requested_angle = 3.1415926535*0.25*0.6;
+        	}
         	float angle_diff = RC_requested_angle - z_axis_angle; // between -pi/2 and pi/2
         	
         	float target_angle_adjustment = angle_diff*0.5; // between -pi/4=-0.7... and pi/4=0.7...
@@ -219,18 +227,18 @@ void app_main(void)
         	//rudder_angle = getRudderControl(target_angle, TURNING_SPEED, (float)(pow(5,CH5)), (float)(pow(5,CH5)), SINGULARITY_AT_BOTTOM); //TODO: CH5,CH6 here for P/D
 		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl((float)(pow(5,CH6)));
 		    
-		    if(h > 70 && fabs(slowly_changing_target_angle) < 0.1){FLIGHT_MODE = LANDING; descend_timer = start_timer();}
+		    if(descend_timer > 17 && h > 70 && fabs(slowly_changing_target_angle) < 0.1){PREPARE_LANDING = true; prepare_landing_timer = start_timer();}
+		    
+		    if(PREPARE_LANDING && prepare_landing_timer > 5){PREPARE_LANDING = false; FLIGHT_MODE = LANDING; descend_timer = start_timer();}
+		    
+		    
+		    
 		    
         } else if (FLIGHT_MODE == LANDING) {
         	
-        	
-        	rudder_angle = getLandingRudderControl(1*(float)(pow(5,CH5)), 2*(float)(pow(5,CH5))); //TODO: CH5,CH6 here for P/D
+        	rudder_angle = getLandingRudderControl(1.0, 1.0);
 			
-			
-			float elevator = getLandingElevatorControl(MAX_SERVO_DEFLECTION * CH2, 1*(float)(pow(5,CH6)), 1*(float)(pow(5,CH6)));
-			
-			
-			
+			float elevator = getLandingElevatorControl(-30.0 + 45*CH2, 1*(float)(pow(5,CH5)), 1*(float)(pow(5,CH6)));
 			
 			float aileron = 0.2 * 1 * gyro_in_kite_coords[0]; //getLandingAileronControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5)));
 			
@@ -238,24 +246,23 @@ void app_main(void)
 			elevon_angle_right = elevator + aileron;
 			elevon_angle_left = elevator - aileron;
 			
-			
 			if(CH1 < -0.8 || CH1 > 0.8) {FINAL_LANDING = true;}
 			//if(h < 50 && !FINAL_LANDING){FLIGHT_MODE = FIGURE_EIGHT; reset_slowly_changing_target_angle_timer(); sideways_flying_timer = start_timer(); /*GROUND_STATION_MIN_TENSION = 0; propeller_speed=0; propeller_diff=0;*/}
 		    //if(h < 10){FLIGHT_MODE = HOVER; goal_height = -10; rate_of_climb = 0.5;}
 		    if(h < 5){FLIGHT_MODE = HOVER; goal_height = -10; rate_of_climb = 0.5;}
 		    
+		    if(query_timer_seconds(descend_timer) > 5 && !FINAL_LANDING){
+		    	elevator = getGlideElevatorControl((float)(pow(5,CH6)));
+		    }
 		    
-        	
-        	
-        	if((query_timer_seconds(descend_timer) > 7 || h < 30 ) && !FINAL_LANDING){
+        	if((query_timer_seconds(descend_timer) > 7 /*|| h < 30 */) && !FINAL_LANDING){
 	        	// RESUME FIGURE EIGHT MODE:
     	    	reset_slowly_changing_target_angle_timer();
     	    	sideways_flying_timer = start_timer();
     	    	FLIGHT_MODE = FIGURE_EIGHT;
     	    }
-        
-        
         }
+        
         
         // DON'T LET SERVOS BREAK THE KITE
 		if(rudder_angle > MAX_SERVO_DEFLECTION) rudder_angle = MAX_SERVO_DEFLECTION;

@@ -12,6 +12,8 @@ static float oldBeta = 0;
 static float wind_direction[] = {0,0};
 static Time z_axis_last_update_time = 0;
 
+
+//TODO: make this code reusable
 static Time target_angle_delta_timer = 0;
 void reset_slowly_changing_target_angle_timer(){target_angle_delta_timer = 0;}
 float get_slowly_changing_target_angle(float target_angle, float turning_speed){
