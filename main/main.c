@@ -211,7 +211,7 @@ void app_main(void)
         	// 0 ... no roll, kite line straight up
         	// pi/2 ... 90 degree roll angle
         	float z_axis_angle = safe_acos(rotation_matrix[2]); // between 0 and pi/2
-        	float RC_requested_angle = (1-CH2)*3.1415926535*0.25; // between 0 and pi/2
+        	float RC_requested_angle = (1.0/*-CH2*/)*3.1415926535*0.25; // between 0 and pi/2
         	if(PREPARE_LANDING == true){
         		RC_requested_angle = 3.1415926535*0.25*0.6;
         	}
@@ -230,7 +230,7 @@ void app_main(void)
         	//rudder_angle = getRudderControl(target_angle, TURNING_SPEED, (float)(pow(5,CH5)), (float)(pow(5,CH5)), SINGULARITY_AT_BOTTOM); //TODO: CH5,CH6 here for P/D
 		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl((float)(pow(5,CH6)));
 		    
-		    if(query_timer_seconds(descend_timer) > 17 && h > 70){PREPARE_LANDING = true; prepare_landing_timer = start_timer();}
+		    if((query_timer_seconds(descend_timer) > 17 && h > 70) || CH2 > 0.8 || CH2 < -0.8){PREPARE_LANDING = true; prepare_landing_timer = start_timer();}
 		    
 		    if(PREPARE_LANDING && query_timer_seconds(prepare_landing_timer) > 8 && fabs(slowly_changing_target_angle) < 0.1){
 		    	PREPARE_LANDING = false;
