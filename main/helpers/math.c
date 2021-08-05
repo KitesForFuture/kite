@@ -1,5 +1,5 @@
 #include <math.h>
-
+#include "math.h"
 // acos function continuously extended beyond -1 and 1.
 float safe_acos(float number_more_or_less_between_one_and_minus_one){
 	return (fabs(number_more_or_less_between_one_and_minus_one) < 1) ? acos(number_more_or_less_between_one_and_minus_one) : 0;
@@ -167,4 +167,26 @@ float normalize(float a[], int length) {
 	}
 	
 	return norm;
+}
+
+void setup_slowly_changing_angle(float* target_angle_delta_timer, float* slowly_changing_target_angle){
+	*target_angle_delta_timer = 0;
+	*slowly_changing_target_angle = 0;
+}
+
+void get_slowly_changing_angle(float target_angle, float turning_speed, Time* target_angle_delta_timer, float* slowly_changing_target_angle){
+	
+    //static float slowly_changing_target_angle = 0;
+    
+    
+    float d_t = get_time_step(target_angle_delta_timer);
+    if(*slowly_changing_target_angle < target_angle){
+    	*slowly_changing_target_angle += d_t * turning_speed;
+    	if(*slowly_changing_target_angle > target_angle) *slowly_changing_target_angle = target_angle;
+    }
+    if(*slowly_changing_target_angle > target_angle){
+    	*slowly_changing_target_angle -= d_t * turning_speed;
+    	if(*slowly_changing_target_angle < target_angle) *slowly_changing_target_angle = target_angle;
+    }
+    //return slowly_changing_target_angle;
 }

@@ -31,7 +31,7 @@
 
 #define INITIAL_SIDEWAYS_FLYING_TIME 8
 
-#define MAX_SERVO_DEFLECTION 70
+#define MAX_SERVO_DEFLECTION 50
 #define MAX_PROPELLER_SPEED 65
 #define HOVER_RUDDER_OFFSET 0
 #define HOVER_ELEVATOR_OFFSET 0
@@ -43,7 +43,7 @@
 
 #define TURNING_SPEED 0.75 // in QUARTER TURNS PER SECOND, 2 is too fast, 0.5 seems a bit too slow, but let's try
 
-#define DIVING_ANGULAR_VELOCITY 0.75 // if 0, turning is maximum fast (possibly and probably causing a stall)
+#define DIVING_ANGULAR_VELOCITY 50.0// 86 //1.5 * 180/pi if 0, turning is maximum fast (possibly and probably causing a stall)
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -74,7 +74,7 @@ void app_main(void)
 	initMotors(output_pins, 5);
 	
 	int input_pins[] = {4, 33, 2, 17, 16};
-	//TODO: initPWMInput(input_pins, 5);
+	initPWMInput(input_pins, 5);
     
     
     int FLIGHT_MODE = MANUAL;
@@ -93,6 +93,10 @@ void app_main(void)
     float goal_height = 100;// 100 // 5*CH5;// -3 to +3 meters
     float rate_of_climb = 2.5;// 3 // CH6+1;// 0 to 1 m/s
     
+    float PREPARE_LANDING = false;
+    Time diving_target_angle_delta_timer = 0;
+    float slowly_changing_diving_target_angle = 45;
+        
     while(1) {
         vTaskDelay(1);
         
@@ -100,7 +104,7 @@ void app_main(void)
         
         updateRotationMatrix();
         
-        //TODO:updatePWMInput();
+        updatePWMInput();
 		
 		float h = getHeight();// + 0.047*propeller_speed; // this is a possible hack to offset the airflow caused pressure difference at the sensor, if the propeller airflow influences the sensor. currently the propellers are far enough apart, so this is not neccessary.
 	    float d_h = getHeightDerivative();
@@ -114,12 +118,13 @@ void app_main(void)
         float CH6 = getPWMInputMinus1to1normalized(4);
         
         //TODO:
-        CH1 = 0;
+        /*CH1 = 0;
         CH2 = 0;
         CH3 = 0;
         // CH4 not used
         CH5 = 0;
         CH6 = 0;
+        */
         
         float rudder_angle = 0;
         float elevon_angle_left = 0;
@@ -133,10 +138,8 @@ void app_main(void)
         float propeller_diff = 0;
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
-        FLIGHT_MODE = LANDING; // TODO delete this debugging line
-        
-        float PREPARE_LANDING = false;
-        
+        //FLIGHT_MODE = LANDING; // TODO delete this debugging line
+        //FINAL_LANDING = false;//TODO remove
         if (FLIGHT_MODE == HOVER) {
         	
         	rudder_angle = 0;//getHoverRudderControl(HOVER_RUDDER_OFFSET, 1.5, 3.6);
@@ -161,8 +164,8 @@ void app_main(void)
 		    }
 		    
 		    //REQUEST LOW LINE TENSION FROM GROUND STATION
-		    if(h > 50){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); GROUND_STATION_MIN_TENSION = 0; propeller_speed = 0; propeller_diff = 0;}
-		    if(h < 45) GROUND_STATION_MIN_TENSION = 1; else GROUND_STATION_MIN_TENSION = 0;
+		    if(h > 45){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); GROUND_STATION_MIN_TENSION = 0; propeller_speed = 0; propeller_diff = 0;}
+		    if(h < 40) GROUND_STATION_MIN_TENSION = 1; else GROUND_STATION_MIN_TENSION = 0;
 		    
 		    
 		    
@@ -227,18 +230,29 @@ void app_main(void)
         	//rudder_angle = getRudderControl(target_angle, TURNING_SPEED, (float)(pow(5,CH5)), (float)(pow(5,CH5)), SINGULARITY_AT_BOTTOM); //TODO: CH5,CH6 here for P/D
 		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl((float)(pow(5,CH6)));
 		    
-		    if(descend_timer > 17 && h > 70 && fabs(slowly_changing_target_angle) < 0.1){PREPARE_LANDING = true; prepare_landing_timer = start_timer();}
+		    if(query_timer_seconds(descend_timer) > 17 && h > 70){PREPARE_LANDING = true; prepare_landing_timer = start_timer();}
 		    
-		    if(PREPARE_LANDING && prepare_landing_timer > 5){PREPARE_LANDING = false; FLIGHT_MODE = LANDING; descend_timer = start_timer();}
+		    if(PREPARE_LANDING && query_timer_seconds(prepare_landing_timer) > 8 && fabs(slowly_changing_target_angle) < 0.1){
+		    	PREPARE_LANDING = false;
+		    	FLIGHT_MODE = LANDING;
+		    	descend_timer = start_timer();
+		    	diving_target_angle_delta_timer = 0;
+		    	slowly_changing_diving_target_angle = 45;
+		    }
 		    
 		    
 		    
 		    
         } else if (FLIGHT_MODE == LANDING) {
         	
-        	rudder_angle = getLandingRudderControl(1.0, 1.0);
+        	rudder_angle = getLandingRudderControl(1.0*(float)(pow(5,CH5)), 1.0);
 			
-			float elevator = getLandingElevatorControl(-30.0 + 45*CH2, 1*(float)(pow(5,CH5)), 1*(float)(pow(5,CH6)));
+			float target_angle = -30.0 + 45*CH2;
+			
+			get_slowly_changing_angle(target_angle, DIVING_ANGULAR_VELOCITY, &diving_target_angle_delta_timer, &slowly_changing_diving_target_angle);
+			
+			
+			float elevator = getLandingElevatorControl(slowly_changing_diving_target_angle, 1.0*(float)(pow(5,CH6)), 1.0*(float)(pow(5,CH6)));
 			
 			float aileron = 0.2 * 1 * gyro_in_kite_coords[0]; //getLandingAileronControl(2*(float)(pow(5,CH5)), 2.1*(float)(pow(5,CH5)));
 			
@@ -258,9 +272,20 @@ void app_main(void)
         	if((query_timer_seconds(descend_timer) > 7 /*|| h < 30 */) && !FINAL_LANDING){
 	        	// RESUME FIGURE EIGHT MODE:
     	    	reset_slowly_changing_target_angle_timer();
+    	    	slowly_changing_diving_target_angle = 45;//TODO: just for debugging
+    	    	descend_timer = start_timer();//TODO: just for debugging
+    	    	//slowly_changing_target_angle = 0;
     	    	sideways_flying_timer = start_timer();
     	    	FLIGHT_MODE = FIGURE_EIGHT;
     	    }
+        } else if (FLIGHT_MODE == MANUAL) {
+        	
+        	rudder_angle = MAX_SERVO_DEFLECTION*CH1;
+        	elevon_angle_right = elevon_angle_left = MAX_SERVO_DEFLECTION*(CH2) + getGlideElevatorControl(1*(float)(pow(5,CH6))); // TODO: determine right values experimentally (also use in LANDING and FIGURE_EIGTH mode), then use CH5,CH6 for Rudder-D/P gains in Landing and Figure-8-Mode, (float)(pow(5,CH5))
+        	
+        	propeller_speed = MAX_PROPELLER_SPEED*CH3;
+        	
+        	if(CH3 > 0.9) FLIGHT_MODE = HOVER;
         }
         
         

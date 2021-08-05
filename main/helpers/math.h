@@ -3,6 +3,7 @@
 #define HELPERS_KITEMATH
 
 #include <math.h>
+#include "../helpers/timer.h"
  
 float safe_acos(float number_more_or_less_between_one_and_minus_one);
 
@@ -27,6 +28,8 @@ void rotate_towards_g(float mat[], float a_init, float b_init, float c_init, flo
 float scalarProductOfMatrices(float A[], float B[], int length);
 
 float normalize(float a[], int length);
+
+void get_slowly_changing_angle(float target_angle, float turning_speed, Time* target_angle_delta_timer, float* slowly_changing_target_angle);
 
 //TODO-Ben:
 //void get_column(float matrix[], float column[], int column_number);
