@@ -45,6 +45,8 @@
 
 #define DIVING_ANGULAR_VELOCITY 50.0// 86 //1.5 * 180/pi if 0, turning is maximum fast (possibly and probably causing a stall)
 
+#define STARTING_HEIGHT 40
+
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
 
@@ -96,7 +98,10 @@ void app_main(void)
     float PREPARE_LANDING = false;
     Time diving_target_angle_delta_timer = 0;
     float slowly_changing_diving_target_angle = 45;
-        
+    
+    int TESTING_WIND = false;
+    Time wind_timer = 0;
+    
     while(1) {
         vTaskDelay(1);
         
@@ -164,9 +169,34 @@ void app_main(void)
 		    }
 		    
 		    //REQUEST LOW LINE TENSION FROM GROUND STATION
-		    if(h > 45){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); GROUND_STATION_MIN_TENSION = 0; propeller_speed = 0; propeller_diff = 0;}
-		    if(h < 40) GROUND_STATION_MIN_TENSION = 1; else GROUND_STATION_MIN_TENSION = 0;
+		    //if(h > STARTING_HEIGHT + 5){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); GROUND_STATION_MIN_TENSION = 0; propeller_speed = 0; propeller_diff = 0;}
+		    if(h < STARTING_HEIGHT){
+		    	GROUND_STATION_MIN_TENSION = 1;
+		    }else{
+		    	GROUND_STATION_MIN_TENSION = 0;
+		    	if(TESTING_WIND == false){
+		    		TESTING_WIND = true;
+		    		wind_timer = start_timer();
+		    	}
+		    }
 		    
+		    if(TESTING_WIND == true){
+		    	if(query_timer_seconds(wind_timer) > 3){
+		    		if(h > STARTING_HEIGHT){	// windy
+		    			// => start FIGURE 8
+		    			FLIGHT_MODE = FIGURE_EIGHT;
+		    			sideways_flying_timer = start_timer();
+		    			GROUND_STATION_MIN_TENSION = 0;
+		    			propeller_speed = 0;
+		    			propeller_diff = 0;
+		    		}else{						// not windy
+		    			// => slowly descend and land
+		    			//TODO: integrate with LANDING mode and rope length counting
+		    			goal_height = -10;
+						rate_of_climb = -2;
+		    		}
+		    	}
+		    }
 		    
 		    
 		    
