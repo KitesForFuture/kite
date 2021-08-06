@@ -262,8 +262,8 @@ void app_main(void)
 			
 			if(CH1 < -0.8 || CH1 > 0.8) {FINAL_LANDING = true;}
 			//if(h < 50 && !FINAL_LANDING){FLIGHT_MODE = FIGURE_EIGHT; reset_slowly_changing_target_angle_timer(); sideways_flying_timer = start_timer(); /*GROUND_STATION_MIN_TENSION = 0; propeller_speed=0; propeller_diff=0;*/}
-		    //if(h < 10){FLIGHT_MODE = HOVER; goal_height = -10; rate_of_climb = 0.5;}
-		    if(h < 5){FLIGHT_MODE = HOVER; goal_height = -10; rate_of_climb = 0.5;}
+			
+		    //if(h < 5){FLIGHT_MODE = HOVER; goal_height = -10; rate_of_climb = 0.5;}
 		    
 		    if(query_timer_seconds(descend_timer) > 5 && !FINAL_LANDING){
 		    	elevator = getGlideElevatorControl((float)(pow(5,CH6)));
