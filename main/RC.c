@@ -19,6 +19,8 @@ int signalOffset[6] = {0,0,0,0,0,0};
 int receivedSignal[6] = {0,0,0,0,0,0};
 float receivedData[DATALENGTH] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
+int line_length_in_meters = 0;
+
 typedef struct __attribute__((packed)) esp_now_msg_t
 {
 	uint32_t mode;
@@ -73,6 +75,11 @@ static void msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 				lastReceivedtime = esp_timer_get_time();
 				
 				// HERE YOU CAN DEFINE THE BEHAVIOUR ON RECEIVING DATA:
+				
+				
+				if(msg.data[0] == 2){
+					line_length_in_meters = msg.data[1];
+				}
 				
 				// IF the sender/radio control tells you that it just turned on ...
 				// the first message sends "1000000" so that we can detect whether the rc has been turned on before the kite
