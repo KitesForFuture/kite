@@ -76,7 +76,7 @@ void app_main(void)
 	initMotors(output_pins, 5);
 	
 	int input_pins[] = {4, 33, 2, 17, 16};
-	initPWMInput(input_pins, 5);
+	//TODO initPWMInput(input_pins, 5);
     
     
     int FLIGHT_MODE = MANUAL;
@@ -109,7 +109,7 @@ void app_main(void)
         
         updateRotationMatrix();
         
-        updatePWMInput();
+        //TODO updatePWMInput();
 		
 		float h = getHeight();// + 0.047*propeller_speed; // this is a possible hack to offset the airflow caused pressure difference at the sensor, if the propeller airflow influences the sensor. currently the propellers are far enough apart, so this is not neccessary.
 	    float d_h = getHeightDerivative();
@@ -123,13 +123,13 @@ void app_main(void)
         float CH6 = getPWMInputMinus1to1normalized(4);
         
         //TODO:
-        /*CH1 = 0;
+        CH1 = 0;
         CH2 = 0;
         CH3 = 0;
         // CH4 not used
         CH5 = 0;
         CH6 = 0;
-        */
+        
         
         float rudder_angle = 0;
         float elevon_angle_left = 0;
@@ -339,6 +339,9 @@ void app_main(void)
         
         //printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
         //printf("%f, %f\n", d_h, h);
+        
+        printf("rotation_matrix:\n%f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
+        
         // SENDING DEBUGGING DATA TO GROUND
 		sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, CH5, CH6, d_h, h);
     }
