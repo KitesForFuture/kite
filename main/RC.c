@@ -19,12 +19,12 @@ int signalOffset[6] = {0,0,0,0,0,0};
 int receivedSignal[6] = {0,0,0,0,0,0};
 float receivedData[DATALENGTH] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-int line_length_in_meters = 0;
+float line_length_in_meters = 0;
 
 typedef struct __attribute__((packed)) esp_now_msg_t
 {
 	uint32_t mode;
-	uint32_t control[6];
+	float control[6];
 	float data[DATALENGTH];
 	// Can put lots of things here
 } esp_now_msg_t;
@@ -77,10 +77,11 @@ static void msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 				// HERE YOU CAN DEFINE THE BEHAVIOUR ON RECEIVING DATA:
 				
 				
-				if(msg.data[0] == 2){
-					line_length_in_meters = msg.data[1];
-				}
+				//if(msg.control[0] == 2){
+					line_length_in_meters = msg.control[0];
+				//}
 				
+				/*
 				// IF the sender/radio control tells you that it just turned on ...
 				// the first message sends "1000000" so that we can detect whether the rc has been turned on before the kite
 				// can re-init radio control mid flight to reset signalOffset
@@ -103,6 +104,7 @@ static void msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 						receivedSignal[i] = (int)msg.control[i] - signalOffset[i];
 					}
 				}
+				*/
 			}
 		}
 	}else if (ROLE == DATA_RECEIVER){
@@ -178,7 +180,7 @@ void network_setup(void)
 }
 
 // used by the radio control to send control signals to the kite
-void sendControl(uint32_t poti[6]){
+void sendControl(float poti[6]){
 	esp_now_msg_t msg;
 	msg.mode = RC_MODE;
 	if(firstTime == 1){
@@ -210,7 +212,7 @@ void sendDataArray(float data[DATALENGTH]){
 	
 	msg.mode = DATA_MODE;
 	for(int i = 0; i < 6; i++){
-		msg.control[i] = 0;
+		msg.control[i] = 0.0;
 	}
 	for(int i = 0; i < DATALENGTH; i++){
 		msg.data[i] = data[i];
