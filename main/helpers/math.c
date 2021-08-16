@@ -6,6 +6,12 @@ float safe_acos(float number_more_or_less_between_one_and_minus_one){
 	return 0;
 }
 
+float safe_asin(float number_more_or_less_between_one_and_minus_one){
+	if(number_more_or_less_between_one_and_minus_one <= -1) return -1.5708;
+	if(number_more_or_less_between_one_and_minus_one >= 1) return 1.5708;
+	return asin(number_more_or_less_between_one_and_minus_one);
+}
+
 int smallpow(int x, int p){
 	int ret = 1;
 	for(int i = 0; i < p; i++){

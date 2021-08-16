@@ -32,7 +32,7 @@
 #define INITIAL_SIDEWAYS_FLYING_TIME 8
 
 #define MAX_SERVO_DEFLECTION 50
-#define MAX_PROPELLER_SPEED 75
+#define MAX_PROPELLER_SPEED 75 // AT MOST 90 - MAX_PROPELLER_DIFF
 #define HOVER_RUDDER_OFFSET 0
 #define HOVER_ELEVATOR_OFFSET 0
 
@@ -161,7 +161,7 @@ void app_main(void)
 		    if(propeller_diff > MAX_PROPELLER_DIFF) propeller_diff = MAX_PROPELLER_DIFF;
 		    if(propeller_diff < -MAX_PROPELLER_DIFF) propeller_diff = -MAX_PROPELLER_DIFF;
 		    
-		    propeller_speed = 25/*neutral propeller speed*/ + getHoverHeightControl(h, d_h, goal_height, rate_of_climb, 0.25, 1);
+		    propeller_speed = 25/*neutral propeller speed*/ + getHoverHeightControl(h, d_h, goal_height, (line_length_in_meters<5)?1:rate_of_climb, 0.25, 1);
 		    // IF DIVING DOWNWARDS: TURN OFF PROPELLERS
 		    float nose_horizon = rotation_matrix[0];// <x, (1,0,0)>
 		    if(nose_horizon < -0.1){
@@ -177,10 +177,12 @@ void app_main(void)
 		    	if(TESTING_WIND == false){
 		    		TESTING_WIND = true;
 		    		wind_timer = start_timer();
+		    		
 		    	}
 		    }
 		    
 		    if(TESTING_WIND == true){
+		    	propeller_speed = 25;
 		    	if(query_timer_seconds(wind_timer) > 3){
 		    		if(h > STARTING_HEIGHT){	// windy
 		    			// => start FIGURE 8
@@ -193,7 +195,8 @@ void app_main(void)
 		    			// => slowly descend and land
 		    			//TODO: integrate with LANDING mode and rope length counting
 		    			goal_height = -10;
-						rate_of_climb = -2;
+						rate_of_climb = 2;
+						TESTING_WIND = false;
 		    		}
 		    	}
 		    }
@@ -267,20 +270,45 @@ void app_main(void)
 		    	FLIGHT_MODE = LANDING;
 		    	descend_timer = start_timer();
 		    	diving_target_angle_delta_timer = 0;
-		    	slowly_changing_diving_target_angle = 45;
+		    	slowly_changing_diving_target_angle = 30;
 		    }
-		    
-		    
-		    
-		    
         } else if (FLIGHT_MODE == LANDING) {
+        	
+        	
+        	
+        	
+        	
+        	
+        	
         	
         	rudder_angle = getLandingRudderControl(1.0*(float)(pow(5,CH5)), 1.0);
 			
-			float target_angle = -30.0 + 45*CH2;
+			float target_angle = 0;// -30.0 + 45*CH2;
+			
+			if(line_length_in_meters > 75){
+				//try to keep 50 meters in height
+				float height_deviation_from_50 = h-50;
+				if(height_deviation_from_50 > 10) height_deviation_from_50 = 7;
+				if(height_deviation_from_50 < -10) height_deviation_from_50 = -7;
+				
+				target_angle = -height_deviation_from_50 * 9;
+				
+			}else{
+				// descend in 45 degree angle towards ground station
+				float angle_line_horizon = safe_asin(h/line_length_in_meters);
+				angle_line_horizon -= 0.7854;
+				angle_line_horizon *= 57.296;	// 180/pi
+				target_angle = -45 - angle_line_horizon*2;
+				if(target_angle < -80) target_angle = -80;
+				if(target_angle > 0) target_angle = 0;
+			}
+			target_angle += 45*CH2;
 			
 			get_slowly_changing_angle(target_angle, DIVING_ANGULAR_VELOCITY, &diving_target_angle_delta_timer, &slowly_changing_diving_target_angle);
 			
+			if(line_length_in_meters < 5){
+				slowly_changing_diving_target_angle = 45; // Not so slowly changing now. Trying stall landing like a swan.
+			}
 			
 			float elevator = getLandingElevatorControl(slowly_changing_diving_target_angle, 1.0*(float)(pow(5,CH6)), 1.0*(float)(pow(5,CH6)));
 			
@@ -302,12 +330,24 @@ void app_main(void)
         	if((query_timer_seconds(descend_timer) > 7 /*|| h < 30 */) && !FINAL_LANDING){
 	        	// RESUME FIGURE EIGHT MODE:
     	    	reset_slowly_changing_target_angle_timer();
-    	    	slowly_changing_diving_target_angle = 45;//TODO: just for debugging
-    	    	descend_timer = start_timer();//TODO: just for debugging
-    	    	//slowly_changing_target_angle = 0;
     	    	sideways_flying_timer = start_timer();
     	    	FLIGHT_MODE = FIGURE_EIGHT;
+    	    	
+    	    	//slowly_changing_target_angle = 0; // probably still close to 0 anyway, because that's where we moved from Fig8 into Landing mode.
     	    }
+    	    
+    	    
+    	    
+    	    
+    	    
+    	    
+    	    
+    	    
+    	    
+    	    
+    	    
+    	    
+    	    
         } else if (FLIGHT_MODE == MANUAL) {
         	
         	rudder_angle = MAX_SERVO_DEFLECTION*CH1;
@@ -317,7 +357,6 @@ void app_main(void)
         	
         	if(CH3 > 0.9) FLIGHT_MODE = HOVER;
         }
-        
         
         // DON'T LET SERVOS BREAK THE KITE
 		if(rudder_angle > MAX_SERVO_DEFLECTION) rudder_angle = MAX_SERVO_DEFLECTION;
@@ -340,7 +379,7 @@ void app_main(void)
         //printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
         //printf("%f, %f\n", d_h, h);
         //printf("rotation_matrix:\n%f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
-        
+        //printf("line_length_in_meters = %f\n",line_length_in_meters);
         // SENDING DEBUGGING DATA TO GROUND
 		sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, CH5, CH6, d_h, h);
     }

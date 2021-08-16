@@ -183,13 +183,13 @@ void network_setup(void)
 void sendControl(float poti[6]){
 	esp_now_msg_t msg;
 	msg.mode = RC_MODE;
-	if(firstTime == 1){
+	/*if(firstTime == 1){
 		msg.control[0] = poti[0] + 1000000;
 		firstTime = 0;
 	}else{
 		msg.control[0] = poti[0];
-	}
-	for(int i = 1; i < 6; i++){
+	}*/
+	for(int i = 0; i < 6; i++){
 		msg.control[i] = poti[i];
 	}
 	for(int i = 0; i < DATALENGTH; i++){
