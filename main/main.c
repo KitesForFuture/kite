@@ -276,15 +276,15 @@ void app_main(void)
         	
         	
         	
-        	
-        	
-        	
+        	//TODO: remove this
+        	//line_length_in_meters = 60;
+        	//h = 50;
         	
         	
         	rudder_angle = getLandingRudderControl(1.0*(float)(pow(5,CH5)), 1.0);
 			
 			float target_angle = 0;// -30.0 + 45*CH2;
-			
+			//float angle_line_horizon = 0; //TODO: declared here for debugging
 			if(line_length_in_meters > 75){
 				//try to keep 50 meters in height
 				float height_deviation_from_50 = h-50;
@@ -296,7 +296,7 @@ void app_main(void)
 			}else{
 				// descend in 45 degree angle towards ground station
 				float angle_line_horizon = safe_asin(h/line_length_in_meters);
-				angle_line_horizon -= 0.7854;
+				angle_line_horizon -= 0.7854;	// pi/4
 				angle_line_horizon *= 57.296;	// 180/pi
 				target_angle = -45 - angle_line_horizon*2;
 				if(target_angle < -80) target_angle = -80;
@@ -309,6 +309,8 @@ void app_main(void)
 			if(line_length_in_meters < 5){
 				slowly_changing_diving_target_angle = 45; // Not so slowly changing now. Trying stall landing like a swan.
 			}
+			
+			//sendData(target_angle, slowly_changing_diving_target_angle, angle_line_horizon, CH2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 			
 			float elevator = getLandingElevatorControl(slowly_changing_diving_target_angle, 1.0*(float)(pow(5,CH6)), 1.0*(float)(pow(5,CH6)));
 			
@@ -374,6 +376,13 @@ void app_main(void)
 		setSpeed(2, propeller_speed - propeller_diff);
 		setAngle(3, -elevon_angle_right);
 		setSpeed(4, propeller_speed + propeller_diff);
+		/*
+		setAngle(0, 0);
+		setAngle(1, 0);
+		setSpeed(2, 0);
+		setAngle(3, 0);
+		setSpeed(4, 0);
+		*/
 		//printf("setting speed");
         
         //printf("rud = %f, elev = %f, prop = %f\n", rudder_angle, elevator_angle, propeller_speed);
@@ -381,6 +390,6 @@ void app_main(void)
         //printf("rotation_matrix:\n%f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
         //printf("line_length_in_meters = %f\n",line_length_in_meters);
         // SENDING DEBUGGING DATA TO GROUND
-		sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, CH5, CH6, d_h, h);
+		//sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, CH5, CH6, d_h, h);
     }
 }
