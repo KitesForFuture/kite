@@ -72,7 +72,7 @@ void app_main(void)
     init_bmp280(bus1, readEEPROM(6));
     initMPU6050(bus0, mpu_callibration);
     
-	int output_pins[] = {26,27,12,13,5};
+	int output_pins[] = {/*TODO: SURVIVOR: 26,27*/27,26,12,13,5};
 	initMotors(output_pins, 5);
 	
 	int input_pins[] = {4, 33, 2, 17, 16};
