@@ -142,6 +142,10 @@ void app_main(void)
         
         float propeller_diff = 0;
         
+        if(timeSinceLastReceiveInSeconds() > 3){
+	        line_length_in_meters = 100;
+	    }
+        
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
         //FLIGHT_MODE = LANDING; // TODO delete this debugging line
         //FINAL_LANDING = false;//TODO remove
