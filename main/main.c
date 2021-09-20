@@ -88,7 +88,7 @@ void app_main(void)
     Time prepare_landing_timer = 0;
     int turn_delayed = 0;
     
-    float GROUND_STATION_MIN_TENSION = 1;
+    float GROUND_STATION_MIN_TENSION = 0;
     float propeller_speed = 0;
     float FINAL_LANDING = false;
     
@@ -147,7 +147,7 @@ void app_main(void)
 	    }
         
         if(CH3 < 0.9) FLIGHT_MODE = MANUAL;
-        //FLIGHT_MODE = LANDING; // TODO delete this debugging line
+        //FLIGHT_MODE = FIGURE_EIGHT; // TODO delete this debugging line
         //FINAL_LANDING = false;//TODO remove
         if (FLIGHT_MODE == HOVER) {
         	
@@ -175,15 +175,34 @@ void app_main(void)
 		    //REQUEST LOW LINE TENSION FROM GROUND STATION
 		    //if(h > STARTING_HEIGHT + 5){ FLIGHT_MODE = FIGURE_EIGHT; sideways_flying_timer = start_timer(); GROUND_STATION_MIN_TENSION = 0; propeller_speed = 0; propeller_diff = 0;}
 		    if(h < STARTING_HEIGHT){
-		    	GROUND_STATION_MIN_TENSION = 1;
-		    }else{
 		    	GROUND_STATION_MIN_TENSION = 0;
+		    }else{
+		    	GROUND_STATION_MIN_TENSION = 1;
 		    	if(TESTING_WIND == false){
 		    		TESTING_WIND = true;
 		    		wind_timer = start_timer();
 		    		
 		    	}
 		    }
+		    
+		    /*
+		    if(line_length_in_meters > 70){
+		    	// windy
+		   		// => start FIGURE 8
+		    	FLIGHT_MODE = FIGURE_EIGHT;
+		    	sideways_flying_timer = start_timer();
+		    	GROUND_STATION_MIN_TENSION = 0;
+		    	propeller_speed = 0;
+		    	propeller_diff = 0;
+		    }else{
+		    	// not windy
+		    	// => slowly descend and land
+		    	//TODO: integrate with LANDING mode and rope length counting
+		    	goal_height = -10;
+				rate_of_climb = 2;
+				TESTING_WIND = false;
+		    }
+		    */
 		    
 		    if(TESTING_WIND == true){
 		    	propeller_speed = 25;
@@ -192,7 +211,7 @@ void app_main(void)
 		    			// => start FIGURE 8
 		    			FLIGHT_MODE = FIGURE_EIGHT;
 		    			sideways_flying_timer = start_timer();
-		    			GROUND_STATION_MIN_TENSION = 0;
+		    			GROUND_STATION_MIN_TENSION = 1;
 		    			propeller_speed = 0;
 		    			propeller_diff = 0;
 		    		}else{						// not windy
@@ -376,10 +395,10 @@ void app_main(void)
 		if(propeller_speed > MAX_PROPELLER_SPEED) propeller_speed = MAX_PROPELLER_SPEED;
         
         setAngle(0, rudder_angle);
-		setAngle(1, -elevon_angle_left);
-		setSpeed(2, propeller_speed - propeller_diff);
-		setAngle(3, -elevon_angle_right);
-		setSpeed(4, propeller_speed + propeller_diff);
+		setAngle(1, elevon_angle_left);
+		setSpeed(2, propeller_speed + propeller_diff);
+		setAngle(3, elevon_angle_right);
+		setSpeed(4, propeller_speed - propeller_diff);
 		/*
 		setAngle(0, 0);
 		setAngle(1, 0);
@@ -394,6 +413,6 @@ void app_main(void)
         //printf("rotation_matrix:\n%f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rotation_matrix[0], rotation_matrix[1], rotation_matrix[2], rotation_matrix[3], rotation_matrix[4], rotation_matrix[5], rotation_matrix[6], rotation_matrix[7], rotation_matrix[8]);
         //printf("line_length_in_meters = %f\n",line_length_in_meters);
         // SENDING DEBUGGING DATA TO GROUND
-		//sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, CH5, CH6, d_h, h);
+		sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, 90*CH1, 90*CH2, d_h, h);
     }
 }
