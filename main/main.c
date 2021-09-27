@@ -155,15 +155,14 @@ void app_main(void)
 		    
 		    elevon_angle_left = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET+CH2, 0.5/*1*(float)(pow(3,CH5))*/, 0.22/*0.44*(float)(pow(3,CH6))*/, &elevator_p);
 		    float ailerons = get_aileron_D_gain(1.5/*5.0*/);
-		    if(ailerons > AILERON_MAX_DEFLECTION) ailerons = AILERON_MAX_DEFLECTION;
-		    if(ailerons < AILERON_MIN_DEFLECTION) ailerons = AILERON_MIN_DEFLECTION;
+		    clamp(ailerons, AILERON_MIN_DEFLECTION, AILERON_MAX_DEFLECTION);
+		    
 		    elevon_angle_right = elevon_angle_left + ailerons + HOVER_AILERON_OFFSET;
 		    elevon_angle_left -= ailerons + HOVER_AILERON_OFFSET;
 		    //(float)(pow(5,CH5)), (float)(pow(5,CH6))
 		    
 		    propeller_diff = getHoverRudderControl(HOVER_RUDDER_OFFSET, 0.2, 0.56);// 0.25, 0.2);
-		    if(propeller_diff > MAX_PROPELLER_DIFF) propeller_diff = MAX_PROPELLER_DIFF;
-		    if(propeller_diff < -MAX_PROPELLER_DIFF) propeller_diff = -MAX_PROPELLER_DIFF;
+		    clamp(propeller_diff, -MAX_PROPELLER_DIFF, MAX_PROPELLER_DIFF);
 		    
 		    propeller_speed = 25/*neutral propeller speed*/ + getHoverHeightControl(h, d_h, goal_height, (line_length_in_meters<5)?1:rate_of_climb, 0.25, 1);
 		    // IF DIVING DOWNWARDS: TURN OFF PROPELLERS
@@ -311,9 +310,7 @@ void app_main(void)
 			if(line_length_in_meters > 75){
 				//try to keep 50 meters in height
 				float height_deviation_from_50 = h-50;
-				if(height_deviation_from_50 > 10) height_deviation_from_50 = 7;
-				if(height_deviation_from_50 < -10) height_deviation_from_50 = -7;
-				
+				clamp(height_deviation_from_50, -7, 7);
 				target_angle = -height_deviation_from_50 * 9;
 				
 			}else{
@@ -322,8 +319,8 @@ void app_main(void)
 				angle_line_horizon -= 0.7854;	// pi/4
 				angle_line_horizon *= 57.296;	// 180/pi
 				target_angle = -45 - angle_line_horizon*2;
-				if(target_angle < -80) target_angle = -80;
-				if(target_angle > 0) target_angle = 0;
+				clamp(target_angle, -80, 0);
+				
 			}
 			target_angle += 45*CH2;
 			
@@ -384,15 +381,12 @@ void app_main(void)
         }
         
         // DON'T LET SERVOS BREAK THE KITE
-		if(rudder_angle > MAX_SERVO_DEFLECTION) rudder_angle = MAX_SERVO_DEFLECTION;
-		if(rudder_angle < -MAX_SERVO_DEFLECTION) rudder_angle = -MAX_SERVO_DEFLECTION;
-		if(elevon_angle_left > MAX_SERVO_DEFLECTION) elevon_angle_left = MAX_SERVO_DEFLECTION;
-		if(elevon_angle_left < -MAX_SERVO_DEFLECTION) elevon_angle_left = -MAX_SERVO_DEFLECTION;
-		if(elevon_angle_right > MAX_SERVO_DEFLECTION) elevon_angle_right = MAX_SERVO_DEFLECTION;
-		if(elevon_angle_right < -MAX_SERVO_DEFLECTION) elevon_angle_right = -MAX_SERVO_DEFLECTION;
+        clamp(rudder_angle, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+        clamp(elevon_angle_left, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+        clamp(elevon_angle_right, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
 		
 		// DON'T OVERHEAT THE MOTORS
-		if(propeller_speed > MAX_PROPELLER_SPEED) propeller_speed = MAX_PROPELLER_SPEED;
+		clamp(propeller_speed, 0, MAX_PROPELLER_SPEED);
         
         setAngle(0, rudder_angle);
 		setAngle(1, elevon_angle_left);

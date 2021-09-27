@@ -53,8 +53,7 @@ float getHoverHeightControl(float h, float d_h, float goal_height, float rate_of
 	target_height += target_height_update*update_sign;
 	
 	// BOUND |target_height - h|
-	if(target_height > h + TARGET_HEIGHT_BOUND) target_height = h + TARGET_HEIGHT_BOUND;
-	if(target_height < h - TARGET_HEIGHT_BOUND) target_height = h - TARGET_HEIGHT_BOUND;
+	clamp(target_height, h - TARGET_HEIGHT_BOUND, h + TARGET_HEIGHT_BOUND);
 	
 	float P = target_height - h;
 	float D = -d_h;
