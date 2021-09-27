@@ -32,6 +32,8 @@ float normalize(float a[], int length);
 
 void get_slowly_changing_angle(float target_angle, float turning_speed, Time* target_angle_delta_timer, float* slowly_changing_target_angle);
 
+float clamp(float d, float min, float max);
+
 //TODO-Ben:
 //void get_column(float matrix[], float column[], int column_number);
 

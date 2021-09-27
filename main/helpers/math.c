@@ -196,3 +196,8 @@ void get_slowly_changing_angle(float target_angle, float turning_speed, Time* ta
     }
     //return slowly_changing_target_angle;
 }
+
+float clamp(float d, float min, float max) {
+  const float t = d < min ? min : d;
+  return t > max ? max : t;
+}
