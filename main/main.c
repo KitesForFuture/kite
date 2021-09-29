@@ -32,11 +32,11 @@
 #define INITIAL_SIDEWAYS_FLYING_TIME 8
 
 #define MAX_SERVO_DEFLECTION 50
-#define MAX_PROPELLER_SPEED 75 // AT MOST 90 - MAX_PROPELLER_DIFF
+#define MAX_PROPELLER_SPEED 60 // AT MOST 90 - MAX_PROPELLER_DIFF
 #define HOVER_RUDDER_OFFSET 0
 #define HOVER_ELEVATOR_OFFSET 0
 
-#define HOVER_AILERON_OFFSET 0
+#define HOVER_AILERON_OFFSET 5
 #define AILERON_MAX_DEFLECTION 30
 #define AILERON_MIN_DEFLECTION -30
 #define MAX_PROPELLER_DIFF 10
@@ -46,6 +46,8 @@
 #define DIVING_ANGULAR_VELOCITY 50.0// 86 //1.5 * 180/pi if 0, turning is maximum fast (possibly and probably causing a stall)
 
 #define STARTING_HEIGHT 40
+
+#define NEUTRAL_PROPELLER_SPEED 30
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -94,6 +96,10 @@ void app_main(void)
     
     float goal_height = 100;// 100 // 5*CH5;// -3 to +3 meters
     float rate_of_climb = 3;// 3 // CH6+1;// 0 to 1 m/s
+    
+    //TODO: remove, only for debugging:
+    goal_height = 5;
+    rate_of_climb = 0.1;
     
     float PREPARE_LANDING = false;
     Time diving_target_angle_delta_timer = 0;
@@ -153,18 +159,18 @@ void app_main(void)
         	
         	rudder_angle = 0;//getHoverRudderControl(HOVER_RUDDER_OFFSET, 1.5, 3.6);
 		    
-		    elevon_angle_left = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET+CH2, 0.5/*1*(float)(pow(3,CH5))*/, 0.22/*0.44*(float)(pow(3,CH6))*/, &elevator_p);
-		    float ailerons = get_aileron_D_gain(1.5/*5.0*/);
+		    elevon_angle_left = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET+CH2, 0.7, 0.6, &elevator_p);
+		    float ailerons = get_aileron_D_gain(1.5/*5.0*/) + HOVER_AILERON_OFFSET/*CH1 * 45*/;
 		    clamp(ailerons, AILERON_MIN_DEFLECTION, AILERON_MAX_DEFLECTION);
 		    
 		    elevon_angle_right = elevon_angle_left + ailerons + HOVER_AILERON_OFFSET;
 		    elevon_angle_left -= ailerons + HOVER_AILERON_OFFSET;
 		    //(float)(pow(5,CH5)), (float)(pow(5,CH6))
 		    
-		    propeller_diff = getHoverRudderControl(HOVER_RUDDER_OFFSET, 0.2, 0.56);// 0.25, 0.2);
+		    propeller_diff = getHoverRudderControl(HOVER_RUDDER_OFFSET, 0.17, 0.56);// 0.25, 0.2);
 		    clamp(propeller_diff, -MAX_PROPELLER_DIFF, MAX_PROPELLER_DIFF);
 		    
-		    propeller_speed = 25/*neutral propeller speed*/ + getHoverHeightControl(h, d_h, goal_height, (line_length_in_meters<5)?1:rate_of_climb, 0.25, 1);
+		    propeller_speed = NEUTRAL_PROPELLER_SPEED + getHoverHeightControl(h, d_h, goal_height, (line_length_in_meters<5)?1:rate_of_climb, 0.25, 1);
 		    // IF DIVING DOWNWARDS: TURN OFF PROPELLERS
 		    float nose_horizon = rotation_matrix[0];// <x, (1,0,0)>
 		    if(nose_horizon < -0.1){
@@ -204,7 +210,7 @@ void app_main(void)
 		    */
 		    
 		    if(TESTING_WIND == true){
-		    	propeller_speed = 25;
+		    	propeller_speed = NEUTRAL_PROPELLER_SPEED;
 		    	if(query_timer_seconds(wind_timer) > 3){
 		    		if(h > STARTING_HEIGHT){	// windy
 		    			// => start FIGURE 8
@@ -388,7 +394,7 @@ void app_main(void)
 		// DON'T OVERHEAT THE MOTORS
 		clamp(propeller_speed, 0, MAX_PROPELLER_SPEED);
         
-        setAngle(0, rudder_angle);
+        setAngle(0, -rudder_angle);
 		setAngle(1, elevon_angle_left);
 		setSpeed(2, propeller_speed + propeller_diff);
 		setAngle(3, elevon_angle_right);

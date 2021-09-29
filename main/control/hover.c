@@ -104,7 +104,7 @@ float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, f
 	static float I = 0;
 	if(beta > 0) I ++;
 	if(beta < 0) I --;
-	beta = clamp(beta, -100, 100);
+	I = clamp(I, -100, 100);
 	
 	// IF MORE ROLL NEUTRAL THAN KITE-LIKE, DON'T CONTROLL RUDDER, BUT ONLY ELEVATOR
 	if(nose_horizon < 0.1 && fabs(rotation_matrix[2]) > fabs(rotation_matrix[1])/*|<z, (1,0,0)>| > |<y, (1,0,0)>|*/){
@@ -119,7 +119,7 @@ float getHoverRudderControl(float sidewards_tilt_angle, float p_rudder_factor, f
 		oldBetaHover = beta;
 	}
 	
-	return - P_RUDDER*p_rudder_factor*(beta + I*0.01) + D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];
+	return - P_RUDDER*p_rudder_factor*(beta + I*0.005) + D_RUDDER*d_rudder_factor*gyro_in_kite_coords[2];
 }
 
 
