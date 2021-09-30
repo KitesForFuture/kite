@@ -98,8 +98,8 @@ void app_main(void)
     float rate_of_climb = 3;// 3 // CH6+1;// 0 to 1 m/s
     
     //TODO: remove, only for debugging:
-    goal_height = 5;
-    rate_of_climb = 0.1;
+    //goal_height = 5;
+    //rate_of_climb = 0.1;
     
     float PREPARE_LANDING = false;
     Time diving_target_angle_delta_timer = 0;
@@ -170,6 +170,10 @@ void app_main(void)
 		    propeller_diff = getHoverRudderControl(HOVER_RUDDER_OFFSET, 0.17, 0.56);// 0.25, 0.2);
 		    clamp(propeller_diff, -MAX_PROPELLER_DIFF, MAX_PROPELLER_DIFF);
 		    
+		    //TODO: remove
+		    //h = 100*(CH2);
+		    //d_h = 0;
+		    
 		    propeller_speed = NEUTRAL_PROPELLER_SPEED + getHoverHeightControl(h, d_h, goal_height, (line_length_in_meters<5)?1:rate_of_climb, 0.25, 1);
 		    // IF DIVING DOWNWARDS: TURN OFF PROPELLERS
 		    float nose_horizon = rotation_matrix[0];// <x, (1,0,0)>
@@ -211,7 +215,7 @@ void app_main(void)
 		    
 		    if(TESTING_WIND == true){
 		    	propeller_speed = NEUTRAL_PROPELLER_SPEED;
-		    	if(query_timer_seconds(wind_timer) > 3){
+		    	if(query_timer_seconds(wind_timer) > 2){
 		    		if(h > STARTING_HEIGHT){	// windy
 		    			// => start FIGURE 8
 		    			FLIGHT_MODE = FIGURE_EIGHT;
