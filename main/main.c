@@ -295,7 +295,7 @@ void app_main(void)
         	//rudder_angle = getRudderControl(target_angle, TURNING_SPEED, (float)(pow(5,CH5)), (float)(pow(5,CH5)), SINGULARITY_AT_BOTTOM); //TODO: CH5,CH6 here for P/D
 		    elevon_angle_right = elevon_angle_left = getGlideElevatorControl((float)(pow(5,CH6)));
 		    
-		    if((query_timer_seconds(descend_timer) > 17 && h > 70) || CH2 > 0.8 || CH2 < -0.8){PREPARE_LANDING = true; prepare_landing_timer = start_timer();}
+		    if((query_timer_seconds(descend_timer) > /*17*/30 && h > 100) || CH2 > 0.8 || CH2 < -0.8){PREPARE_LANDING = true; prepare_landing_timer = start_timer();}
 		    
 		    if(PREPARE_LANDING && query_timer_seconds(prepare_landing_timer) > 8 && fabs(slowly_changing_target_angle) < 0.1){
 		    	PREPARE_LANDING = false;
@@ -303,7 +303,7 @@ void app_main(void)
 		    	descend_timer = start_timer();
 		    	diving_target_angle_delta_timer = 0;
 		    	slowly_changing_diving_target_angle = 30;
-		    }
+		    }3
         } else if (FLIGHT_MODE == LANDING) {
         	
         	
