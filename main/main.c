@@ -159,7 +159,7 @@ void app_main(void)
         	
         	rudder_angle = 0;//getHoverRudderControl(HOVER_RUDDER_OFFSET, 1.5, 3.6);
 		    
-		    elevon_angle_left = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET+CH2, 0.7, 0.6, &elevator_p);
+		    elevon_angle_left = getHoverElevatorControl(HOVER_ELEVATOR_OFFSET+CH2, 0.7*(float)(pow(5,CH5)), 0.6*(float)(pow(5,CH6)), &elevator_p);
 		    float ailerons = get_aileron_D_gain(1.5/*5.0*/) + HOVER_AILERON_OFFSET/*CH1 * 45*/;
 		    clamp(ailerons, AILERON_MIN_DEFLECTION, AILERON_MAX_DEFLECTION);
 		    
