@@ -303,7 +303,7 @@ void app_main(void)
 		    	descend_timer = start_timer();
 		    	diving_target_angle_delta_timer = 0;
 		    	slowly_changing_diving_target_angle = 30;
-		    }3
+		    }
         } else if (FLIGHT_MODE == LANDING) {
         	
         	
