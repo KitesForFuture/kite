@@ -1,9 +1,11 @@
 #include <math.h>
 #include "math.h"
 // acos function continuously extended beyond -1 and 1.
+
 float safe_acos(float number_more_or_less_between_one_and_minus_one){
-	return (fabs(number_more_or_less_between_one_and_minus_one) < 1) ? acos(number_more_or_less_between_one_and_minus_one) : 0;
-	return 0;
+	if(number_more_or_less_between_one_and_minus_one <= -1) return 3.14159265;
+	if(number_more_or_less_between_one_and_minus_one >= 1) return 0;
+	return acos(number_more_or_less_between_one_and_minus_one);
 }
 
 float safe_asin(float number_more_or_less_between_one_and_minus_one){
@@ -173,6 +175,14 @@ float normalize(float a[], int length) {
 	}
 	
 	return norm;
+}
+
+float angle(float vec1[3], float vec2[3]){
+	
+	normalize(vec1, 3);
+	normalize(vec2, 3);
+	
+	return acos_clamp(scalarProductOfMatrices(vec1, vec2, 3));
 }
 
 void setup_slowly_changing_angle(float* target_angle_delta_timer, float* slowly_changing_target_angle){

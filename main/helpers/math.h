@@ -4,6 +4,8 @@
 
 #include <math.h>
 #include "../helpers/timer.h"
+
+const float PI = 3.14159265;
  
 float safe_acos(float number_more_or_less_between_one_and_minus_one);
 float safe_asin(float number_more_or_less_between_one_and_minus_one);
