@@ -16,21 +16,25 @@
 #include "esp_wifi.h"
 #include "esp_now.h"
 #include "RC.c"
+//#include "control/sensorData.h"
 #include "control/autopilot.h"
+
+#define MAX_SERVO_DEFLECTION 50
+#define MAX_PROPELLER_SPEED 60 // AT MOST 90 - MAX_PROPELLER_DIFF
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
 
 void app_main(void)
 {
-
+	
 	init_uptime();
 	setRole(KITE);
 	network_setup();
 	
 	init_cat24(bus1);
     
-    float debug_bmp_tmp_factor = readEEPROM(6);
+    //float debug_bmp_tmp_factor = readEEPROM(6);
 
     struct position_data mpu_callibration = {
         {readEEPROM(0), readEEPROM(1), readEEPROM(2)},
@@ -47,7 +51,7 @@ void app_main(void)
 	int input_pins[] = {4, 33, 2, 17, 16};
 	initPWMInput(input_pins, 5);
 	
-	float GROUND_STATION_MIN_TENSION = 0;//TODO: needed?
+	//float GROUND_STATION_MIN_TENSION = 0;//TODO: needed?
 	
 	//autopilot = new Autopilot();
 	SensorData sensorData;
@@ -75,12 +79,12 @@ void app_main(void)
 		float line_length = 1;
 		float line_tension = 0;
 		
-		autopilot.hover.Y.P = 1.5**getPWMInputMinus1to1normalized(3);//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
+		autopilot.hover.Y.P = pow(1.5,getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
 		
 		initSensorData(&sensorData, rotation_matrix, gyro_in_kite_coords, getHeight(), getHeightDerivative());
 		
 		//TODO: decide size of timestep_in_s in main.c and pass to stepAutopilot()
-        stepAutopilot(&autopilot, &control_data, sensor_data, line_length, line_tension);
+        stepAutopilot(&autopilot, &control_data, sensorData, line_length, line_tension);
         
         // DON'T LET SERVOS BREAK THE KITE
         clamp(control_data.rudder, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
@@ -99,7 +103,6 @@ void app_main(void)
 		setSpeed(4, control_data.right_prop);
         
         //TODO: communication with ground station
-        
-		sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, 90*CH1, 90*CH2, d_h, h);
+		//sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, 90*CH1, 90*CH2, d_h, h);
     }
 }

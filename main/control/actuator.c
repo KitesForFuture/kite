@@ -32,5 +32,5 @@ float getValueActuator(Actuator* actuator){
 void setTargetValueActuator(Actuator* actuator, float value){
 	
 	actuator->targetValue = value;
-	
+}
 

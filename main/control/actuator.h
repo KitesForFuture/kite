@@ -2,11 +2,11 @@
 #define CONTROLS_ACTUATOR
 
 struct _Actuator {
-	float targetValue = 0;
-	float speed = 0;
-	float minValue = 0;
-	float maxValue = 0;
-	float currentValue = 0;
+	float targetValue;
+	float speed;
+	float minValue;
+	float maxValue;
+	float currentValue;
 };
 typedef struct _Actuator Actuator;
 

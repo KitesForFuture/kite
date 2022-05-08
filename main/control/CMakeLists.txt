@@ -5,5 +5,4 @@ add_library(control
  actuator.c
  autopilot.c)
  
- include_directories(../helpers)
-target_link_libraries(control PUBLIC helpers)
+

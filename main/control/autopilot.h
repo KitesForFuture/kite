@@ -1,24 +1,24 @@
 #ifndef CONTROLS_AUTOPILOT
 #define CONTROLS_AUTOPILOT
 
-#include "../controlData.h"
-#include "../sensorData.h"
-#include "../actuator.h"
+#include "./controlData.h"
+#include "./sensorData.h"
+#include "./actuator.h"
 
-const int HOVER_MODE = 0;
-const int EIGHT_MODE = 1;
-const int TRANSITION_MODE = 2;
-const int STRAIGHT_MODE = 3;
-const int LANDING_MODE = 4;
-const int LANDING_MODE_HOVER = 5;
-const int LANDING_EIGHT_TRANSITION = 6;
-const int FINAL_LANDING_MODE = 7;
-const int FINAL_LANDING_MODE_HOVER = 8;
+#define HOVER_MODE 0
+#define EIGHT_MODE 1
+#define TRANSITION_MODE 2
+#define STRAIGHT_MODE 3
+#define LANDING_MODE 4
+#define LANDING_MODE_HOVER 5
+#define LANDING_EIGHT_TRANSITION 6
+#define FINAL_LANDING_MODE 7
+#define FINAL_LANDING_MODE_HOVER 8
 
-const float FIRST_TURN_MULTIPLIER = 0.5;
+#define FIRST_TURN_MULTIPLIER 0.5
 
-const int LEFT = 0;
-const int RIGHT = 1;
+#define LEFT 0
+#define RIGHT 1
 
 struct _Autopilot {
 	struct {
@@ -42,8 +42,8 @@ struct _Autopilot {
 		} H;
 	} hover;
 	
-	float y_angle_offset = 0.15;
-	float desired_height = 0;
+	float y_angle_offset;
+	float desired_height;
 		
 	//struct {...} figure_eight;
 		

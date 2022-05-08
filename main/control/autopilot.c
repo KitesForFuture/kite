@@ -27,7 +27,7 @@ void initAutopilot(Autopilot* autopilot){
 	autopilot->multiplier = FIRST_TURN_MULTIPLIER;
 	autopilot->turning_speed = 1.3;//0.75;//0.75;
 	
-	initActuator(autopilot->slowly_changing_target_angle, autopilot->turning_speed, -1000, 1000);
+	initActuator(&(autopilot->slowly_changing_target_angle), autopilot->turning_speed, -1000, 1000);
 	
 	autopilot->old_line_length = 0;
 	autopilot->smooth_reel_in_speed = 0.1;
@@ -101,7 +101,7 @@ float getAngleError(float offset, float controllable_axis[3], float axis_we_wish
 	float l_1_norm = fabs(where_axis_we_wish_horizontal_should_be[1]) + fabs(where_axis_we_wish_horizontal_should_be[2]);
 	
 	
-	if(pseudonorm < 0.05){ // close to undefinedness
+	if(l_1_norm < 0.05){ // close to undefinedness
 		return 0;
 	}else{
 		normalize(where_axis_we_wish_horizontal_should_be, 3);
@@ -122,33 +122,33 @@ float getAngleErrorYAxis(float offset, float mat[9]){
 }
 
 
-ControlData landing_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension, int transition){
-	float mat[9] = sensor_data.rotation_matrix;
+void landing_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension, int transition){
+	float* mat = sensor_data.rotation_matrix;
 	float line_angle = safe_asin(sensor_data.height/line_length);
 	
 	float desired_line_angle = PI/4 * 0.75;//0.3;
 	
 	float line_angle_error = line_angle - desired_line_angle;// negative -> too low, positive -> too high
 	float desired_dive_angle = -desired_line_angle - 2 * line_angle_error;
-	float desired_dive_angle = clamp(desired_dive_angle, -PI * 0.5 * 0.8, 0);
+	desired_dive_angle = clamp(desired_dive_angle, -PI * 0.5 * 0.8, 0);
 	if(transition){
 		desired_dive_angle = PI/4;
 	}
 	
 	float y_axis_offset = getAngleErrorYAxis(desired_dive_angle - PI/2, mat);
 	//TODO: bei weniger Wind (geringe Seilspannung) sollte das hier mit Faktor multipliziert werden, um genügend Steuerwirkung zu haben
-	float y_axis_control = /*autopilot->hover.Y.P**/10*(- 0.24*3.8*2*0.5* y_axis_offset + 0.0027*0.7*0.4 *0.2*0.5 * sensor_data.gyro.y);
+	float y_axis_control = /*autopilot->hover.Y.P**/10*(- 0.24*3.8*2*0.5* y_axis_offset + 0.0027*0.7*0.4 *0.2*0.5 * sensor_data.gyro[1]);
 	
 	y_axis_control *= line_tension < 5 ? 5 : 1;
 	
-	float x_axis_control = -50 * (mat[3] * autopilot->hover.Z.P + 0*autopilot->hover.Z.D * sensor_data.gyro.x);
+	float x_axis_control = -50 * (mat[3] * autopilot->hover.Z.P + 0*autopilot->hover.Z.D * sensor_data.gyro[0]);
 	
 	initControlData(control_data_out, 0, 0, y_axis_control-1*x_axis_control, y_axis_control+1*x_axis_control, x_axis_control, 2); return;
 }
 
 void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float timestep_in_s){
 	
-	float mat[9] = sensor_data.rotation_matrix;
+	float* mat = sensor_data.rotation_matrix;
 	if(query_timer_seconds(autopilot->timer) > autopilot->sideways_flying_time * autopilot->multiplier){ // IF TIME TO TURN
 		//TURN
 		autopilot->direction  *= -1;
@@ -163,16 +163,16 @@ void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	if(target_angle_adjustment < -0.4) target_angle_adjustment = -0.4;
 	float sideways_flying_angle_fraction = 0.9;//0.9;//0.75; // fraction of 90 degrees, autopilot influences the angle to the horizon, smaller => greater angle = flying higher
 	float target_angle = PI*0.5*autopilot->direction*(sideways_flying_angle_fraction + target_angle_adjustment/* 1 means 1.2*90 degrees, 0 means 0 degrees*/);
-	setTargetValueActuator(&autopilot->slowly_changing_target_angle, target_angle);
-	stepActuator(&autopilot->slowly_changing_target_angle, timestep_in_s);
-	float slowly_changing_target_angle = getValueActuator(&autopilot->slowly_changing_target_angle);
+	setTargetValueActuator(&(autopilot->slowly_changing_target_angle), target_angle);
+	stepActuator(&(autopilot->slowly_changing_target_angle), timestep_in_s);
+	float slowly_changing_target_angle_local = getValueActuator(&(autopilot->slowly_changing_target_angle));
 	
 	float z_axis_offset = getAngleErrorZAxis(0.0, mat);
-	z_axis_offset -= slowly_changing_target_angle;
-	float z_axis_control = - 1 * z_axis_offset + 1 * sensor_data.gyro.z;
+	z_axis_offset -= slowly_changing_target_angle_local;
+	float z_axis_control = - 1 * z_axis_offset + 1 * sensor_data.gyro[2];
 	z_axis_control *=100;
 	
-	float y_axis_control = 15 - 1 * autopilot->hover.Y.D * sensor_data.gyro.y;
+	float y_axis_control = 15 - 1 * autopilot->hover.Y.D * sensor_data.gyro[1];
 	initControlData(control_data_out, 0, 0, y_axis_control - 0.5*z_axis_control, y_axis_control + 0.5*z_axis_control, 0, 35); return;
 }
 
@@ -184,11 +184,11 @@ void straight_control(Autopilot* autopilot, ControlData* control_data_out, Senso
 //TODO:
 void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension){
 	
-	float mat[9] = sensor_data.rotation_matrix;
+	float* mat = sensor_data.rotation_matrix;
 	
 	// HEIGHT
 	
-	float height = sensor_data.height;
+	//float height = sensor_data.height;
 	float d_height = sensor_data.d_height;
 	
 	float line_angle = safe_asin(sensor_data.height/(line_length == 0 ? 1 : line_length));
@@ -207,18 +207,18 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	// Y-AXIS
 	
 	float y_axis_offset = getAngleErrorYAxis(autopilot->y_angle_offset, mat);
-	float y_axis_control = (normed_airflow)**-2 * 0.7 * (- 3.8*autopilot->hover.Y.P * y_axis_offset + 0.7*0.4 * autopilot->hover.Y.D * sensor_data.gyro.y);
+	float y_axis_control = (normed_airflow > 0.0001 ? 1/(normed_airflow*normed_airflow) : 1) * 0.7 * (- 3.8*autopilot->hover.Y.P * y_axis_offset + 0.7*0.4 * autopilot->hover.Y.D * sensor_data.gyro[1]);
 	y_axis_control *= 100;
 	
 	// Z-AXIS
 	
-	float z_axis_offset = autopilot->getAngleErrorZAxis(0.0, mat);
-	float z_axis_control = - autopilot->hover.Z.P * z_axis_offset + autopilot->hover.Z.D * sensor_data.gyro.z;
+	float z_axis_offset = getAngleErrorZAxis(0.0, mat);
+	float z_axis_control = - autopilot->hover.Z.P * z_axis_offset + autopilot->hover.Z.D * sensor_data.gyro[2];
 	z_axis_control *=100;
 	
 	// X-AXIS
 	
-	float x_axis_control = autopilot->hover.X.D * sensor_data.gyro.x;
+	float x_axis_control = autopilot->hover.X.D * sensor_data.gyro[0];
 	x_axis_control *= 100;
 	
 	// MIXING

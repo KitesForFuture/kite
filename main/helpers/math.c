@@ -182,7 +182,7 @@ float angle(float vec1[3], float vec2[3]){
 	normalize(vec1, 3);
 	normalize(vec2, 3);
 	
-	return acos_clamp(scalarProductOfMatrices(vec1, vec2, 3));
+	return safe_acos(scalarProductOfMatrices(vec1, vec2, 3));
 }
 
 void setup_slowly_changing_angle(float* target_angle_delta_timer, float* slowly_changing_target_angle){
