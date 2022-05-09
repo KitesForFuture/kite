@@ -184,12 +184,13 @@ float angle(float vec1[3], float vec2[3]){
 	
 	return safe_acos(scalarProductOfMatrices(vec1, vec2, 3));
 }
-
+/*
 void setup_slowly_changing_angle(float* target_angle_delta_timer, float* slowly_changing_target_angle){
 	*target_angle_delta_timer = 0;
 	*slowly_changing_target_angle = 0;
-}
-
+}*/
+// replaced by actuator.c
+/*
 void get_slowly_changing_angle(float target_angle, float turning_speed, Time* target_angle_delta_timer, float* slowly_changing_target_angle){
 	
     //static float slowly_changing_target_angle = 0;
@@ -206,7 +207,7 @@ void get_slowly_changing_angle(float target_angle, float turning_speed, Time* ta
     }
     //return slowly_changing_target_angle;
 }
-
+*/
 float clamp(float d, float min, float max) {
   const float t = d < min ? min : d;
   return t > max ? max : t;

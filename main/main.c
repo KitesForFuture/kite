@@ -87,13 +87,13 @@ void app_main(void)
         stepAutopilot(&autopilot, &control_data, sensorData, line_length, line_tension);
         
         // DON'T LET SERVOS BREAK THE KITE
-        clamp(control_data.rudder, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
-        clamp(control_data.left_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
-        clamp(control_data.right_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+        control_data.rudder = clamp(control_data.rudder, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+        control_data.left_elevon = clamp(control_data.left_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+        control_data.right_elevon = clamp(control_data.right_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
 		
 		// DON'T OVERHEAT THE MOTORS
-		clamp(control_data.left_prop, 0, MAX_PROPELLER_SPEED);
-		clamp(control_data.right_prop, 0, MAX_PROPELLER_SPEED);
+		control_data.left_prop = clamp(control_data.left_prop, 0, MAX_PROPELLER_SPEED);
+		control_data.right_prop = clamp(control_data.right_prop, 0, MAX_PROPELLER_SPEED);
         
         //TODO: setAngle in radians ( * PI/180) and setSpeed from [0, 1] or so
         setAngle(0, -control_data.rudder);
