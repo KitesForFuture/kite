@@ -7,7 +7,7 @@
 // HOW TO CALIBRATE:
 // output acc_calibrationx,y,z preferably via wifi, set accel_offset_* in constants.c to the midpoints between highest and lowest reading.
 
-struct position_data mpu_pos_callibration;
+Mpu_raw_data mpu_pos_calibration;
 struct i2c_bus mpu6050_bus;
 
 float gyro_precision_factor;	//factor needed to get to deg/sec
@@ -44,7 +44,7 @@ void enableDLPF(){
 	i2c_send(mpu6050_bus, 104, 26, 3, 1);
 }
 
-void readMPURawData(struct position_data *out){
+void readMPURawData(Mpu_raw_data *out){
 	uint8_t highByte;
 	uint8_t lowByte;
 	
@@ -77,24 +77,24 @@ void readMPURawData(struct position_data *out){
 	out->accel[2] = accel_precision_factor*(int16_t)((highByte << 8) | lowByte);
 }
 
-void readMPUData(struct position_data *position){
+void readMPUData(Mpu_raw_data *position){
 	readMPURawData(position);
-	position->accel[0] -= mpu_pos_callibration.accel[0];
-	position->accel[1] -= mpu_pos_callibration.accel[1];
-	position->accel[2] -= mpu_pos_callibration.accel[2];
-	position->gyro[0] -= mpu_pos_callibration.gyro[0];
-	position->gyro[1] -= mpu_pos_callibration.gyro[1];
-	position->gyro[2] -= mpu_pos_callibration.gyro[2];
+	position->accel[0] -= mpu_pos_calibration.accel[0];
+	position->accel[1] -= mpu_pos_calibration.accel[1];
+	position->accel[2] -= mpu_pos_calibration.accel[2];
+	position->gyro[0] -= mpu_pos_calibration.gyro[0];
+	position->gyro[1] -= mpu_pos_calibration.gyro[1];
+	position->gyro[2] -= mpu_pos_calibration.gyro[2];
 }
 
-void initMPU6050(struct i2c_bus bus_arg, struct position_data callibration_data){
+void initMPU6050(struct i2c_bus bus_arg, Mpu_raw_data calibration_data){
 	
   	mpu6050_bus = bus_arg;
 
 	//wake up MPU6050 from sleep mode
 	i2c_send(mpu6050_bus, 104, 107, 0, 1);
 
-	mpu_pos_callibration = callibration_data;
+	mpu_pos_calibration = calibration_data;
 	
 	init_gyro_sensitivity(1);
 	init_accel_sensitivity(2);

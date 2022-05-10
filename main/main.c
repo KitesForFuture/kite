@@ -27,7 +27,6 @@ struct i2c_bus bus1 = {18, 19};
 
 void app_main(void)
 {
-	
 	init_uptime();
 	setRole(KITE);
 	network_setup();
@@ -35,15 +34,15 @@ void app_main(void)
 	init_cat24(bus1);
     
     //float debug_bmp_tmp_factor = readEEPROM(6);
-
-    struct position_data mpu_callibration = {
+	
+    Mpu_raw_data mpu_calibration = {
         {readEEPROM(0), readEEPROM(1), readEEPROM(2)},
         {readEEPROM(3), readEEPROM(4), readEEPROM(5)}
     };
-
+	
     // THIS TAKES TIME...
     init_bmp280(bus1, readEEPROM(6));
-    initMPU6050(bus0, mpu_callibration);
+    initMPU6050(bus0, mpu_calibration);
     
 	int output_pins[] = {/*TODO: SURVIVOR: 26,27*/27,26,12,13,5};
 	initMotors(output_pins, 5);
@@ -53,9 +52,8 @@ void app_main(void)
 	
 	//float GROUND_STATION_MIN_TENSION = 0;//TODO: needed?
 	
-	//autopilot = new Autopilot();
-	SensorData sensorData;
-	ControlData control_data;
+	Orientation_Data orientation_data;
+	initRotationMatrix(&orientation_data);
 	
 	Autopilot autopilot;
 	initAutopilot(&autopilot);
@@ -65,7 +63,7 @@ void app_main(void)
         
         update_bmp280_if_necessary();
         
-        updateRotationMatrix();
+        updateRotationMatrix(&orientation_data);
         
         updatePWMInput();
 		
@@ -74,16 +72,17 @@ void app_main(void)
 		//autopilot.mode = FINAL_LANDING_MODE;
 		//autopilot.mode = HOVER_MODE;
 		
-		
 		//TODO:
 		float line_length = 1;
 		float line_tension = 0;
 		
 		autopilot.hover.Y.P = pow(1.5,getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
 		
-		initSensorData(&sensorData, rotation_matrix, gyro_in_kite_coords, getHeight(), getHeightDerivative());
+		SensorData sensorData;
+		initSensorData(&sensorData, orientation_data.rotation_matrix, orientation_data.gyro_in_kite_coords, getHeight(), getHeightDerivative());
 		
 		//TODO: decide size of timestep_in_s in main.c and pass to stepAutopilot()
+		ControlData control_data;
         stepAutopilot(&autopilot, &control_data, sensorData, line_length, line_tension);
         
         // DON'T LET SERVOS BREAK THE KITE

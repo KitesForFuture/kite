@@ -13,24 +13,24 @@
 //KITE COORDINATE AXES EXPRESSED IN TERMS OF MPU COORDINATE AXES
 //SURVIVOR:
 /*
-#define accel_x -position.accel[1]
-#define accel_y -position.accel[0]
-#define accel_z -position.accel[2]
+#define accel_x -mpu_raw_data.accel[1]
+#define accel_y -mpu_raw_data.accel[0]
+#define accel_z -mpu_raw_data.accel[2]
 
-#define gyro_x -position.gyro[1]
-#define gyro_y -position.gyro[0]
-#define gyro_z -position.gyro[2]
+#define gyro_x -mpu_raw_data.gyro[1]
+#define gyro_y -mpu_raw_data.gyro[0]
+#define gyro_z -mpu_raw_data.gyro[2]
 */
 
 //BEBUEGELTER:
 
-#define accel_x position.accel[0]
-#define accel_y position.accel[1]
-#define accel_z position.accel[2]
+#define accel_x mpu_raw_data.accel[0]
+#define accel_y mpu_raw_data.accel[1]
+#define accel_z mpu_raw_data.accel[2]
 
-#define gyro_x position.gyro[0]
-#define gyro_y position.gyro[1]
-#define gyro_z position.gyro[2]
+#define gyro_x mpu_raw_data.gyro[0]
+#define gyro_y mpu_raw_data.gyro[1]
+#define gyro_z mpu_raw_data.gyro[2]
 
 
 // The Gravity vector is the direction the gravitational force is supposed to point in KITE COORDINATES with the nose pointing to the sky
@@ -39,18 +39,25 @@
 #define gravity_z 0
 
 // rotation of the drone in world coordinates
-float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-float gyro_in_kite_coords[3] = {0,0,0};
+//float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+//float gyro_in_kite_coords[3] = {0,0,0};
 
-struct position_data position = {
+Mpu_raw_data mpu_raw_data = {
 	{0, 0, 0},
 	{0, 0, 0}
 };
 
 Time mpu_last_update_time = 0;
 
-void updateRotationMatrix(){
-	readMPUData(&position);
+void initRotationMatrix(Orientation_Data* orientation_data){
+	float tmp[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+	memcpy(orientation_data->rotation_matrix, tmp, 9*sizeof(float));
+	float tmp_gyro[3] = {0,0,0};
+	memcpy(orientation_data->gyro_in_kite_coords, tmp_gyro, 3*sizeof(float));
+}
+
+void updateRotationMatrix(Orientation_Data* orientation_data){
+	readMPUData(&mpu_raw_data);
 	if(mpu_last_update_time == 0){
 		mpu_last_update_time = start_timer();
 		return;
@@ -63,9 +70,9 @@ void updateRotationMatrix(){
 	// angles in radians
 	// 0.01745329 = pi/180
 	
-	gyro_in_kite_coords[0] = gyro_x;
-	gyro_in_kite_coords[1] = gyro_y;
-	gyro_in_kite_coords[2] = gyro_z;
+	orientation_data->gyro_in_kite_coords[0] = gyro_x;
+	orientation_data->gyro_in_kite_coords[1] = gyro_y;
+	orientation_data->gyro_in_kite_coords[2] = gyro_z;
 	
 	float alpha = 0.01745329 * gyro_x * time_difference;
 	float beta = 0.01745329 * gyro_y * time_difference;
@@ -86,12 +93,12 @@ void updateRotationMatrix(){
 	diff[8] = 1;
 	
 	float temp_rotation_matrix[9];
-	mat_mult(rotation_matrix, diff, temp_rotation_matrix);
+	mat_mult(orientation_data->rotation_matrix, diff, temp_rotation_matrix);
 	
-	rotate_towards_g(temp_rotation_matrix, gravity_x, gravity_y, gravity_z, accel_x, accel_y, accel_z, rotation_matrix);
-	//memcpy(rotation_matrix, temp_rotation_matrix, sizeof(temp_rotation_matrix));// TODO: remove when above line uncommented!!!
+	rotate_towards_g(temp_rotation_matrix, gravity_x, gravity_y, gravity_z, accel_x, accel_y, accel_z, orientation_data->rotation_matrix);
+	//memcpy(orientation_data->rotation_matrix, temp_rotation_matrix, sizeof(temp_rotation_matrix));// TODO: remove when above line uncommented!!!
 	
-	normalize_matrix(rotation_matrix);
+	normalize_matrix(orientation_data->rotation_matrix);
 }
 
 

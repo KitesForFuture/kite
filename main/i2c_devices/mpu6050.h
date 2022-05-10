@@ -4,13 +4,14 @@
 #include "freertos/FreeRTOS.h"
 #include "interchip.h"
 
-struct position_data {
+struct _Mpu_raw_data {
 	float accel[3];
   float gyro[3];
 };
+typedef struct _Mpu_raw_data Mpu_raw_data;
 
-void initMPU6050(struct i2c_bus bus_arg, struct position_data callibration_data);
+void initMPU6050(struct i2c_bus bus_arg, Mpu_raw_data calibration_data);
 
-void readMPUData(struct position_data *out);
+void readMPUData(Mpu_raw_data *out);
 
 #endif
