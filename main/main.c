@@ -79,7 +79,7 @@ void app_main(void)
 		autopilot.hover.Y.P = pow(1.5,getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
 		
 		SensorData sensorData;
-		initSensorData(&sensorData, orientation_data.rotation_matrix, orientation_data.gyro_in_kite_coords, getHeight(), getHeightDerivative());
+		initSensorData(&sensorData, orientation_data.rotation_matrix_transpose, orientation_data.gyro_in_kite_coords, getHeight(), getHeightDerivative());
 		
 		//TODO: decide size of timestep_in_s in main.c and pass to stepAutopilot()
 		ControlData control_data;

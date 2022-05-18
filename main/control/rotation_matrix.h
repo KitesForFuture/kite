@@ -9,6 +9,7 @@
 
 struct _Orientation_Data{
 	float rotation_matrix[9];
+	float rotation_matrix_transpose[9];
 	float gyro_in_kite_coords[3];
 };
 typedef struct _Orientation_Data Orientation_Data;

@@ -103,6 +103,16 @@ void updateRotationMatrix(Orientation_Data* orientation_data){
 	//memcpy(orientation_data->rotation_matrix, temp_rotation_matrix, sizeof(temp_rotation_matrix));// TODO: remove when above line uncommented!!!
 	
 	normalize_matrix(orientation_data->rotation_matrix);
+	
+	orientation_data->rotation_matrix_transpose[0] = orientation_data->rotation_matrix[0];
+	orientation_data->rotation_matrix_transpose[1] = orientation_data->rotation_matrix[3];
+	orientation_data->rotation_matrix_transpose[2] = orientation_data->rotation_matrix[6];
+	orientation_data->rotation_matrix_transpose[3] = orientation_data->rotation_matrix[1];
+	orientation_data->rotation_matrix_transpose[4] = orientation_data->rotation_matrix[4];
+	orientation_data->rotation_matrix_transpose[5] = orientation_data->rotation_matrix[7];
+	orientation_data->rotation_matrix_transpose[6] = orientation_data->rotation_matrix[2];
+	orientation_data->rotation_matrix_transpose[7] = orientation_data->rotation_matrix[5];
+	orientation_data->rotation_matrix_transpose[8] = orientation_data->rotation_matrix[8];
 }
 
 
