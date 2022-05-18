@@ -5,6 +5,8 @@
 //#include "../actuator.h"
 #include "autopilot.h"
 
+void sendData(float data0, float data1, float data2, float data3, float data4, float data5, float data6, float data7, float data8, float data9, float data10, float data11, float data12, float data13, float data14, float data15, float data16, float data17, float data18, float data19, float data20, float data21, float data22);
+
 void initAutopilot(Autopilot* autopilot){
 	autopilot->hover.Y.P = 1;
 	autopilot->hover.Y.D = 1;
@@ -185,7 +187,7 @@ void straight_control(Autopilot* autopilot, ControlData* control_data_out, Senso
 void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension){
 	
 	float* mat = sensor_data.rotation_matrix;
-	
+	//sendData(mat[3], mat[4], mat[5], 0, mat[6], mat[7], mat[8], 0, mat[0], mat[1], mat[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	// HEIGHT
 	
 	//float height = sensor_data.height;
@@ -228,6 +230,8 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	float left_prop = height_control + z_axis_control;
 	float right_prop = height_control - z_axis_control;
 	float rudder = z_axis_control; // just to move it out of the way, so it doesn't provide drag for the wind
+	
+	//sendData(y_axis_offset, y_axis_control, 0, normed_airflow, 0, z_axis_offset, z_axis_control, getAngleErrorZAxis(0.0, mat), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	
 	initControlData(control_data_out, left_prop, right_prop, left_elevon, right_elevon, rudder, line_tension); return;
 	
