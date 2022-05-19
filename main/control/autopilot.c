@@ -128,18 +128,18 @@ void landing_control(Autopilot* autopilot, ControlData* control_data_out, Sensor
 	float* mat = sensor_data.rotation_matrix;
 	float line_angle = safe_asin(sensor_data.height/line_length);
 	
-	float desired_line_angle = PI/4 * 0.75;//0.3;
+	float desired_line_angle = PI/4.0 * 0.75;//0.3;
 	
 	float line_angle_error = line_angle - desired_line_angle;// negative -> too low, positive -> too high
-	float desired_dive_angle = -desired_line_angle - 2 * line_angle_error;
+	float desired_dive_angle = -desired_line_angle - 2.0 * line_angle_error;
 	desired_dive_angle = clamp(desired_dive_angle, -PI * 0.5 * 0.8, 0);
 	if(transition){
-		desired_dive_angle = PI/4;
+		desired_dive_angle = PI/4.0;
 	}
 	
 	float y_axis_offset = getAngleErrorYAxis(desired_dive_angle - PI/2, mat);
 	//TODO: bei weniger Wind (geringe Seilspannung) sollte das hier mit Faktor multipliziert werden, um genügend Steuerwirkung zu haben
-	float y_axis_control = /*autopilot->hover.Y.P**/10*(- 0.24*3.8*2*0.5* y_axis_offset + 0.0027*0.7*0.4 *0.2*0.5 * sensor_data.gyro[1]);
+	float y_axis_control = /*autopilot->hover.Y.P**/10.0*(- 0.24*3.8*2*0.5* y_axis_offset + 0.0027*0.7*0.4 *0.2*0.5 * sensor_data.gyro[1]);
 	
 	y_axis_control *= line_tension < 5 ? 5 : 1;
 	
@@ -193,15 +193,15 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	//float height = sensor_data.height;
 	float d_height = sensor_data.d_height;
 	
-	float line_angle = safe_asin(sensor_data.height/(line_length == 0 ? 1 : line_length));
+	float line_angle = safe_asin(sensor_data.height/(line_length == 0 ? 1.0 : line_length));
 	
 	//TODO: cleanup all those constants!
-	float height_control_normed = 1.15*clamp(0.8 - 5.8*autopilot->hover.H.P * (line_angle-PI/4) - autopilot->hover.H.D * clamp(d_height, -1, 1), 0.8, 1.2);
+	float height_control_normed = 1.15*clamp(0.8 - 5.8*autopilot->hover.H.P * (line_angle-PI/4.0) - autopilot->hover.H.D * clamp(d_height, -1.0, 1.0), 0.8, 1.2);
 	
 	// autopilot is an approximation to the airflow seen by the elevons (propeller airflow + velocity in height direction)
 	float normed_airflow = height_control_normed + sensor_data.d_height*7*1.15/8/5;
 	
-	float height_control = height_control_normed * 90*5/7/1.15;
+	float height_control = height_control_normed * 90.0*5.0/7.0/1.15;
 	//TODO: investigate autopilot:
 	//height_control *= 0.7*mat[0] + 0.3; // decrease propeller thrust when nose not pointing straight up
 	//if(mat[0] < 0) height_control = 0; // propellers off when nose pointing down
@@ -209,7 +209,7 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	// Y-AXIS
 	
 	float y_axis_offset = getAngleErrorYAxis(autopilot->y_angle_offset, mat);
-	float y_axis_control = (normed_airflow > 0.0001 ? 1/(normed_airflow*normed_airflow) : 1) * 0.7 * (- 3.8*autopilot->hover.Y.P * y_axis_offset + 0.7*0.4 * autopilot->hover.Y.D * sensor_data.gyro[1]);
+	float y_axis_control = (normed_airflow > 0.0001 ? 1.0/(normed_airflow*normed_airflow) : 1.0) * 0.7 * (- 3.8*autopilot->hover.Y.P * y_axis_offset + 0.7*0.4 * autopilot->hover.Y.D * sensor_data.gyro[1]);
 	y_axis_control *= 100;
 	
 	// Z-AXIS
