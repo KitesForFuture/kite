@@ -86,9 +86,11 @@ void app_main(void)
         stepAutopilot(&autopilot, &control_data, sensorData, line_length, line_tension);
         
         // DON'T LET SERVOS BREAK THE KITE
-        control_data.rudder = clamp(control_data.rudder, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
-        control_data.left_elevon = clamp(control_data.left_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
-        control_data.right_elevon = clamp(control_data.right_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+        // empirical factor difference between simulation and reality gains
+        float ef = 0.3;
+        control_data.rudder = clamp(ef*control_data.rudder, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+        control_data.left_elevon = clamp(ef*control_data.left_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+        control_data.right_elevon = clamp(ef*control_data.right_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
 		
 		// DON'T OVERHEAT THE MOTORS
 		control_data.left_prop = clamp(control_data.left_prop, 0, MAX_PROPELLER_SPEED);
