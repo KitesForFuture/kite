@@ -97,16 +97,20 @@ float getAngleError(float offset, float controllable_axis[3], float axis_we_wish
 	// cross product with (1,0,0)
 	float where_axis_we_wish_horizontal_should_be[3];
 	where_axis_we_wish_horizontal_should_be[0] = 0;
-	where_axis_we_wish_horizontal_should_be[1] = controllable_axis[3];
-	where_axis_we_wish_horizontal_should_be[2] = -controllable_axis[2];
+	where_axis_we_wish_horizontal_should_be[1] = controllable_axis[2];
+	where_axis_we_wish_horizontal_should_be[2] = -controllable_axis[1];
 	
 	float l_1_norm = fabs(where_axis_we_wish_horizontal_should_be[1]) + fabs(where_axis_we_wish_horizontal_should_be[2]);
+	
 	
 	
 	if(l_1_norm < 0.05){ // close to undefinedness
 		return 0;
 	}else{
 		normalize(where_axis_we_wish_horizontal_should_be, 3);
+		
+		//sendData(controllable_axis[0], controllable_axis[1], controllable_axis[2], 0, axis_we_wish_horizontal[0], axis_we_wish_horizontal[1], axis_we_wish_horizontal[2], 0, where_axis_we_wish_horizontal_should_be[0], where_axis_we_wish_horizontal_should_be[1], where_axis_we_wish_horizontal_should_be[2], 0, l_1_norm, 0, angle(axis_we_wish_horizontal, where_axis_we_wish_horizontal_should_be), 0, offset, 0, 0, 0, offset, sign(axis_we_wish_horizontal[0]), angle(axis_we_wish_horizontal, where_axis_we_wish_horizontal_should_be));
+		
 		return sign(axis_we_wish_horizontal[0]) * angle(axis_we_wish_horizontal, where_axis_we_wish_horizontal_should_be) - offset;
 	}
 }
@@ -222,6 +226,8 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	
 	float x_axis_control = autopilot->hover.X.D * sensor_data.gyro[0];
 	x_axis_control *= 100;
+	
+	//sendData(mat[3], mat[4], mat[5], 0, mat[6], mat[7], mat[8], 0, mat[0], mat[1], mat[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, y_axis_offset, 0, y_axis_control);
 	
 	// MIXING
 	

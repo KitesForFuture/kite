@@ -40,13 +40,19 @@ void app_main(void)
         {readEEPROM(3), readEEPROM(4), readEEPROM(5)}
     };
 	
-    // THIS TAKES TIME...
-    init_bmp280(bus1, readEEPROM(6));
-    initMPU6050(bus0, mpu_calibration);
-    
 	int output_pins[] = {/*TODO: SURVIVOR: 26,27*/27,26,12,13,5};
 	initMotors(output_pins, 5);
 	
+	setAngle(0, 0);
+	setSpeed(1, 0);
+	setSpeed(2, 0);
+	setAngle(3, 0);
+	setSpeed(4, 0);
+	
+	// THIS TAKES TIME...
+    init_bmp280(bus1, readEEPROM(6));
+    initMPU6050(bus0, mpu_calibration);
+		
 	int input_pins[] = {4, 33, 2, 17, 16};
 	initPWMInput(input_pins, 5);
 	
@@ -97,14 +103,14 @@ void app_main(void)
 		control_data.right_prop = clamp(control_data.right_prop, 0, MAX_PROPELLER_SPEED);
         
         //TODO: setAngle in radians ( * PI/180) and setSpeed from [0, 1] or so
-        setAngle(0, -control_data.rudder);
-		setAngle(1, control_data.left_elevon);
-		setSpeed(2, control_data.left_prop);
-		setAngle(3, control_data.right_elevon);
-		setSpeed(4, control_data.right_prop);
+        setAngle(0, control_data.left_elevon); // elevon
+		//setAngle(1, 0); // optional Rudder
+		setSpeed(2, 0);
+		setAngle(3, control_data.right_elevon); // elevon
+		setSpeed(4, 0);
         
         //TODO: communication with ground station
-        //sendData(autopilot.mode, control_data.rudder, control_data.left_elevon, control_data.right_elevon, 0, control_data.left_prop, control_data.right_prop, 0, get_uptime_seconds(), 0, orientation_data.gyro_in_kite_coords[0], orientation_data.gyro_in_kite_coords[1], orientation_data.gyro_in_kite_coords[2], 0, orientation_data.rotation_matrix[0], orientation_data.rotation_matrix[1], orientation_data.rotation_matrix[2], orientation_data.rotation_matrix[3], orientation_data.rotation_matrix[4], orientation_data.rotation_matrix[5], orientation_data.rotation_matrix[6], orientation_data.rotation_matrix[7], orientation_data.rotation_matrix[8]);
+        sendData(autopilot.mode, control_data.rudder, control_data.left_elevon, control_data.right_elevon, 0, control_data.left_prop, control_data.right_prop, 0, get_uptime_seconds(), 0, orientation_data.gyro_in_kite_coords[0], orientation_data.gyro_in_kite_coords[1], orientation_data.gyro_in_kite_coords[2], 0, orientation_data.rotation_matrix[0], orientation_data.rotation_matrix[1], orientation_data.rotation_matrix[2], orientation_data.rotation_matrix[3], orientation_data.rotation_matrix[4], orientation_data.rotation_matrix[5], orientation_data.rotation_matrix[6], orientation_data.rotation_matrix[7], orientation_data.rotation_matrix[8]);
 		//sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, 90*CH1, 90*CH2, d_h, h);
     }
 }
