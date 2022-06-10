@@ -20,7 +20,7 @@
 #include "control/autopilot.h"
 
 #define MAX_SERVO_DEFLECTION 50
-#define MAX_PROPELLER_SPEED 60 // AT MOST 90 - MAX_PROPELLER_DIFF
+#define MAX_PROPELLER_SPEED 40 // AT MOST 90 - MAX_PROPELLER_DIFF
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -44,7 +44,7 @@ void app_main(void)
 	initMotors(output_pins, 5);
 	
 	setAngle(0, 0);
-	setSpeed(1, 0);
+	setAngle(1, 0);
 	setSpeed(2, 0);
 	setAngle(3, 0);
 	setSpeed(4, 0);
@@ -93,7 +93,7 @@ void app_main(void)
         
         // DON'T LET SERVOS BREAK THE KITE
         // empirical factor difference between simulation and reality gains
-        float ef = 0.3;
+        float ef = 1;
         control_data.rudder = clamp(ef*control_data.rudder, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
         control_data.left_elevon = clamp(ef*control_data.left_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
         control_data.right_elevon = clamp(ef*control_data.right_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
@@ -103,11 +103,12 @@ void app_main(void)
 		control_data.right_prop = clamp(control_data.right_prop, 0, MAX_PROPELLER_SPEED);
         
         //TODO: setAngle in radians ( * PI/180) and setSpeed from [0, 1] or so
-        setAngle(0, control_data.left_elevon); // elevon
+        setAngle(0, control_data.right_elevon); // elevon
 		//setAngle(1, 0); // optional Rudder
-		setSpeed(2, 0);
-		setAngle(3, control_data.right_elevon); // elevon
-		setSpeed(4, 0);
+		setAngle(3, -control_data.left_elevon); // elevon
+		
+		setSpeed(2, control_data.right_prop);
+		setSpeed(4, control_data.left_prop);
         
         //TODO: communication with ground station
         sendData(autopilot.mode, control_data.rudder, control_data.left_elevon, control_data.right_elevon, 0, control_data.left_prop, control_data.right_prop, 0, get_uptime_seconds(), 0, orientation_data.gyro_in_kite_coords[0], orientation_data.gyro_in_kite_coords[1], orientation_data.gyro_in_kite_coords[2], 0, orientation_data.rotation_matrix[0], orientation_data.rotation_matrix[1], orientation_data.rotation_matrix[2], orientation_data.rotation_matrix[3], orientation_data.rotation_matrix[4], orientation_data.rotation_matrix[5], orientation_data.rotation_matrix[6], orientation_data.rotation_matrix[7], orientation_data.rotation_matrix[8]);
