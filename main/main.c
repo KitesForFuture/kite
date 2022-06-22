@@ -20,7 +20,7 @@
 #include "control/autopilot.h"
 
 #define MAX_SERVO_DEFLECTION 50
-#define MAX_PROPELLER_SPEED 40 // AT MOST 90 - MAX_PROPELLER_DIFF
+#define MAX_PROPELLER_SPEED 50 // AT MOST 90 - MAX_PROPELLER_DIFF
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -48,13 +48,14 @@ void app_main(void)
 	setSpeed(2, 0);
 	setAngle(3, 0);
 	setSpeed(4, 0);
+		
+	int input_pins[] = {4, 33, 2, 17, 16};
+	initPWMInput(input_pins, 5);
 	
 	// THIS TAKES TIME...
     init_bmp280(bus1, readEEPROM(6));
     initMPU6050(bus0, mpu_calibration);
-		
-	int input_pins[] = {4, 33, 2, 17, 16};
-	initPWMInput(input_pins, 5);
+	
 	
 	//float GROUND_STATION_MIN_TENSION = 0;//TODO: needed?
 	
@@ -82,7 +83,11 @@ void app_main(void)
 		float line_length = 1;
 		float line_tension = 0;
 		
-		autopilot.hover.Y.P = pow(1.5,getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
+		//autopilot.hover.Y.P = pow(1.5,getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
+		autopilot.hover.Z.P = pow(1.5,10*getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
+		autopilot.hover.Z.D = pow(1.5,10*getPWMInputMinus1to1normalized(4));
+		autopilot.hover.Y.P = 2;
+		autopilot.hover.Y.D = 2;
 		
 		SensorData sensorData;
 		initSensorData(&sensorData, orientation_data.rotation_matrix_transpose, orientation_data.gyro_in_kite_coords, getHeight(), getHeightDerivative());
@@ -106,12 +111,13 @@ void app_main(void)
         setAngle(0, control_data.right_elevon); // elevon
 		//setAngle(1, 0); // optional Rudder
 		setAngle(3, -control_data.left_elevon); // elevon
-		
-		setSpeed(2, control_data.right_prop);
-		setSpeed(4, control_data.left_prop);
+		setSpeed(2, getPWMInput0to1normalized(0)*control_data.right_prop);
+		setSpeed(4, getPWMInput0to1normalized(0)*control_data.left_prop);
         
         //TODO: communication with ground station
-        sendData(autopilot.mode, control_data.rudder, control_data.left_elevon, control_data.right_elevon, 0, control_data.left_prop, control_data.right_prop, 0, get_uptime_seconds(), 0, orientation_data.gyro_in_kite_coords[0], orientation_data.gyro_in_kite_coords[1], orientation_data.gyro_in_kite_coords[2], 0, orientation_data.rotation_matrix[0], orientation_data.rotation_matrix[1], orientation_data.rotation_matrix[2], orientation_data.rotation_matrix[3], orientation_data.rotation_matrix[4], orientation_data.rotation_matrix[5], orientation_data.rotation_matrix[6], orientation_data.rotation_matrix[7], orientation_data.rotation_matrix[8]);
+        
+        sendData(autopilot.hover.Z.P, autopilot.hover.Z.D, 0,0, 0, 0,0, 0, 0, 0, 0,0,0, 0, 0,0,0,0,0,0,0,0,0);
+        //sendData(autopilot.mode, control_data.rudder, control_data.left_elevon, control_data.right_elevon, 0, control_data.left_prop, control_data.right_prop, 0, get_uptime_seconds(), 0, orientation_data.gyro_in_kite_coords[0], orientation_data.gyro_in_kite_coords[1], orientation_data.gyro_in_kite_coords[2], 0, orientation_data.rotation_matrix[0], orientation_data.rotation_matrix[1], orientation_data.rotation_matrix[2], orientation_data.rotation_matrix[3], orientation_data.rotation_matrix[4], orientation_data.rotation_matrix[5], orientation_data.rotation_matrix[6], orientation_data.rotation_matrix[7], orientation_data.rotation_matrix[8]);
 		//sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, 90*CH1, 90*CH2, d_h, h);
     }
 }

@@ -231,10 +231,13 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	
 	// MIXING
 	
-	float left_elevon = y_axis_control + x_axis_control;
-	float right_elevon = y_axis_control - x_axis_control;
+	height_control = clamp(height_control, 0, 40);
+	z_axis_control = clamp(z_axis_control, -10, 10);
+	
 	float left_prop = height_control + z_axis_control;
 	float right_prop = height_control - z_axis_control;
+	float left_elevon = y_axis_control + x_axis_control;
+	float right_elevon = y_axis_control - x_axis_control;
 	float rudder = z_axis_control; // just to move it out of the way, so it doesn't provide drag for the wind
 	
 	//sendData(y_axis_offset, y_axis_control, 0, normed_airflow, 0, z_axis_offset, z_axis_control, getAngleErrorZAxis(0.0, mat), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
