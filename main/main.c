@@ -84,7 +84,7 @@ void app_main(void)
 		float line_tension = 0;
 		
 		//autopilot.hover.Y.P = pow(1.5,getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
-		0.195935,0.017341
+		//0.195935,0.017341
 		autopilot.hover.Z.P = 0.195935;//
 		autopilot.hover.Z.D = 0.017341;//
 		autopilot.hover.Y.P = pow(1.5,10*getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
