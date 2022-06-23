@@ -84,10 +84,11 @@ void app_main(void)
 		float line_tension = 0;
 		
 		//autopilot.hover.Y.P = pow(1.5,getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
-		autopilot.hover.Z.P = pow(1.5,10*getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
-		autopilot.hover.Z.D = pow(1.5,10*getPWMInputMinus1to1normalized(4));
-		autopilot.hover.Y.P = 2;
-		autopilot.hover.Y.D = 2;
+		0.195935,0.017341
+		autopilot.hover.Z.P = 0.195935;//
+		autopilot.hover.Z.D = 0.017341;//
+		autopilot.hover.Y.P = pow(1.5,10*getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
+		autopilot.hover.Y.D = pow(1.5,10*getPWMInputMinus1to1normalized(4));
 		
 		SensorData sensorData;
 		initSensorData(&sensorData, orientation_data.rotation_matrix_transpose, orientation_data.gyro_in_kite_coords, getHeight(), getHeightDerivative());
@@ -116,7 +117,7 @@ void app_main(void)
         
         //TODO: communication with ground station
         
-        sendData(autopilot.hover.Z.P, autopilot.hover.Z.D, 0,0, 0, 0,0, 0, 0, 0, 0,0,0, 0, 0,0,0,0,0,0,0,0,0);
+        sendData(autopilot.hover.Y.P, autopilot.hover.Y.D, 0,0, 0, 0,0, 0, 0, 0, 0,0,0, 0, 0,0,0,0,0,0,0,0,0);
         //sendData(autopilot.mode, control_data.rudder, control_data.left_elevon, control_data.right_elevon, 0, control_data.left_prop, control_data.right_prop, 0, get_uptime_seconds(), 0, orientation_data.gyro_in_kite_coords[0], orientation_data.gyro_in_kite_coords[1], orientation_data.gyro_in_kite_coords[2], 0, orientation_data.rotation_matrix[0], orientation_data.rotation_matrix[1], orientation_data.rotation_matrix[2], orientation_data.rotation_matrix[3], orientation_data.rotation_matrix[4], orientation_data.rotation_matrix[5], orientation_data.rotation_matrix[6], orientation_data.rotation_matrix[7], orientation_data.rotation_matrix[8]);
 		//sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, 90*CH1, 90*CH2, d_h, h);
     }

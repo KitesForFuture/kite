@@ -80,7 +80,7 @@ void updateRotationMatrix(Orientation_Data* orientation_data){
 	float beta = PI / 180 * gyro_y * time_difference;
 	float gamma = PI / 180 * gyro_z * time_difference;
 	
-	sendData(alpha, beta, gamma, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	//sendData(alpha, beta, gamma, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	
 	// infinitesimal rotation matrix:
 	float diff[9];
