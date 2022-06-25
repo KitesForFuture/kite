@@ -203,7 +203,7 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	float height_control_normed = 1.15*clamp(0.8 - 5.8*autopilot->hover.H.P * (line_angle-PI/4.0) - autopilot->hover.H.D * clamp(d_height, -1.0, 1.0), 0.8, 1.2);
 	
 	// autopilot is an approximation to the airflow seen by the elevons (propeller airflow + velocity in height direction)
-	float normed_airflow = height_control_normed + sensor_data.d_height*7*1.15/8/5;
+	float normed_airflow = height_control_normed + sensor_data.d_height*7*1.15/8/5; // this latter constant depends highly on the shape of the ailerons. probably needs to be more aggressive with the full wingspan ones.
 	
 	float height_control = height_control_normed * 90.0*5.0/7.0/1.15;
 	//TODO: investigate autopilot:
@@ -213,6 +213,9 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	// Y-AXIS
 	
 	float y_axis_offset = getAngleErrorYAxis(autopilot->y_angle_offset, mat);
+	// normed_airflow at neutral hover position should be between 1 and 1.5 depending on propeller thrust
+	// thus 1.0/(normed_airflow*normed_airflow) is roughly between 1 and 0.5
+	// if kite goes up with 5m/s -> +1 on normed_airflow -> 1.0/(normed_airflow*normed_airflow) between 0.25 and 0.16
 	float y_axis_control = (normed_airflow > 0.0001 ? 1.0/(normed_airflow*normed_airflow) : 1.0) * 0.7 * (- 3.8*autopilot->hover.Y.P * y_axis_offset + 0.7*0.4 * autopilot->hover.Y.D * sensor_data.gyro[1]);
 	y_axis_control *= 100;
 	
