@@ -33,18 +33,18 @@ void app_main(void)
 	
 	init_cat24(bus1);
     
-    //float debug_bmp_tmp_factor = readEEPROM(6);
+	//float debug_bmp_tmp_factor = readEEPROM(6);
 	
-    Mpu_raw_data mpu_calibration = {
-        {readEEPROM(0), readEEPROM(1), readEEPROM(2)},
-        {readEEPROM(3), readEEPROM(4), readEEPROM(5)}
-    };
+	Mpu_raw_data mpu_calibration = {
+		{readEEPROM(0), readEEPROM(1), readEEPROM(2)},
+		{readEEPROM(3), readEEPROM(4), readEEPROM(5)}
+	};
 	
 	int output_pins[] = {/*TODO: SURVIVOR: 26,27*/27,26,12,13,5};
 	initMotors(output_pins, 5);
 	
 	setAngle(0, 0);
-	setAngle(1, 0);
+	setAngle(1, 0); // not used
 	setSpeed(2, 0);
 	setAngle(3, 0);
 	setSpeed(4, 0);
@@ -54,36 +54,40 @@ void app_main(void)
 	
 	// THIS TAKES TIME...
     init_bmp280(bus1, readEEPROM(6));
+    
     initMPU6050(bus0, mpu_calibration);
-	
+	Orientation_Data orientation_data;
+	initRotationMatrix(&orientation_data);
 	
 	//float GROUND_STATION_MIN_TENSION = 0;//TODO: needed?
 	
-	Orientation_Data orientation_data;
-	initRotationMatrix(&orientation_data);
 	
 	Autopilot autopilot;
 	initAutopilot(&autopilot);
 	
-    while(1) {
-        vTaskDelay(1);
-        
-        update_bmp280_if_necessary();
-        
-        updateRotationMatrix(&orientation_data);
-        
-        updatePWMInput();
+	while(1) {
+		vTaskDelay(1);
 		
-		//TODO: LANDING and LAUNCH demand from RC
+		update_bmp280_if_necessary();
 		
-		//autopilot.mode = FINAL_LANDING_MODE;
-		//autopilot.mode = HOVER_MODE;
+		updateRotationMatrix(&orientation_data);
 		
-		//TODO:
-		float line_length = 1;
-		float line_tension = 0;
+		updatePWMInput();
+			
+		//LANDING and LAUNCH demand from RC
+		if(autopilot.mode != LANDING_MODE && autopilot.mode != FINAL_LANDING_MODE_HOVER && getPWMInput0to1normalized(0) < 0.2){
+			autopilot.mode = LANDING_MODE;
+			
+		}
+		/*if(autopilot.mode == LANDING_MODE && getPWMInput0to1normalized(0) >= 0.8){
+			autopilot.mode = HOVER_MODE;
+		}*/
 		
-		//autopilot.hover.Y.P = pow(1.5,getPWMInputMinus1to1normalized(3));//0(CH1), 1(CH2), 2(CH3), 3(CH5), 4(CH6) available
+		//TODO: get line_tension and line_length from groundstation
+		float line_length = line_length_in_meters; // global var defined in RC.c
+		float line_tension = line_tension_in_newtons; // global var defined in RC.c
+		
+		//autopilot.hover.Y.P = pow(1.5,getPWMInputMinus1to1normalized(3));//0(CH3), 1(CH2), 2(CH1), 3(CH5), 4(CH6) available
 		//0.195935,0.017341
 		autopilot.hover.Z.P = 0.195935*0.44;//pow(1.2,10*getPWMInputMinus1to1normalized(3));//
 		autopilot.hover.Z.D = 0.017341*2;//*pow(1.2,10*getPWMInputMinus1to1normalized(4));//
@@ -96,30 +100,31 @@ void app_main(void)
 		
 		//TODO: decide size of timestep_in_s in main.c and pass to stepAutopilot()
 		ControlData control_data;
-        stepAutopilot(&autopilot, &control_data, sensorData, line_length, line_tension);
-        
-        // DON'T LET SERVOS BREAK THE KITE
-        // empirical factor difference between simulation and reality gains
-        float ef = 1;
-        control_data.rudder = clamp(ef*control_data.rudder, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
-        control_data.left_elevon = clamp(ef*control_data.left_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
-        control_data.right_elevon = clamp(ef*control_data.right_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+		stepAutopilot(&autopilot, &control_data, sensorData, line_length, line_tension);
+		
+		// DON'T LET SERVOS BREAK THE KITE
+		// empirical factor difference between simulation and reality gains
+		float ef = 1;
+		control_data.rudder = clamp(ef*control_data.rudder, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+		control_data.left_elevon = clamp(ef*control_data.left_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
+		control_data.right_elevon = clamp(ef*control_data.right_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
 		
 		// DON'T OVERHEAT THE MOTORS
 		control_data.left_prop = clamp(control_data.left_prop, 0, MAX_PROPELLER_SPEED);
 		control_data.right_prop = clamp(control_data.right_prop, 0, MAX_PROPELLER_SPEED);
-        
-        //TODO: setAngle in radians ( * PI/180) and setSpeed from [0, 1] or so
-        setAngle(0, control_data.right_elevon); // elevon
+		
+		//TODO: setAngle in radians ( * PI/180) and setSpeed from [0, 1] or so
+		setAngle(0, control_data.right_elevon); // elevon
 		//setAngle(1, 0); // optional Rudder
 		setAngle(3, -control_data.left_elevon); // elevon
 		setSpeed(2, getPWMInput0to1normalized(0)*control_data.right_prop);
 		setSpeed(4, getPWMInput0to1normalized(0)*control_data.left_prop);
-        
-        //TODO: communication with ground station
-        
-        //sendData(pow(1.2,10*getPWMInputMinus1to1normalized(3)), pow(1.2,10*getPWMInputMinus1to1normalized(4)), 0,getPWMInput0to1normalized(0)*control_data.left_prop, getPWMInput0to1normalized(0)*control_data.right_prop, 0,0, 0, 0, 0, 0,0,0, 0, 0,0,0,0,0,0,0,0,0);
-        //sendData(autopilot.mode, control_data.rudder, control_data.left_elevon, control_data.right_elevon, 0, control_data.left_prop, control_data.right_prop, 0, get_uptime_seconds(), 0, orientation_data.gyro_in_kite_coords[0], orientation_data.gyro_in_kite_coords[1], orientation_data.gyro_in_kite_coords[2], 0, orientation_data.rotation_matrix[0], orientation_data.rotation_matrix[1], orientation_data.rotation_matrix[2], orientation_data.rotation_matrix[3], orientation_data.rotation_matrix[4], orientation_data.rotation_matrix[5], orientation_data.rotation_matrix[6], orientation_data.rotation_matrix[7], orientation_data.rotation_matrix[8]);
-		//sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, 90*CH1, 90*CH2, d_h, h);
-    }
+		
+		//send control_data.line_tension to groundstation.
+		sendData(LINE_TENSION_REQUEST_MODE, control_data.line_tension, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		
+		//sendData(pow(1.2,10*getPWMInputMinus1to1normalized(3)), pow(1.2,10*getPWMInputMinus1to1normalized(4)), 0,getPWMInput0to1normalized(0)*control_data.left_prop, getPWMInput0to1normalized(0)*control_data.right_prop, 0,0, 0, 0, 0, 0,0,0, 0, 0,0,0,0,0,0,0,0,0);
+		//sendData(autopilot.mode, control_data.rudder, control_data.left_elevon, control_data.right_elevon, 0, control_data.left_prop, control_data.right_prop, 0, get_uptime_seconds(), 0, orientation_data.gyro_in_kite_coords[0], orientation_data.gyro_in_kite_coords[1], orientation_data.gyro_in_kite_coords[2], 0, orientation_data.rotation_matrix[0], orientation_data.rotation_matrix[1], orientation_data.rotation_matrix[2], orientation_data.rotation_matrix[3], orientation_data.rotation_matrix[4], orientation_data.rotation_matrix[5], orientation_data.rotation_matrix[6], orientation_data.rotation_matrix[7], orientation_data.rotation_matrix[8]);
+			//sendData(GROUND_STATION_MIN_TENSION, getPWMInputMinus1to1normalized(0), getPWMInputMinus1to1normalized(1), getPWMInputMinus1to1normalized(2), rudder_angle, (float)(pow(10,getPWMInputMinus1to1normalized(1))), (float)(pow(10,getPWMInputMinus1to1normalized(0))), FLIGHT_MODE, 0, get_uptime_seconds(), 0, gyro_in_kite_coords[2], 0, 0, debug_bmp_tmp_factor, rate_of_climb, goal_height, elevator_p, propeller_speed, 90*CH1, 90*CH2, d_h, h);
+	}
 }

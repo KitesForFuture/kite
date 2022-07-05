@@ -4,6 +4,9 @@
 
 #define RC_MODE 0
 #define DATA_MODE 1
+#define LINE_TENSION_REQUEST_MODE 2
+#define LINE_LENGTH_MODE 3
+
 
 #define DATALENGTH 23
 
@@ -19,7 +22,8 @@ int signalOffset[6] = {0,0,0,0,0,0};
 int receivedSignal[6] = {0,0,0,0,0,0};
 float receivedData[DATALENGTH] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
-float line_length_in_meters = 0;
+float line_length_in_meters = 1;
+float line_tension_in_newtons = 0;
 
 typedef struct __attribute__((packed)) esp_now_msg_t
 {
@@ -69,42 +73,9 @@ static void msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 			esp_now_msg_t msg;
 			memcpy(&msg, data, len);
 			
-			if(msg.mode == RC_MODE){
-				
-				// int64_t esp_timer_get_time() returns time since boot in us (microseconds = 10^-6 seconds)
-				lastReceivedtime = esp_timer_get_time();
-				
-				// HERE YOU CAN DEFINE THE BEHAVIOUR ON RECEIVING DATA:
-				
-				
-				//if(msg.control[0] == 2){
-					line_length_in_meters = msg.control[0];
-				//}
-				
-				/*
-				// IF the sender/radio control tells you that it just turned on ...
-				// the first message sends "1000000" so that we can detect whether the rc has been turned on before the kite
-				// can re-init radio control mid flight to reset signalOffset
-				// TODO: maybe use first received signal to set signalOffset instead of sending "1000000"
-				if(msg.control[0] >= 1000000){
-					signalOffset[0] = (int)(msg.control[0]-1000000);
-					for(int i = 1; i < 6; i++){
-						signalOffset[i] = (int)msg.control[i];
-					}
-					firstTime = 0;
-				// if you just turned on yourself ...
-				}else if(firstTime == 1){
-					for(int i = 0; i < 6; i++){
-						signalOffset[i] = (int)msg.control[i];
-					}
-					firstTime = 0;
-				// in usual operation
-				}else{
-					for(int i = 0; i < 6; i++){
-						receivedSignal[i] = (int)msg.control[i] - signalOffset[i];
-					}
-				}
-				*/
+			if(msg.mode == LINE_LENGTH_MODE){
+				line_length_in_meters = msg.data[0];
+				line_tension_in_newtons = msg.data[1];
 			}
 		}
 	}else if (ROLE == DATA_RECEIVER){
@@ -206,11 +177,11 @@ void sendControl(float poti[6]){
 }
 
 // used by the kite to send data to the data receiver
-void sendDataArray(float data[DATALENGTH]){
+void sendDataArray(float data[DATALENGTH], uint32_t mode){
 
 	esp_now_msg_t msg;
 	
-	msg.mode = DATA_MODE;
+	msg.mode = mode;
 	for(int i = 0; i < 6; i++){
 		msg.control[i] = 0.0;
 	}
@@ -234,7 +205,7 @@ void setNumberOfOmittedSends(int n){
 	numberOfOmittedSends = n;
 }
 
-void sendData(float data0, float data1, float data2, float data3, float data4, float data5, float data6, float data7, float data8, float data9, float data10, float data11, float data12, float data13, float data14, float data15, float data16, float data17, float data18, float data19, float data20, float data21, float data22){
+void sendData(uint32_t mode, float data0, float data1, float data2, float data3, float data4, float data5, float data6, float data7, float data8, float data9, float data10, float data11, float data12, float data13, float data14, float data15, float data16, float data17, float data18, float data19, float data20, float data21, float data22){
 	
 	if(counterForOmittedSends < numberOfOmittedSends){
 		counterForOmittedSends ++;
@@ -269,7 +240,7 @@ void sendData(float data0, float data1, float data2, float data3, float data4, f
 	to_be_sent[20] = data20;
 	to_be_sent[21] = data21;
 	to_be_sent[22] = data22;
-	sendDataArray(to_be_sent);
+	sendDataArray(to_be_sent, mode);
 }
 
 

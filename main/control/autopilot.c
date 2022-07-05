@@ -80,7 +80,7 @@ void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 		}
 		landing_control(autopilot, control_data_out, sensor_data, line_length, line_tension, false); return;
 	}else if(autopilot->mode == FINAL_LANDING_MODE_HOVER){
-		initControlData(control_data_out, 0, 0, 45, 45, 0, 2); return;
+		initControlData(control_data_out, 0, 0, 45, 45, 0, 2); return; //TODO: replace by proper hover at 3 meters height
 	}else if(autopilot->mode == LANDING_EIGHT_TRANSITION){
 		if(sensor_data.rotation_matrix[0] > 0.1){
 			autopilot->timer = start_timer();
@@ -227,7 +227,7 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	
 	// X-AXIS
 	
-	float x_axis_control = autopilot->hover.X.D * sensor_data.gyro[0];
+	float x_axis_control = (normed_airflow > 0.0001 ? 1.0/(normed_airflow*normed_airflow) : 1.0) * autopilot->hover.X.D * sensor_data.gyro[0];
 	x_axis_control *= 100;
 	
 	//sendData(mat[3], mat[4], mat[5], 0, mat[6], mat[7], mat[8], 0, mat[0], mat[1], mat[2], 0, 0, 0, 0, 0, 0, 0, 0, 0, y_axis_offset, 0, y_axis_control);
