@@ -75,8 +75,8 @@ void app_main(void)
 		updatePWMInput();
 			
 		//LANDING and LAUNCH demand from RC
-		if(autopilot.mode != LANDING_MODE && autopilot.mode != FINAL_LANDING_MODE_HOVER && getPWMInput0to1normalized(0) < 0.2){
-			autopilot.mode = LANDING_MODE;
+		if(autopilot.mode != FINAL_LANDING_MODE && autopilot.mode != FINAL_LANDING_MODE_HOVER && getPWMInput0to1normalized(0) < 0.2){
+			autopilot.mode = FINAL_LANDING_MODE;
 			
 		}
 		/*if(autopilot.mode == LANDING_MODE && getPWMInput0to1normalized(0) >= 0.8){
