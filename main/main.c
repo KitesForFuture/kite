@@ -114,11 +114,11 @@ void app_main(void)
 		control_data.right_prop = clamp(control_data.right_prop, 0, MAX_PROPELLER_SPEED);
 		
 		//TODO: setAngle in radians ( * PI/180) and setSpeed from [0, 1] or so
-		setAngle(0, control_data.right_elevon); // elevon
+		setAngle(3, control_data.right_elevon); // elevon
 		//setAngle(1, 0); // optional Rudder
-		setAngle(3, -control_data.left_elevon); // elevon
-		setSpeed(2, getPWMInput0to1normalized(0)*control_data.right_prop);
-		setSpeed(4, getPWMInput0to1normalized(0)*control_data.left_prop);
+		setAngle(0, -control_data.left_elevon); // elevon
+		setSpeed(4, getPWMInput0to1normalized(0)*control_data.right_prop);
+		setSpeed(2, getPWMInput0to1normalized(0)*control_data.left_prop);
 		
 		//send control_data.line_tension to groundstation.
 		sendData(LINE_TENSION_REQUEST_MODE, control_data.line_tension, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
