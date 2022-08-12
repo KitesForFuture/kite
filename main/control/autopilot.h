@@ -20,6 +20,11 @@
 #define LEFT 0
 #define RIGHT 1
 
+#define LINE_TENSION_LAUNCH 0
+#define LINE_TENSION_EIGHT -1
+#define LINE_TENSION_LANDING -2
+#define LINE_TENSION_LANDING_HOVER -3
+
 struct _Autopilot {
 	struct {
 		struct {
@@ -41,6 +46,29 @@ struct _Autopilot {
 			float D;
 		} H;
 	} hover;
+	
+	struct {
+		struct {
+			float P;
+			float D;
+		} Z;
+		struct {
+			float P;
+			float D;
+		} Y;
+		float elevator;
+	} eight;
+	
+	struct {
+		struct {
+			float P;
+			float D;
+		} X;
+		struct {
+			float P;
+			float D;
+		} Y;
+	} landing;
 	
 	float y_angle_offset;
 	float desired_height;

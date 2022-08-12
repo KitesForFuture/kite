@@ -7,7 +7,7 @@ void initActuator(Actuator* actuator, float speed, float minValue, float maxValu
 	actuator->speed = speed;
 	actuator->minValue = minValue;
 	actuator->maxValue = maxValue;
-	actuator->currentValue = minValue;
+	actuator->currentValue = (minValue+maxValue)*0.5;
 }
 
 void stepActuator(Actuator* actuator, float time_difference){

@@ -5,7 +5,9 @@
 //#include "../actuator.h"
 #include "autopilot.h"
 
-void sendData(float data0, float data1, float data2, float data3, float data4, float data5, float data6, float data7, float data8, float data9, float data10, float data11, float data12, float data13, float data14, float data15, float data16, float data17, float data18, float data19, float data20, float data21, float data22);
+#define DATA_MODE 1
+
+void sendData(int mode, float data0, float data1, float data2, float data3, float data4, float data5, float data6, float data7, float data8, float data9, float data10, float data11, float data12, float data13, float data14, float data15, float data16, float data17, float data18, float data19, float data20, float data21, float data22);
 
 void initAutopilot(Autopilot* autopilot){
 	autopilot->hover.Y.P = 1;
@@ -19,7 +21,21 @@ void initAutopilot(Autopilot* autopilot){
 	autopilot->hover.H.P = 1;
 	autopilot->hover.H.D = 1;
 	
-	autopilot->y_angle_offset = 0.15;
+	autopilot->eight.Y.P = 1;
+	autopilot->eight.Y.D = 1;
+	
+	autopilot->eight.Z.P = 1;
+	autopilot->eight.Z.D = 1;
+	
+	autopilot->landing.X.P = 1;
+	autopilot->landing.X.D = 1;
+	
+	autopilot->landing.Y.P = 1;
+	autopilot->landing.Y.D = 1;
+	
+	autopilot->eight.elevator = 0;
+	
+	autopilot->y_angle_offset = 0.2;// 0.15 quite good
 	autopilot->desired_height = 0;
 	
 	autopilot->mode = HOVER_MODE;
@@ -27,9 +43,9 @@ void initAutopilot(Autopilot* autopilot){
 	autopilot->sideways_flying_time = 7;
 	
 	autopilot->multiplier = FIRST_TURN_MULTIPLIER;
-	autopilot->turning_speed = 1.3;//0.75;//0.75;
+	autopilot->turning_speed = 1.5;//0.75;//0.75;
 	
-	initActuator(&(autopilot->slowly_changing_target_angle), autopilot->turning_speed, -1000, 1000);
+	initActuator(&(autopilot->slowly_changing_target_angle), autopilot->turning_speed, -3.14, 3.14);
 	
 	autopilot->old_line_length = 0;
 	autopilot->smooth_reel_in_speed = 0.1;
@@ -48,7 +64,7 @@ void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 		}
 		autopilot->y_angle_offset = 0.15;
 		
-		hover_control(autopilot, control_data_out, sensor_data, line_length, 1); return;
+		hover_control(autopilot, control_data_out, sensor_data, line_length, LINE_TENSION_LAUNCH); return;
 	}else if(autopilot->mode == TRANSITION_MODE){
 		if(query_timer_seconds(autopilot->timer) > 1){ // 3s
 			autopilot->timer = start_timer();
@@ -57,9 +73,9 @@ void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 			autopilot->y_angle_offset = 0.15;
 		}
 		autopilot->y_angle_offset = -0.15;
-		hover_control(autopilot, control_data_out, sensor_data, line_length, 25); return;
+		hover_control(autopilot, control_data_out, sensor_data, line_length, LINE_TENSION_EIGHT); return;
 	}else if(autopilot->mode == EIGHT_MODE){
-		if(sensor_data.height > 130){
+		if(sensor_data.height > 100){
 			autopilot->mode = LANDING_MODE;
 		}
 		eight_control(autopilot, control_data_out, sensor_data, line_length, timestep_in_s); return;
@@ -76,11 +92,12 @@ void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 		autopilot->old_line_length = line_length;
 		if(line_length / autopilot->smooth_reel_in_speed < 0.5){
 			autopilot->smooth_reel_in_speed = 0.1;
-			autopilot->mode = FINAL_LANDING_MODE_HOVER;
+			//TODO: commented only for testing without props: autopilot->mode = FINAL_LANDING_MODE_HOVER;
 		}
 		landing_control(autopilot, control_data_out, sensor_data, line_length, line_tension, false); return;
 	}else if(autopilot->mode == FINAL_LANDING_MODE_HOVER){
-		initControlData(control_data_out, 0, 0, 45, 45, 0, 2); return; //TODO: replace by proper hover at 3 meters height
+		hover_control(autopilot, control_data_out, sensor_data, line_length, LINE_TENSION_LANDING_HOVER); return;
+		//initControlData(control_data_out, 0, 0, 45, 45, 0, LINE_TENSION_LANDING_HOVER); return; //TODO: replace by proper hover at 3 meters height
 	}else if(autopilot->mode == LANDING_EIGHT_TRANSITION){
 		if(sensor_data.rotation_matrix[0] > 0.1){
 			autopilot->timer = start_timer();
@@ -143,26 +160,33 @@ void landing_control(Autopilot* autopilot, ControlData* control_data_out, Sensor
 	
 	float y_axis_offset = getAngleErrorYAxis(desired_dive_angle - PI/2, mat);
 	//TODO: bei weniger Wind (geringe Seilspannung) sollte das hier mit Faktor multipliziert werden, um genügend Steuerwirkung zu haben
-	float y_axis_control = /*autopilot->hover.Y.P**/10.0*(- 0.24*3.8*2*0.5* y_axis_offset + 0.0027*0.7*0.4 *0.2*0.5 * sensor_data.gyro[1]);
+	float y_axis_control = /*autopilot->hover.Y.P**/10.0*( -(0.24*3.8*2*0.5)* y_axis_offset * 0.4 * autopilot->landing.Y.P + autopilot->landing.Y.D *2.6 * (0.0027*0.7*0.4 *0.2*0.5) * sensor_data.gyro[1]);
 	
 	y_axis_control *= line_tension < 5 ? 5 : 1;
 	
-	float x_axis_control = -50 * (mat[3] * autopilot->hover.Z.P + 0*autopilot->hover.Z.D * sensor_data.gyro[0]);
-	
-	initControlData(control_data_out, 0, 0, y_axis_control-1*x_axis_control, y_axis_control+1*x_axis_control, x_axis_control, 2); return;
+	float x_axis_control = -50 * (mat[3] * autopilot->landing.X.P + 0*autopilot->landing.X.D * sensor_data.gyro[0]);
+	initControlData(control_data_out, 0, 0, y_axis_control-1*x_axis_control, y_axis_control+1*x_axis_control, x_axis_control, LINE_TENSION_LANDING); return;
 }
 
 void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float timestep_in_s){
 	
 	float* mat = sensor_data.rotation_matrix;
-	if(query_timer_seconds(autopilot->timer) > autopilot->sideways_flying_time * autopilot->multiplier){ // IF TIME TO TURN
+	if(query_timer_seconds(autopilot->timer) > autopilot->sideways_flying_time * autopilot->multiplier * clamp(0.02*sensor_data.height, 0.5, 10)){ // IF TIME TO TURN
 		//TURN
 		autopilot->direction  *= -1;
 		autopilot->multiplier = 1;
 		autopilot->timer = start_timer();
 	}
 	float z_axis_angle = safe_acos(mat[6]); // roll angle of kite = line angle
-	float RC_requested_line_angle = PI/4 * 1.5; // TODO: rename line_angle
+	float RC_requested_line_angle = PI/4 * 1.35; // TODO: rename line_angle
+	/*if(sensor_data.height > 10)
+		RC_requested_line_angle = PI/4 * 1.35;
+	if(sensor_data.height > 15)
+		RC_requested_line_angle = PI/4 * 1.4;
+	if(sensor_data.height > 20)
+		RC_requested_line_angle = PI/4 * 1.45;
+	if(sensor_data.height > 25)
+		RC_requested_line_angle = PI/4 * 1.5;*/
 	float angle_diff = RC_requested_line_angle - z_axis_angle;
 	float target_angle_adjustment = angle_diff*3; // 3 works well for line angle control, but causes instability. between -pi/4=-0.7... and pi/4=0.7...
 	if(target_angle_adjustment > 0.4) target_angle_adjustment = 0.4;
@@ -175,17 +199,20 @@ void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	
 	float z_axis_offset = getAngleErrorZAxis(0.0, mat);
 	z_axis_offset -= slowly_changing_target_angle_local;
-	float z_axis_control = - 1 * z_axis_offset + 1 * sensor_data.gyro[2];
+	float z_axis_control = - autopilot->eight.Z.P * 0.5 * z_axis_offset + autopilot->eight.Z.D * 0.1 * sensor_data.gyro[2];
 	z_axis_control *=100;
 	
-	float y_axis_control = 15 - 1 * autopilot->hover.Y.D * sensor_data.gyro[1];
-	initControlData(control_data_out, 0, 0, y_axis_control - 0.5*z_axis_control, y_axis_control + 0.5*z_axis_control, 0, 35); return;
+	//sendData(DATA_MODE, z_axis_angle, angle_diff, angle_diff, target_angle_adjustment, 0, target_angle, slowly_changing_target_angle_local, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, autopilot->eight.elevator, autopilot->eight.Z.P, autopilot->eight.Z.D);
+	
+	
+	float y_axis_control = autopilot->eight.elevator + 20 - 1 * autopilot->eight.Y.D * sensor_data.gyro[1];
+	initControlData(control_data_out, 0, 0, y_axis_control - 0.5*z_axis_control, y_axis_control + 0.5*z_axis_control, 0, LINE_TENSION_EIGHT); return;
 }
 
-
-void straight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length){
+/*void straight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length){
 	initControlData(control_data_out, 0, 0, 20, 20, 0, 25); return;
-}
+}*/
+
 
 //TODO:
 void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension){
@@ -234,7 +261,7 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	
 	// MIXING
 	
-	height_control = clamp(height_control, 0, 40);
+	height_control = clamp(height_control, 0, 45);
 	z_axis_control = clamp(z_axis_control, -10, 10);
 	
 	float left_prop = height_control + z_axis_control;

@@ -34,12 +34,12 @@
 */
 //Neuer Autopilot, seitlich eingebaut, Akku-Anschluss rechts, ESP32 richtung Bauch
 
-#define accel_x -mpu_raw_data.accel[1]
-#define accel_y mpu_raw_data.accel[0]
+#define accel_x mpu_raw_data.accel[1]
+#define accel_y -mpu_raw_data.accel[0]
 #define accel_z mpu_raw_data.accel[2]
 
-#define gyro_x -mpu_raw_data.gyro[1]
-#define gyro_y mpu_raw_data.gyro[0]
+#define gyro_x mpu_raw_data.gyro[1]
+#define gyro_y -mpu_raw_data.gyro[0]
 #define gyro_z mpu_raw_data.gyro[2]
 
 
