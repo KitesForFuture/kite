@@ -52,7 +52,7 @@
 //float rotation_matrix[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 //float gyro_in_kite_coords[3] = {0,0,0};
 
-void sendData(float data0, float data1, float data2, float data3, float data4, float data5, float data6, float data7, float data8, float data9, float data10, float data11, float data12, float data13, float data14, float data15, float data16, float data17, float data18, float data19, float data20, float data21, float data22);
+//void sendData(float data0, float data1, float data2, float data3, float data4, float data5, float data6, float data7, float data8, float data9, float data10, float data11, float data12, float data13, float data14, float data15, float data16, float data17, float data18, float data19, float data20, float data21, float data22);
 
 Mpu_raw_data mpu_raw_data = {
 	{0, 0, 0},

@@ -15,6 +15,8 @@
 #define FINAL_LANDING_MODE 7
 #define FINAL_LANDING_MODE_HOVER 8
 
+#define AIRPLANE_MODE 9
+
 #define FIRST_TURN_MULTIPLIER 0.5
 
 #define LEFT 0
@@ -68,7 +70,12 @@ struct _Autopilot {
 			float P;
 			float D;
 		} Y;
+		float desired_height;
 	} landing;
+	
+	float brake;
+	
+	float fm;
 	
 	float y_angle_offset;
 	float desired_height;
@@ -98,5 +105,7 @@ void landing_control(Autopilot* autopilot, ControlData* control_data_out, Sensor
 void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float timestep_in_s);
 void straight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length);
 void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension);
+
+void normal_flight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension, int transition);
 
 #endif
