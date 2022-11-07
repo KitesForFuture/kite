@@ -9,3 +9,6 @@ This code runs on the autopilot of the Tailsitter Kite Wind Turbine https://www.
 
 ## Autopilot Hardware
 * https://oshwlab.com/benjamin.kutschan/kitepcb1_copy
+
+## Groundstation
+* The corresponding groundstation for this Kite can be found at https://github.com/KitesForFuture/groundstation
