@@ -7,5 +7,5 @@ This code runs on the autopilot of the Tailsitter Kite Wind Turbine https://www.
 * Run 'idf.py build' to build the project
 * Run 'idf.py flash' to flash it to an ESP32
 
-## Hardware interface between ESP32 and VESC
+## Autopilot Hardware
 * https://oshwlab.com/benjamin.kutschan/kitepcb1_copy
