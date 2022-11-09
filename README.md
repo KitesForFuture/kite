@@ -13,5 +13,9 @@ This code runs on the autopilot of the Tailsitter Kite Wind Turbine https://www.
 ## Groundstation
 * The corresponding groundstation for this Kite can be found at https://github.com/KitesForFuture/groundstation
 
+## Flight Simulator
+* There's a javascript online flight simulator with essentially the same code at https://www.kitesforfuture.de/simulation17/kite_simulation.html
+* Ctrl-S to download the .js-Code when you're on the page.
+
 ## Acknowledgement
 * This autopilot would not exist without the awesome tutorials at http://brokking.net/
