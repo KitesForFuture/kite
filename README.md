@@ -12,3 +12,6 @@ This code runs on the autopilot of the Tailsitter Kite Wind Turbine https://www.
 
 ## Groundstation
 * The corresponding groundstation for this Kite can be found at https://github.com/KitesForFuture/groundstation
+
+## Acknowledgement
+* This autopilot would not exist without the awesome tutorials at http://brokking.net/
