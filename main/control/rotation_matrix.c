@@ -71,6 +71,10 @@ Mpu_raw_data mpu_raw_data = {
 
 Time mpu_last_update_time = 0;
 
+float getAccelX(){
+	return accel_x;
+}
+
 void initRotationMatrix(Orientation_Data* orientation_data){
 	float tmp[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 	memcpy(orientation_data->rotation_matrix, tmp, 9*sizeof(float));

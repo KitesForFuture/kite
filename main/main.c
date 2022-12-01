@@ -16,6 +16,16 @@
 #include "esp_wifi.h"
 #include "esp_now.h"
 #include "RC.c"
+
+
+#include <string.h>
+#include "esp_system.h"
+#include "esp_event.h"
+#include "esp_log.h"
+#include "lwip/err.h"
+#include "lwip/sys.h"
+#include "RC_for_config.c"
+
 //#include "control/sensorData.h"
 #include "control/autopilot.h"
 
@@ -31,8 +41,6 @@ struct i2c_bus bus1 = {18, 19};
 void app_main(void)
 {
 	init_uptime();
-	
-	network_setup();
 	
 	init_cat24(bus1);
     
@@ -52,19 +60,37 @@ void app_main(void)
 	setAngle(3, 0);
 	setSpeed(4, 0);
 		
-	int input_pins[] = {4, 33, 2, 17, 16};
-	initPWMInput(input_pins, 5);
 	
-	// THIS TAKES TIME...
-	float bmp_calib = readEEPROM(6)-0.000001;// - 0.000003;//=0.000024 - 0.000003 = 0.000021
-    init_bmp280(bus1, bmp_calib);
+	
 	
     
     initMPU6050(bus0, mpu_calibration);
 	Orientation_Data orientation_data;
 	initRotationMatrix(&orientation_data);
 	
-	//float GROUND_STATION_MIN_TENSION = 0;//TODO: needed?
+	// just to find out if nose up or down on initialization:
+	updateRotationMatrix(&orientation_data);
+	if(getAccelX() > 0){
+		network_setup_configuring();
+		while(1){
+			//write2EEPROM(float number, int address);
+			//float readEEPROM(int address);
+		}
+	}
+	
+	
+	
+	network_setup_flying();
+	
+	
+	int input_pins[] = {4, 33, 2, 17, 16};
+	initPWMInput(input_pins, 5);
+	
+	
+	// THIS TAKES TIME...
+	float bmp_calib = readEEPROM(6)-0.000001;// - 0.000003;//=0.000024 - 0.000003 = 0.000021
+    init_bmp280(bus1, bmp_calib);
+    
 	
 	
 	Autopilot autopilot;

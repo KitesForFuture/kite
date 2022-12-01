@@ -39,9 +39,10 @@ static void msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 	
 }
 
+
 // init wifi on the esp
 // register callbacks
-void network_setup(void)
+void network_setup_flying(void)
 {
 	//TODO: check if neccessary when WIFI_STORAGE_RAM is used
 	// Initialize FS NVS
