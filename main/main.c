@@ -37,55 +37,150 @@
 #define MAX_SERVO_DEFLECTION 50
 #define MAX_BRAKE_DEFLECTION 90
 #define MAX_PROPELLER_SPEED 90 // AT MOST 90 - MAX_PROPELLER_DIFF
+#define DEBUGGING 1
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
 
+static Autopilot autopilot;
+
+void writeConfigValuesToEEPROM(float* values){
+	for (int i = 7; i < NUM_CONFIG_FLAOT_VARS; i++){
+		float readValue = readEEPROM(i);
+		if(readValue != values[i]) write2EEPROM(values[i], i);
+	}
+	loadConfigVariables(&autopilot, values);
+}
+
+void readConfigValuesFromEEPROM(float* values){
+	for (int i = 7; i < NUM_CONFIG_FLAOT_VARS; i++){
+		values[i] = readEEPROM(i);
+	}
+}
+
+float fakeConfigValues[NUM_CONFIG_FLAOT_VARS];
+
+void FAKEwriteConfigValuesToEEPROM(float* values){
+	for (int i = 7; i < NUM_CONFIG_FLAOT_VARS; i++){
+		float readValue = fakeConfigValues[i];
+		if(readValue != values[i]){
+			printf("FAKE-writing %f to EEPROM at place %d", values[i], i);//write2EEPROM(values[i], i);
+			fakeConfigValues[i] = values[i];
+		}
+	}
+}
+
+void initializeFakeConfigValues(){
+	fakeConfigValues[7] = 1;
+	fakeConfigValues[8] = 1;
+	fakeConfigValues[9] = 0;
+	fakeConfigValues[10] = 1;
+	fakeConfigValues[11] = 0;
+	fakeConfigValues[12] = 7;
+	fakeConfigValues[13] = 90;
+	fakeConfigValues[14] = 1;
+	fakeConfigValues[15] = 1;
+	fakeConfigValues[16] = 9;
+	fakeConfigValues[17] = 1;
+	fakeConfigValues[18] = 1;
+	fakeConfigValues[19] = 1;
+	fakeConfigValues[20] = 1;
+	fakeConfigValues[21] = 1;
+	fakeConfigValues[22] = 45;
+	fakeConfigValues[23] = 1;
+	fakeConfigValues[24] = 1;
+	fakeConfigValues[25] = 1;
+	fakeConfigValues[26] = 0.5;
+	fakeConfigValues[27] = 1;
+	fakeConfigValues[28] = 1;
+	fakeConfigValues[29] = 1;
+	fakeConfigValues[30] = 0;
+	fakeConfigValues[31] = -9;
+	fakeConfigValues[32] = 45;
+	fakeConfigValues[33] = 0.9;
+	fakeConfigValues[34] = 6;
+	fakeConfigValues[35] = 0.85;
+	
+	fakeConfigValues[36] = 1;
+}
+void FAKEreadConfigValuesFromEEPROM(float* values){
+	for(int i = 7; i < NUM_CONFIG_FLAOT_VARS; i++){
+		values[i] = fakeConfigValues[i];
+	}
+}
+void FAKEactuatorControl(float* control){
+	
+	printf("control[0...4] = %f, %f, %f, %f, %f\n", control[0], control[1], control[2], control[3], control[4]);
+}
+
+void actuatorControl(float* control){
+	
+	if(readEEPROM(9)){ // SWAPPED
+		setAngle(3, readEEPROM(7)*control[0]); // left elevon
+		setAngle(0, readEEPROM(8)*control[1]); // right elevon
+	}else{
+		setAngle(0, readEEPROM(7)*control[0]); // left elevon
+		setAngle(3, readEEPROM(8)*control[1]); // right elevon
+	}
+	
+	if(readEEPROM(11)){ // SWAPPED
+		setSpeed(2, clamp(control[3], 0, 20)); // left Propeller
+		setSpeed(4, clamp(control[4], 0, 20)); // right Propeller
+	}else{
+		setSpeed(4, clamp(control[3], 0, 20)); // left Propeller
+		setSpeed(2, clamp(control[4], 0, 20)); // right Propeller
+	}
+	
+	setAngle(1, readEEPROM(10)*control[2]); // Brake
+}
 
 
 void app_main(void)
 {
 	init_uptime();
 	
-	init_cat24(bus1);
-    
-	//float debug_bmp_tmp_factor = readEEPROM(6);
-	
-	Mpu_raw_data mpu_calibration = {
-		{readEEPROM(0), readEEPROM(1), readEEPROM(2)},
-		{readEEPROM(3), readEEPROM(4), readEEPROM(5)}
-	};
-	
-	int output_pins[] = {/*TODO: SURVIVOR: 26,27*/27,26,12,13,5};
-	initMotors(output_pins, 5);
-	
-	setAngle(0, 0);
-	setAngle(1, 0); // not used
-	setSpeed(2, 0);
-	setAngle(3, 0);
-	setSpeed(4, 0);
-		
-	
-	
-	
-    
-    initMPU6050(bus0, mpu_calibration);
 	Orientation_Data orientation_data;
 	initRotationMatrix(&orientation_data);
 	
-	// just to find out if nose up or down on initialization:
-	updateRotationMatrix(&orientation_data);
-	if(getAccelX() > 0){
-		network_setup_configuring();
+	if(!DEBUGGING){
+		init_cat24(bus1);
+    	
+		//float debug_bmp_tmp_factor = readEEPROM(6);
+		
+		Mpu_raw_data mpu_calibration = {
+			{readEEPROM(0), readEEPROM(1), readEEPROM(2)},
+			{readEEPROM(3), readEEPROM(4), readEEPROM(5)}
+		};
+		
+		int output_pins[] = {/*TODO: SURVIVOR: 26,27*/27,26,12,13,5};
+		initMotors(output_pins, 5);
+		
+		setAngle(0, 0);
+		setAngle(1, 0);
+		setSpeed(2, 0);
+		setAngle(3, 0);
+		setSpeed(4, 0);
+		
+    	initMPU6050(bus0, mpu_calibration);
+		// just to find out if nose up or down on initialization:
+		updateRotationMatrix(&orientation_data);
+	}
+	if(DEBUGGING || getAccelX() < 0){
+		initializeFakeConfigValues();
+		network_setup_configuring(&FAKEreadConfigValuesFromEEPROM ,&FAKEwriteConfigValuesToEEPROM, &FAKEactuatorControl, &orientation_data);
 		while(1){
-			//write2EEPROM(float number, int address);
-			//float readEEPROM(int address);
+			vTaskDelay(1);
+			if(DEBUGGING){
+				FAKEupdateRotationMatrix(&orientation_data);
+			}else{
+				updateRotationMatrix(&orientation_data);
+			}
 		}
 	}
 	
 	
 	
-	network_setup_flying();
+	network_setup_flying(&writeConfigValuesToEEPROM);
 	
 	
 	int input_pins[] = {4, 33, 2, 17, 16};
@@ -97,9 +192,12 @@ void app_main(void)
     init_bmp280(bus1, bmp_calib);
     
 	
+    
+    float config_values[NUM_CONFIG_FLAOT_VARS];
+    readConfigValuesFromEEPROM(config_values);
 	
-	Autopilot autopilot;
-	initAutopilot(&autopilot);
+	
+	initAutopilot(&autopilot, config_values);
 	//autopilot.mode = EIGHT_MODE;
 	while(1) {
 		vTaskDelay(1);
@@ -117,8 +215,8 @@ void app_main(void)
 		float line_length = clamp(line_length_in_meters, 0, 1000000); // global var defined in RC.c, should default to 1 when no signal received, TODO: revert line length in VESC LISP code
 		autopilot.fm = flight_mode;// global var flight_mode defined in RC.c, 
 		//printf("flight mode = %f", flight_mode);
-		autopilot.eight.Z.P = pow(1.1,12*getPWMInputMinus1to1normalized(4));//0(CH3), 1(CH2), 2(CH1), 3(CH5), 4(CH6) available
-		autopilot.eight.Z.D = pow(1.1,12*getPWMInputMinus1to1normalized(3));
+		//autopilot.eight.Z.P = pow(1.1,12*getPWMInputMinus1to1normalized(4));//0(CH3), 1(CH2), 2(CH1), 3(CH5), 4(CH6) available
+		//autopilot.eight.Z.D = pow(1.1,12*getPWMInputMinus1to1normalized(3));
 		//autopilot.landing.desired_height = 20*(getPWMInput0to1normalized(4) + getPWMInput0to1normalized(3));
 		
 		SensorData sensorData;

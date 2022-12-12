@@ -10,48 +10,57 @@
 void sendData(int mode, float data0, float data1);
 
 
+void loadConfigVariables(Autopilot* autopilot, float* config_values){
+	autopilot->hover.Y.P = config_values[14];
+	autopilot->hover.Y.D = config_values[15];
+	
+	autopilot->hover.Z.P = config_values[17];
+	autopilot->hover.Z.D = config_values[18];
+	
+	autopilot->hover.X.D = config_values[19];
+	
+	autopilot->hover.H.P = config_values[20];
+	autopilot->hover.H.D = config_values[21];
+	autopilot->hover.y_angle_offset = config_values[16]*PI/180;//0.15;
+	autopilot->transition_y_angle_offset = config_values[31]*PI/180;//-0.15;
+	autopilot->eight.Y.D = config_values[29];
+	
+	autopilot->eight.Z.P = config_values[27];
+	autopilot->eight.Z.D = config_values[28];
+	
+	autopilot->landing.X.P = config_values[25];
+	autopilot->landing.Y.P = config_values[23];
+	autopilot->landing.Y.D = config_values[24];
+	autopilot->landing.desired_height = config_values[26];//0.5;
+	
+	autopilot->brake = config_values[22];//45;
+	autopilot->sideways_flying_time = config_values[12];//7;
+	autopilot->turning_speed = config_values[13]*PI/180;//1.5;//0.75;//0.75;
+	
+	
+	autopilot->eight.elevator = config_values[30];
+	autopilot->eight.desired_line_angle_from_zenith = PI-config_values[32];
+	autopilot->eight.target_angle_beta_clamp = config_values[33];
+	autopilot->eight.beta_P = config_values[34];
+	autopilot->eight.neutral_beta_sideways_flying_angle_fraction = config_values[35];
+	autopilot->landing.dive_angle_P = config_values[36];
+}
 
-
-void initAutopilot(Autopilot* autopilot){
+void initAutopilot(Autopilot* autopilot, float* config_values){
     autopilot->fm = 0.0;
-	autopilot->hover.Y.P = 1;
-	autopilot->hover.Y.D = 1;
-	
-	autopilot->hover.Z.P = 1;
-	autopilot->hover.Z.D = 1;
-	
-	autopilot->hover.X.D = 1;
-	
-	autopilot->hover.H.P = 1;
-	autopilot->hover.H.D = 1;
+    
+	loadConfigVariables(autopilot, config_values);
 	
 	autopilot->eight.Y.P = 1;
-	autopilot->eight.Y.D = 1;
-	
-	autopilot->eight.Z.P = 1;
-	autopilot->eight.Z.D = 1;
-	
-	autopilot->landing.X.P = 1;
 	autopilot->landing.X.D = 1;
 	
-	autopilot->landing.Y.P = 1;
-	autopilot->landing.Y.D = 1;
 	
-	autopilot->landing.desired_height = 2;
-	
-	autopilot->brake = 45;
-	
-	autopilot->eight.elevator = 0;
-	
-	autopilot->y_angle_offset = 0.15;// 0.15 quite good
+	autopilot->y_angle_offset = autopilot->hover.y_angle_offset;// 0.15 quite good
 	//autopilot->desired_height = 0;
 	
 	autopilot->mode = HOVER_MODE;
 	autopilot->direction = 1;
-	autopilot->sideways_flying_time = 7;
-	
 	autopilot->multiplier = FIRST_TURN_MULTIPLIER;
-	autopilot->turning_speed = 1.5;//0.75;//0.75;
 	
 	initActuator(&(autopilot->slowly_changing_target_angle), autopilot->turning_speed, -3.14, 3.14);
 	
@@ -77,7 +86,7 @@ void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 			autopilot->mode = TRANSITION_MODE;
 			autopilot->timer = start_timer();
 		}
-		autopilot->y_angle_offset = 0.15;//0.15;
+		autopilot->y_angle_offset = autopilot->hover.y_angle_offset;//0.15;
 		
 		hover_control(autopilot, control_data_out, sensor_data, line_length, LINE_TENSION_LAUNCH); return;
 	}else if(autopilot->mode == TRANSITION_MODE){
@@ -85,9 +94,9 @@ void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 			autopilot->timer = start_timer();
 			autopilot->multiplier = FIRST_TURN_MULTIPLIER;
 			autopilot->mode = EIGHT_MODE;//LANDING_MODE;//EIGHT_MODE;
-			autopilot->y_angle_offset = 0.15;
+			autopilot->y_angle_offset = autopilot->hover.y_angle_offset;
 		}
-		autopilot->y_angle_offset = -0.15;
+		autopilot->y_angle_offset = autopilot->transition_y_angle_offset;
 		hover_control(autopilot, control_data_out, sensor_data, line_length, LINE_TENSION_EIGHT); return;
 	}else if(autopilot->mode == EIGHT_MODE){
 		if(autopilot->fm == 2.0){//landing mode request from VESC
@@ -159,10 +168,10 @@ void landing_control(Autopilot* autopilot, ControlData* control_data_out, Sensor
 	float* mat = sensor_data.rotation_matrix;
 	
 	// HEIGHT CONTROL
-	float height = sensor_data.height-0.5;
+	float height = sensor_data.height-autopilot->landing.desired_height;
 	float height_error = clamp(height - line_length*0.2 /* 20 percent descent slope*/, -2, 10);
 	
-	float desired_dive_angle = -PI*(1.0/20)*height_error;//-desired_line_angle - 2.0 * line_angle_error;
+	float desired_dive_angle = -0.15*autopilot->landing.dive_angle_P*height_error;//-desired_line_angle - 2.0 * line_angle_error;
 	
 	desired_dive_angle = clamp( desired_dive_angle, -PI/10, PI/6 );
 	
@@ -192,13 +201,13 @@ void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 		autopilot->timer = start_timer();
 	}
 	float z_axis_angle_from_zenith = safe_acos(mat[6]); // roll angle of kite = line angle
-	float desired_line_angle_from_zenith = PI/4;// * 1.3; // TODO: rename line_angle
+	//float desired_line_angle_from_zenith = PI/4;// * 1.3; // TODO: rename line_angle
 	
-	float angle_diff = desired_line_angle_from_zenith - z_axis_angle_from_zenith;
-	float target_angle_adjustment = clamp(angle_diff*6, -0.9, 0.9); // 3 works well for line angle control, but causes instability. between -pi/4=-0.7... and pi/4=0.7...
+	float angle_diff = autopilot->eight.desired_line_angle_from_zenith - z_axis_angle_from_zenith;
+	float target_angle_adjustment = clamp(angle_diff*autopilot->eight.beta_P, -autopilot->eight.target_angle_beta_clamp, autopilot->eight.target_angle_beta_clamp); // 3 works well for line angle control, but causes instability. between -pi/4=-0.7... and pi/4=0.7...
 	
-	float sideways_flying_angle_fraction = 0.85;//0.9;//0.75; // fraction of 90 degrees, autopilot influences the angle to the horizon, smaller => greater angle = flying higher
-	float target_angle = PI*0.5*autopilot->direction*(sideways_flying_angle_fraction + target_angle_adjustment/* 1 means 1.2*90 degrees, 0 means 0 degrees*/);
+	//float sideways_flying_angle_fraction = 0.85;//0.9;//0.75; // fraction of 90 degrees, autopilot influences the angle to the horizon, smaller => greater angle = flying higher
+	float target_angle = PI*0.5*autopilot->direction*(autopilot->eight.neutral_beta_sideways_flying_angle_fraction + target_angle_adjustment/* 1 means 1.2*90 degrees, 0 means 0 degrees*/);
 	setTargetValueActuator(&(autopilot->slowly_changing_target_angle), target_angle);
 	stepActuator(&(autopilot->slowly_changing_target_angle), timestep_in_s);
 	float slowly_changing_target_angle_local = getValueActuator(&(autopilot->slowly_changing_target_angle));

@@ -47,6 +47,7 @@ struct _Autopilot {
 			float P;
 			float D;
 		} H;
+		float y_angle_offset;
 	} hover;
 	
 	struct {
@@ -59,6 +60,10 @@ struct _Autopilot {
 			float D;
 		} Y;
 		float elevator;
+		float desired_line_angle_from_zenith;
+		float target_angle_beta_clamp;
+		float neutral_beta_sideways_flying_angle_fraction;
+		float beta_P;
 	} eight;
 	
 	struct {
@@ -71,7 +76,10 @@ struct _Autopilot {
 			float D;
 		} Y;
 		float desired_height;
+		float dive_angle_P;
 	} landing;
+	
+	float transition_y_angle_offset;
 	
 	float brake;
 	
@@ -97,7 +105,9 @@ struct _Autopilot {
 };
 typedef struct _Autopilot Autopilot;
 
-void initAutopilot(Autopilot* autopilot);
+void loadConfigVariables(Autopilot* autopilot, float* config_values);
+
+void initAutopilot(Autopilot* autopilot, float* config_values);
 
 void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension);
 

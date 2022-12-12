@@ -21,6 +21,7 @@ float getAccelX();
 
 void initRotationMatrix(Orientation_Data* orientation_data);
 
+void FAKEupdateRotationMatrix(Orientation_Data* orientation_data);
 void updateRotationMatrix(Orientation_Data* orientation_data);
 
 

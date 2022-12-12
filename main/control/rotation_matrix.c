@@ -82,6 +82,54 @@ void initRotationMatrix(Orientation_Data* orientation_data){
 	memcpy(orientation_data->gyro_in_kite_coords, tmp_gyro, 3*sizeof(float));
 }
 
+void FAKEupdateRotationMatrix(Orientation_Data* orientation_data){
+	
+	if(mpu_last_update_time == 0){
+		mpu_last_update_time = start_timer();
+		return;
+	}
+	float time_difference = query_timer_seconds(mpu_last_update_time);
+	mpu_last_update_time = start_timer();
+	
+	// ROTATE 20 deg/s AROUND EVERY AXIS
+	orientation_data->gyro_in_kite_coords[0] = 20 * PI / 180;
+	orientation_data->gyro_in_kite_coords[1] = 20 * PI / 180;
+	orientation_data->gyro_in_kite_coords[2] = 20 * PI / 180;
+	
+	float alpha = PI / 180 * 20 * time_difference;
+	float beta = PI / 180 * 20 * time_difference;
+	float gamma = PI / 180 * 20 * time_difference;
+	
+	// infinitesimal rotation matrix:
+	float diff[9];
+	diff[0] = 1;
+	diff[1] = -gamma;
+	diff[2] = beta;
+	
+	diff[3] = gamma;
+	diff[4] = 1;
+	diff[5] = -alpha;
+	
+	diff[6] = -beta;
+	diff[7] = alpha;
+	diff[8] = 1;
+	
+	float temp_rotation_matrix[9];
+	mat_mult(orientation_data->rotation_matrix, diff, temp_rotation_matrix);
+	memcpy(orientation_data->rotation_matrix, temp_rotation_matrix, sizeof(temp_rotation_matrix));
+	normalize_matrix(orientation_data->rotation_matrix);
+	
+	orientation_data->rotation_matrix_transpose[0] = orientation_data->rotation_matrix[0];
+	orientation_data->rotation_matrix_transpose[1] = orientation_data->rotation_matrix[3];
+	orientation_data->rotation_matrix_transpose[2] = orientation_data->rotation_matrix[6];
+	orientation_data->rotation_matrix_transpose[3] = orientation_data->rotation_matrix[1];
+	orientation_data->rotation_matrix_transpose[4] = orientation_data->rotation_matrix[4];
+	orientation_data->rotation_matrix_transpose[5] = orientation_data->rotation_matrix[7];
+	orientation_data->rotation_matrix_transpose[6] = orientation_data->rotation_matrix[2];
+	orientation_data->rotation_matrix_transpose[7] = orientation_data->rotation_matrix[5];
+	orientation_data->rotation_matrix_transpose[8] = orientation_data->rotation_matrix[8];
+}
+
 void updateRotationMatrix(Orientation_Data* orientation_data){
 	readMPUData(&mpu_raw_data);
 	if(mpu_last_update_time == 0){

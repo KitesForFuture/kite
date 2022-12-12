@@ -2,6 +2,7 @@
 #define DATA_MODE 1
 #define LINE_TENSION_REQUEST_MODE 2
 #define LINE_LENGTH_MODE 3
+#define CONFIG_MODE 4
 
 #define DATALENGTH 2
 
@@ -14,12 +15,20 @@ float receivedData[DATALENGTH] = {0.0, 0.0};
 float line_length_in_meters = 1;
 float flight_mode = 0;
 
+static void (*write_config_callback)(float*);
+
 typedef struct __attribute__((packed)) esp_now_msg_t
 {
 	uint32_t mode;
 	float data[DATALENGTH];
 	// Can put lots of things here
 } esp_now_msg_t;
+
+typedef struct __attribute__((packed)) esp_now_msg_t_large
+{
+	uint32_t mode;
+	float data[37];
+} esp_now_msg_t_large;
 
 float receive_counter = 0;
 
@@ -37,13 +46,23 @@ static void msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 		}
 	}
 	
+	if (len == sizeof(esp_now_msg_t_large))
+	{
+		esp_now_msg_t_large msg;
+		memcpy(&msg, data, len);
+		if(msg.mode == CONFIG_MODE){
+			(*write_config_callback)(msg.data);
+		}
+	}
+	
 }
 
 
 // init wifi on the esp
 // register callbacks
-void network_setup_flying(void)
+void network_setup_flying(void (*write_config_callback_arg)(float*))
 {
+	write_config_callback = write_config_callback_arg;
 	//TODO: check if neccessary when WIFI_STORAGE_RAM is used
 	// Initialize FS NVS
     esp_err_t ret = nvs_flash_init();
