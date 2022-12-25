@@ -37,7 +37,7 @@
 #define MAX_SERVO_DEFLECTION 50
 #define MAX_BRAKE_DEFLECTION 90
 #define MAX_PROPELLER_SPEED 90 // AT MOST 90 - MAX_PROPELLER_DIFF
-#define DEBUGGING 1
+#define DEBUGGING 0
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -53,7 +53,7 @@ void writeConfigValuesToEEPROM(float* values){
 }
 
 void readConfigValuesFromEEPROM(float* values){
-	for (int i = 7; i < NUM_CONFIG_FLAOT_VARS; i++){
+	for (int i = 0; i < NUM_CONFIG_FLAOT_VARS; i++){
 		values[i] = readEEPROM(i);
 	}
 }
@@ -167,7 +167,7 @@ void app_main(void)
 	}
 	if(DEBUGGING || getAccelX() < 0){
 		initializeFakeConfigValues();
-		network_setup_configuring(&FAKEreadConfigValuesFromEEPROM ,&FAKEwriteConfigValuesToEEPROM, &FAKEactuatorControl, &orientation_data);
+		network_setup_configuring(&readConfigValuesFromEEPROM ,&writeConfigValuesToEEPROM, &actuatorControl, &orientation_data);
 		while(1){
 			vTaskDelay(1);
 			if(DEBUGGING){
