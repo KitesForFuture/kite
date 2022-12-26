@@ -44,18 +44,34 @@ struct i2c_bus bus1 = {18, 19};
 
 static Autopilot autopilot;
 
+float config_values[NUM_CONFIG_FLAOT_VARS];
+int data_needs_being_written_to_EEPROM = 0;
+
 void writeConfigValuesToEEPROM(float* values){
 	for (int i = 7; i < NUM_CONFIG_FLAOT_VARS; i++){
 		float readValue = readEEPROM(i);
 		if(readValue != values[i]) write2EEPROM(values[i], i);
 	}
-	loadConfigVariables(&autopilot, values);
+	//loadConfigVariables(&autopilot, values);
 }
 
 void readConfigValuesFromEEPROM(float* values){
 	for (int i = 0; i < NUM_CONFIG_FLAOT_VARS; i++){
 		values[i] = readEEPROM(i);
 	}
+}
+
+void getConfigValues(float* values){
+	for (int i = 0; i < NUM_CONFIG_FLAOT_VARS; i++){
+		values[i] = config_values[i];
+	}
+}
+
+void setConfigValues(float* values){
+	for (int i = 0; i < NUM_CONFIG_FLAOT_VARS; i++){
+		config_values[i] = values[i];
+	}
+	data_needs_being_written_to_EEPROM = 1;
 }
 
 float fakeConfigValues[NUM_CONFIG_FLAOT_VARS];
@@ -115,15 +131,15 @@ void FAKEactuatorControl(float* control){
 
 void actuatorControl(float* control){
 	
-	if(readEEPROM(9)){ // SWAPPED
-		setAngle(3, readEEPROM(7)*control[0]); // left elevon
-		setAngle(0, readEEPROM(8)*control[1]); // right elevon
+	if(config_values[9]){ // SWAPPED
+		setAngle(3, config_values[7]*control[0]); // left elevon
+		setAngle(0, config_values[8]*control[1]); // right elevon
 	}else{
-		setAngle(0, readEEPROM(7)*control[0]); // left elevon
-		setAngle(3, readEEPROM(8)*control[1]); // right elevon
+		setAngle(0, config_values[7]*control[0]); // left elevon
+		setAngle(3, config_values[8]*control[1]); // right elevon
 	}
 	
-	if(readEEPROM(11)){ // SWAPPED
+	if(config_values[11]){ // SWAPPED
 		setSpeed(2, clamp(control[3], 0, 20)); // left Propeller
 		setSpeed(4, clamp(control[4], 0, 20)); // right Propeller
 	}else{
@@ -131,7 +147,7 @@ void actuatorControl(float* control){
 		setSpeed(2, clamp(control[4], 0, 20)); // right Propeller
 	}
 	
-	setAngle(1, readEEPROM(10)*control[2]); // Brake
+	setAngle(1, config_values[10]*control[2]); // Brake
 }
 
 
@@ -141,6 +157,8 @@ void app_main(void)
 	
 	Orientation_Data orientation_data;
 	initRotationMatrix(&orientation_data);
+	
+	
 	
 	if(!DEBUGGING){
 		init_cat24(bus1);
@@ -167,20 +185,25 @@ void app_main(void)
 	}
 	if(DEBUGGING || getAccelX() < 0){
 		initializeFakeConfigValues();
-		network_setup_configuring(&readConfigValuesFromEEPROM ,&writeConfigValuesToEEPROM, &actuatorControl, &orientation_data);
+		readConfigValuesFromEEPROM(config_values);
+		network_setup_configuring(&getConfigValues ,&setConfigValues, &actuatorControl, &orientation_data);
 		while(1){
 			vTaskDelay(1);
 			if(DEBUGGING){
 				FAKEupdateRotationMatrix(&orientation_data);
 			}else{
 				updateRotationMatrix(&orientation_data);
+				if(data_needs_being_written_to_EEPROM == 1){
+					writeConfigValuesToEEPROM(config_values);
+					data_needs_being_written_to_EEPROM = 0;
+				}
 			}
 		}
 	}
 	
 	
 	
-	network_setup_flying(&writeConfigValuesToEEPROM);
+	network_setup_flying(&setConfigValues);
 	
 	
 	int input_pins[] = {4, 33, 2, 17, 16};
@@ -193,7 +216,7 @@ void app_main(void)
     
 	
     
-    float config_values[NUM_CONFIG_FLAOT_VARS];
+    
     readConfigValuesFromEEPROM(config_values);
 	
 	
@@ -201,6 +224,11 @@ void app_main(void)
 	//autopilot.mode = EIGHT_MODE;
 	while(1) {
 		vTaskDelay(1);
+		
+		if(data_needs_being_written_to_EEPROM == 1){
+			writeConfigValuesToEEPROM(config_values);
+			data_needs_being_written_to_EEPROM = 0;
+		}
 		
 		update_bmp280_if_necessary();
 		

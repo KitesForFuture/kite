@@ -10,7 +10,7 @@
 void sendData(int mode, float data0, float data1);
 
 
-void loadConfigVariables(Autopilot* autopilot, float* config_values){
+static void loadConfigVariables(Autopilot* autopilot, float* config_values){
 	autopilot->hover.Y.P = config_values[14];
 	autopilot->hover.Y.D = config_values[15];
 	

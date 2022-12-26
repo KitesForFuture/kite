@@ -11,6 +11,7 @@ static void (*read_callback)(float*);
 static void (*write_callback)(float*);
 static void (*actuator_control_callback)(float*);
 
+
 Orientation_Data* orientation_data;
 
 // ****** GET WEBSITE ******
@@ -119,6 +120,7 @@ static const httpd_uri_t kite_config_get_html = {
 							xhr.send();\n\
 						}\n\
 						\n\
+		  				var ready_to_download_orientation = true;\n\
 						function downloadOrientation(){\n\
 							var xhr = new XMLHttpRequest();\n\
 							xhr.open('GET', 'getOrientation', true);\n\
@@ -130,6 +132,7 @@ static const httpd_uri_t kite_config_get_html = {
 									mov_matrix[4+i] = parseFloat(myArray[3+i]);\n\
 									mov_matrix[8+i] = parseFloat(myArray[6+i]);\n\
 								}\n\
+		  						ready_to_download_orientation = true;\n\
 								//console.log(mov_matrix);\n\
 							}\n\
 							xhr.send();\n\
@@ -152,15 +155,18 @@ static const httpd_uri_t kite_config_get_html = {
 							() => {  console.log('succeeded sending controls'); },\n\
 							() => {  console.log('failed sending controls'); }  );\n\
 						}\n\
+						ready_to_upload_controls = true;\n\
 						function sendData(data, filename, successCallback, failedCallback){\n\
 							var xmlhttp;\n\
 							xmlhttp = new XMLHttpRequest();\n\
 							xmlhttp.onreadystatechange = function() {\n\
 								if (this.readyState == 4 && this.status != 200) {\n\
 									failedCallback();\n\
+									ready_to_upload_controls = true;\n\
 								}\n\
 								if(this.readyState == 4 && this.status == 200){\n\
 									successCallback();\n\
+									ready_to_upload_controls = true;\n\
 								}\n\
 							};\n\
 							xmlhttp.open(\"POST\",filename,true);\n\
@@ -178,6 +184,7 @@ static const httpd_uri_t kite_config_get_html = {
 						\n\
 						var UIstring = \"\";\n\
 						\n\
+						var need_to_upload_controls = false;\n\
 						function uploadControls(){\n\
 							controlActuators(\n\
 								  	window[\"value\" + 7].innerHTML,\n\
@@ -222,6 +229,16 @@ static const httpd_uri_t kite_config_get_html = {
 							configValues[36] = 1;\n\
 							uploadConfig();\n\
 						}\n\
+						function addFixedConfig(name, index){\n\
+							UIstring += \"\\\n\
+								<tr>\\\n\
+									<td><p>\" + name + \"=<br><span id=\\\"value\" + index + \"\\\"></span></p></td>\\\n\
+								</tr>\\\n\
+							\";\n\
+							jsFunctions[index] = function(){\n\
+								window[\"value\" + index] = document.getElementById(\"value\" + index);\n\
+							};\n\
+						}\n\
 						function addServo(name, index){\n\
 							UIstring += \"\\\n\
 								<tr>\\\n\
@@ -239,7 +256,7 @@ static const httpd_uri_t kite_config_get_html = {
 \n\
 								window[\"slider\" + index].oninput = function() {\n\
 								  window[\"value\" + index].innerHTML = this.value;\n\
-								  uploadControls();\n\
+								  need_to_upload_controls = true;\n\
 								}\n\
 								document.getElementById(\"invert\" + index + \"Button\").onclick = function() {\n\
 									configValues[index] *= -1;\n\
@@ -247,7 +264,7 @@ static const httpd_uri_t kite_config_get_html = {
 								}\n\
 								document.getElementById(\"zero\" + index + \"Button\").onclick = function() {\n\
 									window[\"value\" + index].innerHTML = window[\"slider\" + index].value = 0;\n\
-								  	uploadControls();\n\
+								  	need_to_upload_controls = true;\n\
 								}\n\
 							};\n\
 						}\n\
@@ -269,12 +286,12 @@ static const httpd_uri_t kite_config_get_html = {
 								\n\
 								window[\"slider\" + index].oninput = function() {\n\
 								  window[\"value\" + index].innerHTML = this.value;\n\
-								  uploadControls();\n\
+								  need_to_upload_controls = true;\n\
 								}\n\
 								\n\
 								document.getElementById(\"zero\" + index + \"Button\").onclick = function() {\n\
 									window[\"value\" + index].innerHTML = window[\"slider\" + index].value = 0;\n\
-								  	uploadControls();\n\
+								  	need_to_upload_controls = true;\n\
 								}\n\
 							};\n\
 						}\n\
@@ -408,7 +425,7 @@ static const httpd_uri_t kite_config_get_html = {
 						\n\
 						function updateConfigValuesInHTML(){\n\
 							for(let i = 0; i < numConfigValues; i++){\n\
-								if(document.getElementById(\"value\" + i) != null){\n\
+								if(document.getElementById(\"value\" + i) != null && i!=7 && i!=8 && i!=10 && i!= numConfigValues + 0 && i!=numConfigValues + 1){\n\
 									document.getElementById(\"value\" + i).innerHTML = configValues[i];\n\
 									console.log(document.getElementById(\"value\" + i));\n\
 									console.log(configValues[i]);\n\
@@ -476,6 +493,13 @@ static const httpd_uri_t kite_config_get_html = {
 						addPIDConstant(\"Landing Roll(X) Compensation\", 25);\n\
 						addPIDConstant(\"Dive Angle Compensation\", 36);\n\
 						addHeight(\"Landing Approach Height (m)\", 26, -100)\n\
+						addFixedConfig(\"Accel x\", 0)\n\
+						addFixedConfig(\"Accel y\", 1)\n\
+						addFixedConfig(\"Accel z\", 2)\n\
+						addFixedConfig(\"Gyro x\", 3)\n\
+						addFixedConfig(\"Gyro y\", 4)\n\
+						addFixedConfig(\"Gyro z\", 5)\n\
+						addFixedConfig(\"BMP280 Calibration\", 6)\n\
 						\n\
 						UIstring += tableEnd;\n\
 						\n\
@@ -632,7 +656,15 @@ static const httpd_uri_t kite_config_get_html = {
 \n\
          var animate = function(time) {\n\
 \n\
-			downloadOrientation();\n\
+		  	if(ready_to_download_orientation){\n\
+				downloadOrientation();\n\
+		  		ready_to_download_orientation = false;\n\
+		  	}\n\
+		  	if(need_to_upload_controls && ready_to_upload_controls){\n\
+		  		uploadControls();\n\
+		  		need_to_upload_controls = false;\n\
+		  		ready_to_upload_controls = false;\n\
+		  	}\n\
             var dt = time-time_old;\n\
             time_old = time;\n\
 \n\

@@ -105,7 +105,7 @@ struct _Autopilot {
 };
 typedef struct _Autopilot Autopilot;
 
-void loadConfigVariables(Autopilot* autopilot, float* config_values);
+//static void loadConfigVariables(Autopilot* autopilot, float* config_values);
 
 void initAutopilot(Autopilot* autopilot, float* config_values);
 
