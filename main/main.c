@@ -68,7 +68,7 @@ void getConfigValues(float* values){
 }
 
 void setConfigValues(float* values){
-	for (int i = 0; i < NUM_CONFIG_FLAOT_VARS; i++){
+	for (int i = 7; i < NUM_CONFIG_FLAOT_VARS; i++){
 		config_values[i] = values[i];
 	}
 	data_needs_being_written_to_EEPROM = 1;
