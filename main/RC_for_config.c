@@ -690,16 +690,16 @@ static const httpd_uri_t kite_config_get_html = {
 };
 
 // ****** GET CONFIG ******
-
+static char response2[1000];
+float float_values[NUM_CONFIG_FLAOT_VARS];
 static esp_err_t config_get_handler(httpd_req_t *req)
 {
 	ESP_LOGI(TAG, "Getting config values");
 	esp_err_t error;
 	
-    float float_values[NUM_CONFIG_FLAOT_VARS];
     (*read_callback)(float_values);
     
-	char response2[NUM_CONFIG_FLAOT_VARS*20];
+	//char response2[NUM_CONFIG_FLAOT_VARS*20];
     sprintf(response2, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f", 
     	float_values[0],
     	float_values[1],
@@ -759,29 +759,13 @@ static esp_err_t orientation_get_handler(httpd_req_t *req)
 {
 	ESP_LOGI(TAG, "Getting kite orientation");
 	esp_err_t error;
-	
-	/*
-    float float_values[12];
     
-    memcpy(float_values, orientation_data->rotation_matrix, 9*4);
-    float_values[9] = orientation_data->gyro_in_kite_coords[0];
-    float_values[10] = orientation_data->gyro_in_kite_coords[1];
-    float_values[11] = orientation_data->gyro_in_kite_coords[2];
-    
-    char response[12*4];
-    memcpy(response, float_values, 12*4);*/
-    
-    char response2[1000];
     sprintf(response2, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f", orientation_data->rotation_matrix[0], orientation_data->rotation_matrix[3], orientation_data->rotation_matrix[6],
     orientation_data->rotation_matrix[1], orientation_data->rotation_matrix[4], orientation_data->rotation_matrix[7],
     orientation_data->rotation_matrix[2], orientation_data->rotation_matrix[5], orientation_data->rotation_matrix[8],
     orientation_data->gyro_in_kite_coords[0], orientation_data->gyro_in_kite_coords[1], orientation_data->gyro_in_kite_coords[2]);
     
-    //printf("Sending: %s",response2);
-    
     error = httpd_resp_send(req, response2, strlen(response2));
-    //char* error_string = esp_err_to_name(error);
-    //printf("%s", error_string);
     return error;
 }
 
@@ -841,11 +825,11 @@ httpd_uri_t config_post = {
 // ****** POST ACTUATOR CONTROLS ******
 
 
-
+char content[20]; // 3(length of number, e.g. "-90") * 5 + 4(commata)
 esp_err_t control_post_handler(httpd_req_t *req)
 {
 	ESP_LOGI(TAG, "Posting controls to kite");
-    char content[20]; // 3(length of number, e.g. "-90") * 5 + 4(commata)
+    
 
     size_t recv_size = MIN(req->content_len, sizeof(content));
 

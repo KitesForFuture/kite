@@ -188,7 +188,7 @@ void app_main(void)
 		readConfigValuesFromEEPROM(config_values);
 		network_setup_configuring(&getConfigValues ,&setConfigValues, &actuatorControl, &orientation_data);
 		while(1){
-			vTaskDelay(1);
+			vTaskDelay(10);
 			if(DEBUGGING){
 				FAKEupdateRotationMatrix(&orientation_data);
 			}else{
