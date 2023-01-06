@@ -1,3 +1,5 @@
+#include "num_config_vars.h"
+
 #define RC_MODE 0
 #define DATA_MODE 1
 #define LINE_TENSION_REQUEST_MODE 2
@@ -27,7 +29,7 @@ typedef struct __attribute__((packed)) esp_now_msg_t
 typedef struct __attribute__((packed)) esp_now_msg_t_large
 {
 	uint32_t mode;
-	float data[37];
+	float data[NUM_CONFIG_FLAOT_VARS];
 } esp_now_msg_t_large;
 
 float receive_counter = 0;

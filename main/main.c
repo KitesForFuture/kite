@@ -36,7 +36,7 @@
 
 #define MAX_SERVO_DEFLECTION 50
 #define MAX_BRAKE_DEFLECTION 90
-#define MAX_PROPELLER_SPEED 90 // AT MOST 90 - MAX_PROPELLER_DIFF
+#define MAX_PROPELLER_SPEED 90 // AT MOST 90
 
 struct i2c_bus bus0 = {14, 25};
 struct i2c_bus bus1 = {18, 19};
@@ -51,7 +51,6 @@ void writeConfigValuesToEEPROM(float* values){
 		float readValue = readEEPROM(i);
 		if(readValue != values[i]) write2EEPROM(values[i], i);
 	}
-	//loadConfigVariables(&autopilot, values);
 }
 
 void readConfigValuesFromEEPROM(float* values){
@@ -125,7 +124,7 @@ void app_main(void)
 	// just to find out if nose up or down on initialization:
 	updateRotationMatrix(&orientation_data);
 	
-	// KITE NOSE POINTING DOWN -> CONFIG MODE
+	// ****** KITE NOSE POINTING DOWN -> CONFIG MODE ******
 	
 	if(getAccelX() < 0){
 		readConfigValuesFromEEPROM(config_values);
@@ -141,7 +140,7 @@ void app_main(void)
 		}
 	}
 	
-	// KITE NOSE POINTING UP -> FLIGHT MODE
+	// ****** KITE NOSE POINTING UP -> FLIGHT MODE ******
 	
 	network_setup_flying(&setConfigValues);
 	
@@ -182,7 +181,6 @@ void app_main(void)
 		ControlData control_data;
 		
 		stepAutopilot(&autopilot, &control_data, sensorData, line_length, 3/*line tension*/);
-		
 		
 		// DON'T LET SERVOS BREAK THE KITE
 		control_data.brake = clamp(control_data.brake, 0, MAX_BRAKE_DEFLECTION);

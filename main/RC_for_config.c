@@ -1,10 +1,10 @@
+#include "num_config_vars.h"
+
 #define EXAMPLE_ESP_WIFI_SSID      "Kite-Config"
 #define EXAMPLE_ESP_WIFI_PASS      "password"
 #define EXAMPLE_ESP_WIFI_CHANNEL   1
 #define EXAMPLE_MAX_STA_CONN       1
 
-#define NUM_CONFIG_FLAOT_VARS 37
-//#define NUM_ACTUATOR_CONTROL_FLAOT_VARS 36
 
 static const char *TAG = "wifi softAP";
 static void (*read_callback)(float*);
@@ -174,7 +174,7 @@ static const httpd_uri_t kite_config_get_html = {
 						}\n\
 						\n\
 						\n\
-						var numConfigValues = 37;\n\
+						var numConfigValues = " NUM_CONFIG_FLAOT_VARS_string ";\n\
 						var numActuatorsWithoutConfig = 2;\n\
 						var configValues = new Array(numConfigValues).fill(0);\n\
 						\n\
@@ -1013,8 +1013,5 @@ void network_setup_configuring(void (*read_callback_arg)(float*), void (*write_c
     
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_AP_STAIPASSIGNED, &connect_handler, &server));
     //ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &disconnect_handler, &server));
-    
-    /* Start the server for the first time */
-    //server = start_webserver(); // will be started in connect_handler
     
 }
