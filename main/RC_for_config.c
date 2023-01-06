@@ -9,7 +9,7 @@
 static const char *TAG = "wifi softAP";
 static void (*read_callback)(float*);
 static void (*write_callback)(float*);
-static void (*actuator_control_callback)(float*);
+static void (*actuator_control_callback)(float, float, float, float, float, float);
 
 
 Orientation_Data* orientation_data;
@@ -845,7 +845,7 @@ esp_err_t control_post_handler(httpd_req_t *req)
     }
     //printf("controls[0...4] = %d, %d, %d, %d, %d\n", controls[0], controls[1], controls[2], controls[3], controls[4]);
     
-	(*actuator_control_callback)(controls);
+	(*actuator_control_callback)(controls[0], controls[1], controls[2], controls[3], controls[4], 20);
 	
 	
     /* Send a simple response */
@@ -990,7 +990,7 @@ void wifi_init_softap(void)
 
 // init wifi on the esp
 // register callbacks
-void network_setup_configuring(void (*read_callback_arg)(float*), void (*write_callback_arg)(float*), void (*actuator_control_callback_arg)(float*), Orientation_Data* orientation_data_arg)
+void network_setup_configuring(void (*read_callback_arg)(float*), void (*write_callback_arg)(float*), void (*actuator_control_callback_arg)(float, float, float, float, float, float), Orientation_Data* orientation_data_arg)
 {
 	orientation_data = orientation_data_arg;
 	read_callback = read_callback_arg;
