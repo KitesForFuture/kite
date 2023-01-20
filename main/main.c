@@ -85,11 +85,13 @@ void actuatorControl(float left_elevon, float right_elevon, float brake, float l
 	if(config_values[11]){ // SWAPPED
 		setSpeed(2, clamp(left_propeller, 0, propeller_safety_max)); // left Propeller
 		setSpeed(4, clamp(right_propeller, 0, propeller_safety_max)); // right Propeller
+		//printf("sending %f, %f\n", clamp(left_propeller, 0, propeller_safety_max), clamp(right_propeller, 0, propeller_safety_max));
 	}else{
 		setSpeed(4, clamp(left_propeller, 0, propeller_safety_max)); // left Propeller
 		setSpeed(2, clamp(right_propeller, 0, propeller_safety_max)); // right Propeller
+		//printf("sending inverted %f, %f\n", clamp(left_propeller, 0, propeller_safety_max), clamp(right_propeller, 0, propeller_safety_max));
 	}
-	
+	//printf("setting angle to %f\n", config_values[10]*brake);
 	setAngle(1, config_values[10]*brake); // Brake
 }
 
@@ -173,7 +175,7 @@ void app_main(void)
 		
 		float line_length = clamp(line_length_in_meters, 0, 1000000); // global var defined in RC.c, should default to 1 when no signal received, TODO: revert line length in VESC LISP code
 		autopilot.fm = flight_mode;// global var flight_mode defined in RC.c, 
-		
+		//printf("fm = %f", flight_mode);
 		SensorData sensorData;
 		initSensorData(&sensorData, orientation_data.rotation_matrix_transpose, orientation_data.gyro_in_kite_coords, getHeight(), getHeightDerivative());
 		

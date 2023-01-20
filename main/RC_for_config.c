@@ -188,12 +188,14 @@ static const httpd_uri_t kite_config_get_html = {
 						\n\
 						function controlActuators(elevonLeft, elevonRight, brake, propellerLeft, propellerRight){\n\
 							\n\
-							sendData(\"\" + elevonLeft + \",\" + elevonRight + \",\" + brake + \",\" + propellerLeft + \",\" + propellerRight, 'uploadControls',\n\
+							console.log(\"brake before sendData = \" + brake);\n\
+							sendData(\"\" + elevonLeft + \",\" + elevonRight + \",\" + brake + \",\" + propellerLeft + \",\" + propellerRight + \",\", 'uploadControls',\n\
 							() => {  console.log('succeeded sending controls'); },\n\
 							() => {  console.log('failed sending controls'); }  );\n\
 						}\n\
 						ready_to_upload_controls = true;\n\
 						function sendData(data, filename, successCallback, failedCallback){\n\
+							console.log(data);\n\
 							var xmlhttp;\n\
 							xmlhttp = new XMLHttpRequest();\n\
 							xmlhttp.onreadystatechange = function() {\n\
@@ -223,6 +225,7 @@ static const httpd_uri_t kite_config_get_html = {
 						\n\
 						var need_to_upload_controls = false;\n\
 						function uploadControls(){\n\
+							console.log(\"window...innerHTML = \" + window[\"value\" + 10].innerHTML);\n\
 							controlActuators(\n\
 								  	window[\"value\" + 7].innerHTML,\n\
 								  	window[\"value\" + 8].innerHTML,\n\
@@ -880,9 +883,9 @@ esp_err_t control_post_handler(httpd_req_t *req)
     	controls[i] = atof(content+string_position);
     	string_position = getIndexToNextNumber(content, string_position);
     }
-    //printf("controls[0...4] = %d, %d, %d, %d, %d\n", controls[0], controls[1], controls[2], controls[3], controls[4]);
+    printf("controls[0...4] = %f, %f, %f, %f, %f\n", controls[0], controls[1], controls[2], controls[3], controls[4]);
     
-	(*actuator_control_callback)(controls[0], controls[1], controls[2], controls[3], controls[4], 20);
+	(*actuator_control_callback)(controls[0], controls[1], controls[2], controls[3], controls[4], 50);
 	
 	
     /* Send a simple response */
