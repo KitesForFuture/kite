@@ -131,7 +131,7 @@ static const httpd_uri_t kite_config_get_html = {
 							fileReader.readAsText(document.getElementById('myfile').files[0]);\n\
 							fileReader.onload = function() {\n\
 								let result = JSON.parse(fileReader.result);\n\
-								for (i = 0; i < Math.min(configValues.length, result.length); i++) {\n\
+								for (i = 7; i < Math.min(configValues.length, result.length); i++) {\n\
 									configValues[i] = result[i];\n\
 								}\n\
 								updateConfigValuesInHTML();\n\
@@ -267,6 +267,9 @@ static const httpd_uri_t kite_config_get_html = {
 							configValues[34] = 6;\n\
 							configValues[35] = 0.85;\n\
 							configValues[36] = 1;\n\
+							configValues[37] = 0;\n\
+							configValues[38] = 0;\n\
+							configValues[39] = 0;\n\
 							uploadConfig();\n\
 						}\n\
 						function addFixedConfig(name, index){\n\
@@ -493,6 +496,9 @@ static const httpd_uri_t kite_config_get_html = {
 						addPropeller(\"Left Prop\", numConfigValues + 0);\n\
 						addPropeller(\"Right Prop\", numConfigValues + 1);\n\
 						addSwitch(\"Props\", 11);\n\
+						addDegrees(\"Left Elevon Trim\", 37);\n\
+						addDegrees(\"Right Elevon Trim\", 38);\n\
+						addDegrees(\"Brake Trim\", 39);\n\
 						\n\
 						UIstring += tableEnd;\n\
 						UIstring += \"<h3>Eight Flying Config</h3>\";\n\
@@ -740,7 +746,7 @@ static esp_err_t config_get_handler(httpd_req_t *req)
     (*read_callback)(float_values);
     
 	//char response2[NUM_CONFIG_FLAOT_VARS*20];
-    sprintf(response2, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f", 
+    sprintf(response2, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f", 
     	float_values[0],
     	float_values[1],
     	float_values[2],
@@ -777,7 +783,10 @@ static esp_err_t config_get_handler(httpd_req_t *req)
     	float_values[33],
     	float_values[34],
     	float_values[35],
-    	float_values[36]
+    	float_values[36],
+    	float_values[37],
+    	float_values[38],
+    	float_values[39]
     );
     
     error = httpd_resp_send(req, response2, strlen(response2));

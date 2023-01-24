@@ -75,11 +75,11 @@ void setConfigValues(float* values){
 void actuatorControl(float left_elevon, float right_elevon, float brake, float left_propeller, float right_propeller, float propeller_safety_max){
 	
 	if(config_values[9]){ // SWAPPED
-		setAngle(3, config_values[7]*left_elevon); // left elevon
-		setAngle(0, config_values[8]*right_elevon); // right elevon
+		setAngle(3, config_values[37] + config_values[7]*left_elevon); // left elevon
+		setAngle(0, config_values[38] + config_values[8]*right_elevon); // right elevon
 	}else{
-		setAngle(0, config_values[7]*left_elevon); // left elevon
-		setAngle(3, config_values[8]*right_elevon); // right elevon
+		setAngle(0, config_values[37] + config_values[7]*left_elevon); // left elevon
+		setAngle(3, config_values[38] + config_values[8]*right_elevon); // right elevon
 	}
 	
 	if(config_values[11]){ // SWAPPED
@@ -92,7 +92,7 @@ void actuatorControl(float left_elevon, float right_elevon, float brake, float l
 		//printf("sending inverted %f, %f\n", clamp(left_propeller, 0, propeller_safety_max), clamp(right_propeller, 0, propeller_safety_max));
 	}
 	//printf("setting angle to %f\n", config_values[10]*brake);
-	setAngle(1, config_values[10]*brake); // Brake
+	setAngle(1, config_values[39] + config_values[10]*brake); // Brake
 }
 
 
