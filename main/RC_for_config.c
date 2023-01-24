@@ -123,7 +123,7 @@ static const httpd_uri_t kite_config_get_html = {
 							}\n\
 						}\n\
 						document.getElementById('saveButton').onclick = function(){\n\
-							saveFile(\"\" + document.getElementById('filename').value + \".kiteconfig\", JSON.stringify(configValues));\n\
+							saveFile(\"\" + document.getElementById('filename').value + \".kiteconfig2\", JSON.stringify(configValues));\n\
 						};\n\
 						\n\
 						document.getElementById('myfile').oninput = function(event){\n\
