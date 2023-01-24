@@ -180,7 +180,7 @@ static const httpd_uri_t kite_config_get_html = {
 							for(let i = 0; i < numConfigValues-1; i++){\n\
 								config_string += configValues[i] + \",\";\n\
 							}\n\
-							config_string += configValues[numConfigValues-1];\n\
+							config_string += configValues[numConfigValues-1] + \",\";\n\
 							sendData(config_string, 'uploadConfig',\n\
 							() => {  console.log('succeeded sending config'); downloadConfig(); },\n\
 							() => {  console.log('failed sending config'); downloadConfig(); }  );\n\
