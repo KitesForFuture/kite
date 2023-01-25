@@ -74,6 +74,12 @@ Time mpu_last_update_time = 0;
 float getAccelX(){
 	return accel_x;
 }
+float getAccelY(){
+	return accel_y;
+}
+float getAccelZ(){
+	return accel_z;
+}
 
 void initRotationMatrix(Orientation_Data* orientation_data){
 	float tmp[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};

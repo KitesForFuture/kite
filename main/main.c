@@ -85,13 +85,10 @@ void actuatorControl(float left_elevon, float right_elevon, float brake, float l
 	if(config_values[11]){ // SWAPPED
 		setSpeed(2, clamp(left_propeller, 0, propeller_safety_max)); // left Propeller
 		setSpeed(4, clamp(right_propeller, 0, propeller_safety_max)); // right Propeller
-		//printf("sending %f, %f\n", clamp(left_propeller, 0, propeller_safety_max), clamp(right_propeller, 0, propeller_safety_max));
 	}else{
 		setSpeed(4, clamp(left_propeller, 0, propeller_safety_max)); // left Propeller
 		setSpeed(2, clamp(right_propeller, 0, propeller_safety_max)); // right Propeller
-		//printf("sending inverted %f, %f\n", clamp(left_propeller, 0, propeller_safety_max), clamp(right_propeller, 0, propeller_safety_max));
 	}
-	//printf("setting angle to %f\n", config_values[10]*brake);
 	setAngle(1, config_values[39] + config_values[10]*brake); // Brake
 }
 
@@ -103,32 +100,39 @@ void app_main(void)
 	Orientation_Data orientation_data;
 	initRotationMatrix(&orientation_data);
 	
-	
 	init_cat24(bus1);
-    
-	//float debug_bmp_tmp_factor = readEEPROM(6);
 	
 	Mpu_raw_data mpu_calibration = {
 		{readEEPROM(0), readEEPROM(1), readEEPROM(2)},
 		{readEEPROM(3), readEEPROM(4), readEEPROM(5)}
 	};
 	
-	int output_pins[] = {/*TODO: SURVIVOR: 26,27*/27,26,12,13,5};
+	int output_pins[] = {27,26,12,13,5};
 	initMotors(output_pins, 5);
 	
 	setAngle(0, 0);
 	setAngle(1, 0);
-	setSpeed(2, 0);
 	setAngle(3, 0);
-	setSpeed(4, 0);
 	
     initMPU6050(bus0, mpu_calibration);
-	// just to find out if nose up or down on initialization:
+	// just to find out if nose (or wing tip) up or down on initialization:
 	updateRotationMatrix(&orientation_data);
+	
+	if(getAccelY() < -7 || getAccelY() > 7){ // m/s**2
+		printf("entering ESC calibration mode:\n");
+		setSpeed(2, 90);
+		setSpeed(4, 90);
+		//vTaskDelay(1000);
+		vTaskDelay(1000);
+		printf(" ESCs calibrated\n");
+	}
+	setSpeed(2, 0);
+	setSpeed(4, 0);
 	
 	// ****** KITE NOSE POINTING DOWN -> CONFIG MODE ******
 	
 	if(getAccelX() < 0){
+		printf("entering config mode\n");
 		readConfigValuesFromEEPROM(config_values);
 		network_setup_configuring(&getConfigValues ,&setConfigValues, &actuatorControl, &orientation_data);
 		while(1){
@@ -143,7 +147,7 @@ void app_main(void)
 	}
 	
 	// ****** KITE NOSE POINTING UP -> FLIGHT MODE ******
-	
+	printf("Entering flight mode. Excitement guaranteed :D\n");
 	network_setup_flying(&setConfigValues);
 	
 	int input_pins[] = {4, 33, 2, 17, 16};

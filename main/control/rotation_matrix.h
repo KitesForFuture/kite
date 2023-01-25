@@ -18,6 +18,8 @@ typedef struct _Orientation_Data Orientation_Data;
 //float gyro_in_kite_coords[3];
 
 float getAccelX();
+float getAccelY();
+float getAccelZ();
 
 void initRotationMatrix(Orientation_Data* orientation_data);
 
