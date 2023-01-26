@@ -29,7 +29,7 @@ typedef struct __attribute__((packed)) esp_now_msg_t
 typedef struct __attribute__((packed)) esp_now_msg_t_large
 {
 	uint32_t mode;
-	float data[NUM_CONFIG_FLAOT_VARS];
+	float data[NUM_CONFIG_FLOAT_VARS];
 } esp_now_msg_t_large;
 
 float receive_counter = 0;

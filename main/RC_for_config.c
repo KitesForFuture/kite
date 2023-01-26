@@ -213,7 +213,7 @@ static const httpd_uri_t kite_config_get_html = {
 						}\n\
 						\n\
 						\n\
-						var numConfigValues = " NUM_CONFIG_FLAOT_VARS_string ";\n\
+						var numConfigValues = " NUM_CONFIG_FLOAT_VARS_string ";\n\
 						var numActuatorsWithoutConfig = 2;\n\
 						var configValues = new Array(numConfigValues).fill(0);\n\
 						\n\
@@ -737,7 +737,7 @@ static const httpd_uri_t kite_config_get_html = {
 
 // ****** GET CONFIG ******
 static char response2[1000];
-float float_values[NUM_CONFIG_FLAOT_VARS];
+float float_values[NUM_CONFIG_FLOAT_VARS];
 static esp_err_t config_get_handler(httpd_req_t *req)
 {
 	ESP_LOGI(TAG, "Getting config values");
@@ -745,7 +745,7 @@ static esp_err_t config_get_handler(httpd_req_t *req)
 	
     (*read_callback)(float_values);
     
-	//char response2[NUM_CONFIG_FLAOT_VARS*20];
+	//char response2[NUM_CONFIG_FLOAT_VARS*20];
     sprintf(response2, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f", 
     	float_values[0],
     	float_values[1],
@@ -840,7 +840,7 @@ int getIndexToNextNumber(char* string_arg, int current_index){
 esp_err_t config_post_handler(httpd_req_t *req)
 {
 	ESP_LOGI(TAG, "Posting config to kite");
-    char content[NUM_CONFIG_FLAOT_VARS*20];
+    char content[NUM_CONFIG_FLOAT_VARS*20];
 
     size_t recv_size = MIN(req->content_len, sizeof(content));
 
@@ -849,8 +849,8 @@ esp_err_t config_post_handler(httpd_req_t *req)
     if (ret <= 0) return ESP_FAIL;
     
     int string_position = 0;
-    float config_float_values[NUM_CONFIG_FLAOT_VARS];
-    for(int i = 0; i < NUM_CONFIG_FLAOT_VARS; i++){
+    float config_float_values[NUM_CONFIG_FLOAT_VARS];
+    for(int i = 0; i < NUM_CONFIG_FLOAT_VARS; i++){
     	config_float_values[i] = atof(content+string_position);
     	string_position = getIndexToNextNumber(content, string_position);
     }

@@ -43,30 +43,30 @@ struct i2c_bus bus1 = {18, 19};
 
 static Autopilot autopilot;
 
-float config_values[NUM_CONFIG_FLAOT_VARS];
+float config_values[NUM_CONFIG_FLOAT_VARS];
 int data_needs_being_written_to_EEPROM = 0;
 
 void writeConfigValuesToEEPROM(float* values){
-	for (int i = 7; i < NUM_CONFIG_FLAOT_VARS; i++){
+	for (int i = 7; i < NUM_CONFIG_FLOAT_VARS; i++){
 		float readValue = readEEPROM(i);
 		if(readValue != values[i]) write2EEPROM(values[i], i);
 	}
 }
 
 void readConfigValuesFromEEPROM(float* values){
-	for (int i = 0; i < NUM_CONFIG_FLAOT_VARS; i++){
+	for (int i = 0; i < NUM_CONFIG_FLOAT_VARS; i++){
 		values[i] = readEEPROM(i);
 	}
 }
 
 void getConfigValues(float* values){
-	for (int i = 0; i < NUM_CONFIG_FLAOT_VARS; i++){
+	for (int i = 0; i < NUM_CONFIG_FLOAT_VARS; i++){
 		values[i] = config_values[i];
 	}
 }
 
 void setConfigValues(float* values){
-	for (int i = 7; i < NUM_CONFIG_FLAOT_VARS; i++){
+	for (int i = 7; i < NUM_CONFIG_FLOAT_VARS; i++){
 		config_values[i] = values[i];
 	}
 	data_needs_being_written_to_EEPROM = 1;
@@ -115,8 +115,9 @@ void app_main(void)
 	setAngle(3, 0);
 	
     initMPU6050(bus0, mpu_calibration);
-	// just to find out if nose (or wing tip) up or down on initialization:
-	updateRotationMatrix(&orientation_data);
+	updateRotationMatrix(&orientation_data); // to find out if nose (or wing tip) up or down on initialization
+	
+	// ************************ KITE WING TIP POINTING UP -> ESC CALIBRATION MODE ************************
 	
 	if(getAccelY() < -7 || getAccelY() > 7){ // m/s**2
 		printf("entering ESC calibration mode:\n");
@@ -129,7 +130,7 @@ void app_main(void)
 	setSpeed(2, 0);
 	setSpeed(4, 0);
 	
-	// ****** KITE NOSE POINTING DOWN -> CONFIG MODE ******
+	// ************************ KITE NOSE POINTING DOWN -> CONFIG MODE ************************
 	
 	if(getAccelX() < 0){
 		printf("entering config mode\n");
@@ -146,7 +147,8 @@ void app_main(void)
 		}
 	}
 	
-	// ****** KITE NOSE POINTING UP -> FLIGHT MODE ******
+	// ************************ KITE NOSE POINTING UP -> FLIGHT MODE ************************
+	
 	printf("Entering flight mode. Excitement guaranteed :D\n");
 	network_setup_flying(&setConfigValues);
 	
