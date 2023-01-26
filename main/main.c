@@ -138,14 +138,19 @@ void app_main(void)
 		printf("entering config mode\n");
 		readConfigValuesFromEEPROM(config_values);
 		network_setup_configuring(&getConfigValues ,&setConfigValues, &actuatorControl, &orientation_data);
+		
+		// THIS TAKES TIME...
+		float bmp_calib = readEEPROM(6)-0.000001; // TODO: recalibrate and remove the -0.000001 hack
+    	init_bmp280(bus1, bmp_calib);
+		
 		while(1){
-			vTaskDelay(10);
+			vTaskDelay(1);
+			update_bmp280_if_necessary();
 			updateRotationMatrix(&orientation_data);
 			if(data_needs_being_written_to_EEPROM == 1){
 				writeConfigValuesToEEPROM(config_values);
 				data_needs_being_written_to_EEPROM = 0;
 			}
-			
 		}
 	}
 	
