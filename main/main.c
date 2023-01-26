@@ -64,11 +64,12 @@ void getConfigValues(float* values){
 		values[i] = config_values[i];
 	}
 }
-
+int groundstation_has_config_values_initialized_from_kite_EEPROM = false;
 void setConfigValues(float* values){
 	for (int i = 7; i < NUM_CONFIG_FLOAT_VARS; i++){
 		config_values[i] = values[i];
 	}
+	groundstation_has_config_values_initialized_from_kite_EEPROM = true;
 	data_needs_being_written_to_EEPROM = 1;
 }
 
@@ -160,6 +161,13 @@ void app_main(void)
     init_bmp280(bus1, bmp_calib);
     
     readConfigValuesFromEEPROM(config_values);
+    
+    // **** WAITING for GROUNDSTATION to ECHO the config array ****
+    
+    while(!groundstation_has_config_values_initialized_from_kite_EEPROM){
+    	sendDataArrayLarge(CONFIG_MODE, config_values, NUM_CONFIG_FLOAT_VARS); // *** FORWARD of CONFIG ARRAY from UART to ESP-NOW
+    	vTaskDelay(10);
+    }
 	
 	initAutopilot(&autopilot, config_values);
 	

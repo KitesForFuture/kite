@@ -139,4 +139,19 @@ void sendData(uint32_t mode, float data0, float data1){
 	sendDataArray(to_be_sent, mode);
 }
 
+void sendDataArrayLarge(uint32_t mode, float* data, int length){
+	esp_now_msg_t_large msg;
+	msg.mode = mode;
+	for(int i = 0; i < length; i++){
+		msg.data[i] = data[i];
+	}
+	// Pack
+	uint16_t packet_size = sizeof(esp_now_msg_t_large);
+	uint8_t msg_data[packet_size]; // Byte array
+	memcpy(&msg_data[0], &msg, sizeof(esp_now_msg_t_large));
+	
+	// Send
+	esp_now_send(broadcast_mac, msg_data, packet_size);
+}
+
 
