@@ -69,8 +69,9 @@ void setConfigValues(float* values){
 	for (int i = 7; i < NUM_CONFIG_FLOAT_VARS; i++){
 		config_values[i] = values[i];
 	}
-	groundstation_has_config_values_initialized_from_kite_EEPROM = true;
 	data_needs_being_written_to_EEPROM = 1;
+	groundstation_has_config_values_initialized_from_kite_EEPROM = true;
+	loadConfigVariables(&autopilot, config_values);
 }
 
 void actuatorControl(float left_elevon, float right_elevon, float brake, float left_propeller, float right_propeller, float propeller_safety_max){
@@ -166,7 +167,8 @@ void app_main(void)
     
     while(!groundstation_has_config_values_initialized_from_kite_EEPROM){
     	sendDataArrayLarge(CONFIG_MODE, config_values, NUM_CONFIG_FLOAT_VARS); // *** FORWARD of CONFIG ARRAY from UART to ESP-NOW
-    	vTaskDelay(10);
+    	printf("Sending config array\n");
+    	vTaskDelay(100);
     }
 	
 	initAutopilot(&autopilot, config_values);

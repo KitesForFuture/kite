@@ -10,7 +10,7 @@
 void sendData(int mode, float data0, float data1);
 
 
-static void loadConfigVariables(Autopilot* autopilot, float* config_values){
+void loadConfigVariables(Autopilot* autopilot, float* config_values){
 	autopilot->hover.Y.P = config_values[14];
 	autopilot->hover.Y.D = config_values[15];
 	
@@ -71,6 +71,8 @@ void initAutopilot(Autopilot* autopilot, float* config_values){
 }
 
 void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension){
+	
+	printf("autopilot->landing.dive_angle_P = %f\n", autopilot->landing.dive_angle_P);
 	
 	if(autopilot->fm == 3.0){ // 3.0 is VESC final landing mode
 		autopilot->mode = FINAL_LANDING_MODE;
