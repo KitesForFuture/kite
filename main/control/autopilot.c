@@ -72,8 +72,6 @@ void initAutopilot(Autopilot* autopilot, float* config_values){
 
 void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension){
 	
-	printf("autopilot->landing.dive_angle_P = %f\n", autopilot->landing.dive_angle_P);
-	
 	if(autopilot->fm == 3.0){ // 3.0 is VESC final landing mode
 		autopilot->mode = FINAL_LANDING_MODE;
 	}
