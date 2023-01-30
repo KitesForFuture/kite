@@ -757,7 +757,7 @@ static const httpd_uri_t kite_config_get_html = {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);\n\
             gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);\n\
 \n\
-            setTimeout(() => {  window.requestAnimationFrame(animate); }, 200);\n\
+            setTimeout(() => {  window.requestAnimationFrame(animate); }, 100);\n\
          }\n\
          animate(0);\n\
 					</script>\n\

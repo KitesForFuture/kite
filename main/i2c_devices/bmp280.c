@@ -30,7 +30,7 @@ uint32_t getTemperature(){
 	uint8_t highByte = i2c_receive(bmp280_bus, 0x76, 0xFA, 1);
 	uint8_t middleByte = i2c_receive(bmp280_bus, 0x76, 0xFB, 1);
 	uint8_t lowByte = i2c_receive(bmp280_bus, 0x76, 0xFC, 1);
-	printf("raw temp(normed) = %f, ", (uint32_t)((highByte << 16) | (middleByte << 8) | lowByte)-initial_smoothened_temperature);
+	//printf("raw temp(normed) = %f, ", (uint32_t)((highByte << 16) | (middleByte << 8) | lowByte)-initial_smoothened_temperature);
 	return (uint32_t)((highByte << 16) | (middleByte << 8) | lowByte);
 }
 
@@ -39,7 +39,7 @@ float getPressure(){
 	uint8_t middleByte = i2c_receive(bmp280_bus, 0x76, 0xF8, 1);
 	uint8_t lowByte = i2c_receive(bmp280_bus, 0x76, 0xF9, 1);
 	uint32_t bmp280_raw_pressure_reading = (uint32_t)((highByte << 16) | (middleByte << 8) | lowByte);
-	printf("raw pressure(normed) = %f\n", 1365.3-0.00007555555555*(float)(bmp280_raw_pressure_reading)-initial_smoothened_pressure);
+	//printf("raw pressure(normed) = %f\n", 1365.3-0.00007555555555*(float)(bmp280_raw_pressure_reading)-initial_smoothened_pressure);
   return 1365.3-0.00007555555555*(float)(bmp280_raw_pressure_reading);
 }
 
@@ -49,7 +49,7 @@ static void calculateSmoothTempDiscardingOutliers(float new_value){
 	static float smooth_variance = 0;
 	float new_variance = (new_value - current_smoothened_temperature)*(new_value - current_smoothened_temperature);
 	// OOPSY, WE MIGHT HAVE AN OUTLIER
-	printf("variance relation = %f\n", new_variance/smooth_variance);
+	//printf("variance relation = %f\n", new_variance/smooth_variance);
 	if(new_variance > 5*5*smooth_variance && numDiscardedValuesInARow < 10){
 		// DISCARD; INCREMENT DISCARD COUNTER
 		printf("DISCARDING\n");
@@ -66,6 +66,7 @@ static void calculateSmoothTempDiscardingOutliers(float new_value){
 }
 
 int update_bmp280_if_necessary() {
+  //printf("updating bmp280 if necessary\n");
   if (query_timer_microseconds(last_update) >= UPDATE_INTERVAL_MICROSECONDS) {
     if(current_smoothened_temperature == 0){
     	current_smoothened_temperature = (float)getTemperature();
@@ -79,7 +80,7 @@ int update_bmp280_if_necessary() {
 
     }
     
-	printf("height = %f", getHeight());
+	printf("height = %f\n", getHeight());
     startBmp280Measurement();
     return 1;
   }

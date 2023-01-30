@@ -95,7 +95,7 @@ void actuatorControl(float left_elevon, float right_elevon, float brake, float l
 }
 
 
-void app_main(void)
+void main_task(void* arg)
 {
 	init_uptime();
 	
@@ -214,4 +214,8 @@ void app_main(void)
 		actuatorControl(-control_data.left_elevon, control_data.right_elevon, control_data.brake, getPWMInput0to1normalized(2)*control_data.left_prop, getPWMInput0to1normalized(2)*control_data.right_prop, MAX_PROPELLER_SPEED);
 		
 	}
+}
+
+void app_main(void){
+	xTaskCreate(main_task, "main_task", 20000, NULL, 17, NULL);
 }
