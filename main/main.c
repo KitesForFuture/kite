@@ -92,6 +92,7 @@ void actuatorControl(float left_elevon, float right_elevon, float brake, float l
 		setSpeed(2, clamp(right_propeller, 0, propeller_safety_max)); // right Propeller
 	}
 	setAngle(1, config_values[39] + config_values[10]*brake); // Brake
+	printf("setting left, brake, right to (%f, %f, %f)\n", config_values[37] + config_values[7]*left_elevon, config_values[39] + config_values[10]*brake, config_values[38] + config_values[8]*right_elevon);
 }
 
 
@@ -115,22 +116,24 @@ void main_task(void* arg)
 	setAngle(0, 0);
 	setAngle(1, 0);
 	setAngle(3, 0);
+	setSpeed(2, 0);
+	setSpeed(4, 0);
 	
     initMPU6050(bus0, mpu_calibration);
 	updateRotationMatrix(&orientation_data); // to find out if nose (or wing tip) up or down on initialization
 	
 	// ************************ KITE WING TIP POINTING UP -> ESC CALIBRATION MODE ************************
-	
+	/*
 	if(getAccelY() < -7 || getAccelY() > 7){ // m/s**2
 		printf("entering ESC calibration mode:\n");
-		setSpeed(2, 90);
-		setSpeed(4, 90);
-		//vTaskDelay(1000);
-		vTaskDelay(1000);
+		for(int i = 0; i < 500; i++){
+			setSpeed(2, 90);
+			setSpeed(4, 90);
+			//vTaskDelay(1000);
+			vTaskDelay(1);
+		}
 		printf(" ESCs calibrated\n");
-	}
-	setSpeed(2, 0);
-	setSpeed(4, 0);
+	}*/
 	
 	// ************************ KITE NOSE POINTING DOWN -> CONFIG MODE ************************
 	
@@ -211,7 +214,7 @@ void main_task(void* arg)
 		control_data.right_elevon = clamp(control_data.right_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
 		
 		//TODO: setAngle in radians ( * PI/180) and setSpeed from [0, 1] or so
-		actuatorControl(-control_data.left_elevon, control_data.right_elevon, control_data.brake, getPWMInput0to1normalized(2)*control_data.left_prop, getPWMInput0to1normalized(2)*control_data.right_prop, MAX_PROPELLER_SPEED);
+		actuatorControl(control_data.left_elevon, control_data.right_elevon, -control_data.brake, getPWMInput0to1normalized(2)*control_data.left_prop, getPWMInput0to1normalized(2)*control_data.right_prop, MAX_PROPELLER_SPEED);
 		
 	}
 }
