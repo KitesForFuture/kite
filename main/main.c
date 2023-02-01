@@ -143,7 +143,7 @@ void main_task(void* arg)
 		network_setup_configuring(&getConfigValues ,&setConfigValues, &actuatorControl, &orientation_data);
 		
 		// THIS TAKES TIME...
-		float bmp_calib = readEEPROM(6)+0.0000005; // TODO: recalibrate and remove the -0.000001 hack
+		float bmp_calib = readEEPROM(6)-0.000001; // TODO: recalibrate and remove the -0.000001 hack
     	init_bmp280(bus1, bmp_calib);
 		
 		while(1){
