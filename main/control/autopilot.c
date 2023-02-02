@@ -39,7 +39,7 @@ void loadConfigVariables(Autopilot* autopilot, float* config_values){
 	
 	
 	autopilot->eight.elevator = config_values[30];
-	autopilot->eight.desired_line_angle_from_zenith = PI-config_values[32];
+	autopilot->eight.desired_line_angle_from_zenith = PI-config_values[32]*PI/180;
 	autopilot->eight.target_angle_beta_clamp = config_values[33];
 	autopilot->eight.beta_P = config_values[34];
 	autopilot->eight.neutral_beta_sideways_flying_angle_fraction = config_values[35];
@@ -188,11 +188,11 @@ void landing_control(Autopilot* autopilot, ControlData* control_data_out, Sensor
 	
 	sendData(DATA_MODE, height, desired_dive_angle);
 	
-	initControlData(control_data_out, 0, 0, autopilot->brake * 0.5 + y_axis_control-1*x_axis_control, autopilot->brake * 0.5 + y_axis_control+1*x_axis_control, 2*autopilot->brake, LINE_TENSION_LANDING); return;
+	initControlData(control_data_out, 0, 0, autopilot->brake * 0.5 + y_axis_control-1*x_axis_control, autopilot->brake * 0.5 + y_axis_control+1*x_axis_control, -2*autopilot->brake, LINE_TENSION_LANDING); return;
 }
 
 void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float timestep_in_s){
-	
+	//printf("sidewaystime = %f\n", autopilot->sideways_flying_time);
 	float* mat = sensor_data.rotation_matrix;
 	if(query_timer_seconds(autopilot->timer) > autopilot->sideways_flying_time * autopilot->multiplier * clamp(0.02*sensor_data.height, 1, 10)){ // IF TIME TO TURN
 		//TURN
@@ -208,6 +208,7 @@ void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	
 	//float sideways_flying_angle_fraction = 0.85;//0.9;//0.75; // fraction of 90 degrees, autopilot influences the angle to the horizon, smaller => greater angle = flying higher
 	float target_angle = PI*0.5*autopilot->direction*(autopilot->eight.neutral_beta_sideways_flying_angle_fraction + target_angle_adjustment/* 1 means 1.2*90 degrees, 0 means 0 degrees*/);
+	//printf("angle_diff = %f, autopilot->eight.beta_P = %f, autopilot->eight.neutral_beta_sideways_flying_angle_fraction = %f, autopilot->direction = %d, target_angle = %f, target_angle_adjustment = %f, autopilot->eight.target_angle_beta_clamp = %f\n", angle_diff, autopilot->eight.beta_P, autopilot->eight.neutral_beta_sideways_flying_angle_fraction, autopilot->direction, target_angle, target_angle_adjustment, autopilot->eight.target_angle_beta_clamp);
 	setTargetValueActuator(&(autopilot->slowly_changing_target_angle), target_angle);
 	stepActuator(&(autopilot->slowly_changing_target_angle), timestep_in_s);
 	float slowly_changing_target_angle_local = getValueActuator(&(autopilot->slowly_changing_target_angle));
@@ -284,6 +285,6 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 		y_axis_control = 0;
 	}
 	
-	initControlData(control_data_out, left_prop, right_prop, left_elevon, right_elevon, -y_axis_control, line_tension); return;
+	initControlData(control_data_out, left_prop, right_prop, left_elevon, right_elevon, (left_elevon+right_elevon)*0.125, line_tension); return;
 	
 }

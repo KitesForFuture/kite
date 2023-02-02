@@ -35,7 +35,7 @@
 #include "control/autopilot.h"
 
 #define MAX_SERVO_DEFLECTION 50
-#define MAX_BRAKE_DEFLECTION 90
+#define MAX_BRAKE_DEFLECTION 50
 #define MAX_PROPELLER_SPEED 90 // AT MOST 90
 
 struct i2c_bus bus0 = {14, 25};
@@ -92,7 +92,8 @@ void actuatorControl(float left_elevon, float right_elevon, float brake, float l
 		setSpeed(2, clamp(right_propeller, 0, propeller_safety_max)); // right Propeller
 	}
 	setAngle(1, config_values[39] + config_values[10]*brake); // Brake
-	printf("setting left, brake, right to (%f, %f, %f)\n", config_values[37] + config_values[7]*left_elevon, config_values[39] + config_values[10]*brake, config_values[38] + config_values[8]*right_elevon);
+	//printf("config[39] = %f\n", config_values[39]);
+	//printf("setting left, brake, right to (%f, %f, %f)\n", config_values[37] + config_values[7]*left_elevon, config_values[39] + config_values[10]*brake, config_values[38] + config_values[8]*right_elevon);
 }
 
 
@@ -185,7 +186,7 @@ void main_task(void* arg)
 	
 	while(1) {
 		vTaskDelay(1);
-		
+		//printf("mode = %d\n", autopilot.mode);
 		if(data_needs_being_written_to_EEPROM == 1){
 			writeConfigValuesToEEPROM(config_values);
 			data_needs_being_written_to_EEPROM = 0;
@@ -209,12 +210,12 @@ void main_task(void* arg)
 		stepAutopilot(&autopilot, &control_data, sensorData, line_length, 3/*line tension*/);
 		
 		// DON'T LET SERVOS BREAK THE KITE
-		control_data.brake = clamp(control_data.brake, 0, MAX_BRAKE_DEFLECTION);
+		control_data.brake = clamp(control_data.brake, -MAX_BRAKE_DEFLECTION, MAX_BRAKE_DEFLECTION);
 		control_data.left_elevon = clamp(control_data.left_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
 		control_data.right_elevon = clamp(control_data.right_elevon, -MAX_SERVO_DEFLECTION, MAX_SERVO_DEFLECTION);
 		
 		//TODO: setAngle in radians ( * PI/180) and setSpeed from [0, 1] or so
-		actuatorControl(control_data.left_elevon, control_data.right_elevon, -control_data.brake, getPWMInput0to1normalized(2)*control_data.left_prop, getPWMInput0to1normalized(2)*control_data.right_prop, MAX_PROPELLER_SPEED);
+		actuatorControl(control_data.left_elevon, control_data.right_elevon, control_data.brake, getPWMInput0to1normalized(2)*control_data.left_prop, getPWMInput0to1normalized(2)*control_data.right_prop, MAX_PROPELLER_SPEED);
 		
 	}
 }
