@@ -39,7 +39,7 @@ void loadConfigVariables(Autopilot* autopilot, float* config_values){
 	
 	
 	autopilot->eight.elevator = config_values[30];
-	autopilot->eight.desired_line_angle_from_zenith = PI-config_values[32]*PI/180;
+	autopilot->eight.desired_line_angle_from_zenith = PI/2-config_values[32]*PI/180;
 	autopilot->eight.target_angle_beta_clamp = config_values[33];
 	autopilot->eight.beta_P = config_values[34];
 	autopilot->eight.neutral_beta_sideways_flying_angle_fraction = config_values[35];
