@@ -222,7 +222,7 @@ void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	//sendData(DATA_MODE, 3.14, z_axis_offset);
 	
 	// ELEVATOR
-	float y_axis_control = autopilot->eight.elevator + 20 - 1 * autopilot->eight.Y.D * sensor_data.gyro[1];
+	float y_axis_control = autopilot->eight.elevator - 1 * autopilot->eight.Y.D * sensor_data.gyro[1];
 	initControlData(control_data_out, 0, 0, y_axis_control - 0.5*z_axis_control, y_axis_control + 0.5*z_axis_control, 0, LINE_TENSION_EIGHT); return;
 }
 
