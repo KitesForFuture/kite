@@ -5,6 +5,7 @@
 #define LINE_TENSION_REQUEST_MODE 2
 #define LINE_LENGTH_MODE 3
 #define CONFIG_MODE 4
+#define DEBUG_DATA_MODE 5
 
 #define DATALENGTH 2
 
@@ -31,6 +32,12 @@ typedef struct __attribute__((packed)) esp_now_msg_t_large
 	uint32_t mode;
 	float data[NUM_CONFIG_FLOAT_VARS];
 } esp_now_msg_t_large;
+
+typedef struct __attribute__((packed)) esp_now_msg_t_medium
+{
+	uint32_t mode;
+	float data[6];
+} esp_now_msg_t_medium;
 
 float receive_counter = 0;
 
@@ -107,6 +114,23 @@ void network_setup_flying(void (*write_config_callback_arg)(float*))
 	
 	// Register Send Callback
 	esp_now_register_recv_cb(msg_recv_cb);
+}
+
+void sendDebuggingData(float num1, float num2, float num3, float num4, float num5, float num6){
+	esp_now_msg_t_medium msg;
+	msg.mode = DEBUG_DATA_MODE;
+	msg.data[0] = num1;
+	msg.data[1] = num2;
+	msg.data[2] = num3;
+	msg.data[3] = num4;
+	msg.data[4] = num5;
+	msg.data[5] = num6;
+	
+	uint16_t packet_size = sizeof(esp_now_msg_t_medium);
+	uint8_t msg_data[packet_size];
+	memcpy(&msg_data[0], &msg, sizeof(esp_now_msg_t_medium));
+	
+	esp_now_send(broadcast_mac, msg_data, packet_size);
 }
 
 // used by the kite to send data to the data receiver

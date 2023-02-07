@@ -7,7 +7,7 @@
 
 #define DATA_MODE 1
 
-void sendData(int mode, float data0, float data1);
+void sendDebuggingData(float num1, float num2, float num3, float num4, float num5, float num6);
 
 
 void loadConfigVariables(Autopilot* autopilot, float* config_values){
@@ -186,7 +186,8 @@ void landing_control(Autopilot* autopilot, ControlData* control_data_out, Sensor
 	
 	autopilot->brake = clamp(autopilot->brake, 0, 45);
 	
-	sendData(DATA_MODE, height, desired_dive_angle);
+	//sendData(DATA_MODE, height, desired_dive_angle);
+	sendDebuggingData(height, line_length, height_error, desired_dive_angle, y_axis_offset, y_axis_control);
 	
 	initControlData(control_data_out, 0, 0, autopilot->brake * 0.5 + y_axis_control-1*x_axis_control, autopilot->brake * 0.5 + y_axis_control+1*x_axis_control, -2*autopilot->brake, LINE_TENSION_LANDING); return;
 }
