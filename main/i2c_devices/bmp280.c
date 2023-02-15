@@ -82,7 +82,7 @@ int update_bmp280_if_necessary() {
 
     }
     
-	printf("height = %f\n", getHeight());
+	//printf("height = %f\n", getHeight());
     startBmp280Measurement();
     return 1;
   }
