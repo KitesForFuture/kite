@@ -47,10 +47,11 @@ float config_values[NUM_CONFIG_FLOAT_VARS];
 int data_needs_being_written_to_EEPROM = 0;
 
 void writeConfigValuesToEEPROM(float* values){
-	for (int i = 7; i < NUM_CONFIG_FLOAT_VARS; i++){
+	for (int i = 6; i < NUM_CONFIG_FLOAT_VARS; i++){
 		float readValue = readEEPROM(i);
 		if(readValue != values[i]) write2EEPROM(values[i], i);
 	}
+	printf("values[6] to write = %f\n", values[6]);
 }
 
 void readConfigValuesFromEEPROM(float* values){
@@ -66,9 +67,11 @@ void getConfigValues(float* values){
 }
 int groundstation_has_config_values_initialized_from_kite_EEPROM = false;
 void setConfigValues(float* values){
-	for (int i = 7; i < NUM_CONFIG_FLOAT_VARS; i++){
+	if(values[6] == 0) printf("here bmp_calib is 0\n");
+	for (int i = 6; i < NUM_CONFIG_FLOAT_VARS; i++){
 		config_values[i] = values[i];
 	}
+	updateBMP280Config(config_values[6]);
 	data_needs_being_written_to_EEPROM = 1;
 	groundstation_has_config_values_initialized_from_kite_EEPROM = true;
 	loadConfigVariables(&autopilot, config_values);
@@ -96,6 +99,24 @@ void actuatorControl(float left_elevon, float right_elevon, float brake, float l
 	//printf("setting left, brake, right to (%f, %f, %f)\n", config_values[37] + config_values[7]*left_elevon, config_values[39] + config_values[10]*brake, config_values[38] + config_values[8]*right_elevon);
 }
 
+// can also be used to manually change config variables
+void testConfigWriting(){
+	readConfigValuesFromEEPROM(config_values);
+	
+	
+	float test_config[NUM_CONFIG_FLOAT_VARS];
+	getConfigValues(test_config);
+	printf("config[6]*1000000000 = %f\n", (test_config[6]*1000000000));
+	test_config[6] += 0.00000123;
+	printf("after adding 0.00000123, config[6]*1000000000 = %f\n", (test_config[6]*1000000000));
+	
+	setConfigValues(test_config);
+	vTaskDelay(100);
+	getConfigValues(test_config);
+	printf("after writing to and reading from EEPROM, config[6]*1000000000 = %f\n", (test_config[6]*1000000000));
+	
+	
+}
 
 void main_task(void* arg)
 {
@@ -105,6 +126,8 @@ void main_task(void* arg)
 	initRotationMatrix(&orientation_data);
 	
 	init_cat24(bus1);
+	
+	//testConfigWriting();//TODO: remove. DEBUGGING ONLY
 	
 	Mpu_raw_data mpu_calibration = {
 		{readEEPROM(0), readEEPROM(1), readEEPROM(2)},
@@ -167,7 +190,7 @@ void main_task(void* arg)
 	initPWMInput(input_pins, 5);
 	
 	// THIS TAKES TIME...
-	float bmp_calib = readEEPROM(6)-0.000001; // TODO: recalibrate and remove the -0.000001 hack
+	float bmp_calib = readEEPROM(6);//-0.000001; // TODO: recalibrate and remove the -0.000001 hack
     init_bmp280(bus1, bmp_calib);
     
     readConfigValuesFromEEPROM(config_values);
@@ -175,14 +198,14 @@ void main_task(void* arg)
     // **** WAITING for GROUNDSTATION to ECHO the config array ****
     
     while(!groundstation_has_config_values_initialized_from_kite_EEPROM){
-    	sendDataArrayLarge(CONFIG_MODE, config_values, NUM_CONFIG_FLOAT_VARS); // *** FORWARD of CONFIG ARRAY from UART to ESP-NOW
+    	sendDataArrayLarge(CONFIG_MODE, config_values, NUM_CONFIG_FLOAT_VARS); // *** SENDING of CONFIG ARRAY via ESP-NOW
     	printf("Sending config array\n");
     	vTaskDelay(100);
     }
 	
 	initAutopilot(&autopilot, config_values);
 	
-	//autopilot.mode = EIGHT_MODE;
+	//autopilot.mode = FINAL_LANDING_MODE; // ONLY FOR DEBUGGING; TODO: REMOVE
 	
 	while(1) {
 		vTaskDelay(1);
@@ -200,7 +223,7 @@ void main_task(void* arg)
 		
 		float line_length = clamp(line_length_in_meters, 0, 1000000); // global var defined in RC.c, should default to 1 when no signal received, TODO: revert line length in VESC LISP code
 		autopilot.fm = flight_mode;// global var flight_mode defined in RC.c, 
-		//printf("fm = %f", flight_mode);
+		//printf("autopilot.mode = %d", autopilot.mode);
 		SensorData sensorData;
 		initSensorData(&sensorData, orientation_data.rotation_matrix_transpose, orientation_data.gyro_in_kite_coords, getHeight(), getHeightDerivative());
 		

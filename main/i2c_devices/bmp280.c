@@ -6,7 +6,7 @@
 #define  UPDATE_INTERVAL_MICROSECONDS 50000
 #define  SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT 0.02 // HAS TO BE SMOOTH, BECAUSE TEMP SENSOR PRODUCES SOME FAR OUTLIERS!
 #define  SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT 0.2
-#define  INITIAL_MEASUREMENT_CYCLE_COUNT 50
+#define  INITIAL_MEASUREMENT_CYCLE_COUNT 150
 #define  ONE_DIVIDED_BY_INITIAL_MEASUREMENT_CYCLE_COUNT 0.2
 
 
@@ -43,7 +43,7 @@ float getPressure(){
   return 1365.3-0.00007555555555*(float)(bmp280_raw_pressure_reading);
 }
 
-static void calculateSmoothTempDiscardingOutliers(float new_value){
+static int calculateSmoothTempDiscardingOutliers(float new_value){
 	
 	static int numDiscardedValuesInARow = 0;
 	static float smooth_variance = 0;
@@ -55,7 +55,7 @@ static void calculateSmoothTempDiscardingOutliers(float new_value){
 		printf("DISCARDING\n");
 		numDiscardedValuesInARow++;
 		//smooth_variance = 0.8 * smooth_variance + 0.2 * new_variance;
-		return;
+		return false;
 	}
 	
 	smooth_variance = 0.8 * smooth_variance + 0.2 * new_variance;
@@ -63,6 +63,7 @@ static void calculateSmoothTempDiscardingOutliers(float new_value){
 	numDiscardedValuesInARow = 0;
 	// ADD VALUE TO SMOOTH TEMPERATURE
 	current_smoothened_temperature = (new_value * SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT) + (current_smoothened_temperature * (1-SMOOTHING_TEMPERATURE_RECENT_VALUE_WEIGHT));
+	return true;
 }
 
 int update_bmp280_if_necessary() {
@@ -75,8 +76,9 @@ int update_bmp280_if_necessary() {
     	// For Mathematicians:
     	// current_smoothened_temperature = 0.2 * (float)getTemperature() + 0.8 * current_smoothened_temperature;
     	
-    	calculateSmoothTempDiscardingOutliers((float)getTemperature());
-    	current_smoothened_pressure = (getPressure() * SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) + (current_smoothened_pressure * (1-SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT));
+    	if(calculateSmoothTempDiscardingOutliers((float)getTemperature())){
+	    	current_smoothened_pressure = (getPressure() * SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT) + (current_smoothened_pressure * (1-SMOOTHING_PRESSURE_RECENT_VALUE_WEIGHT));
+	    }
 
     }
     
@@ -85,6 +87,10 @@ int update_bmp280_if_necessary() {
     return 1;
   }
   return 0;
+}
+
+void updateBMP280Config(float minus_dp_by_dt){
+	minus_dp_by_dt_factor = minus_dp_by_dt;
 }
 
 void init_bmp280(struct i2c_bus bus_arg, float minus_dp_by_dt){ // ToDoLeo rename to init. Make sure init calls in main don't conflict
@@ -107,8 +113,9 @@ void init_bmp280(struct i2c_bus bus_arg, float minus_dp_by_dt){ // ToDoLeo renam
 
 // DIFFERENCE IN ATMOSPHERIC PRESSURE SINCE BOOT
 float getPressureDiff(){
-  float delta_temperature = current_smoothened_temperature - initial_smoothened_temperature;
-  float delta_pressure = current_smoothened_pressure - initial_smoothened_pressure;
+  float delta_temperature = current_smoothened_temperature - initial_smoothened_temperature; // loosing factor 1000 precision, after it has 4 decimal digits precision
+  float delta_pressure = current_smoothened_pressure - initial_smoothened_pressure; // loosing factor 10000 precision, after has 3 decimal digits left
+  //printf("init temp = %f, init_pressure = %f, temp_diff = %f, delta_p = %f\n", initial_smoothened_temperature, initial_smoothened_pressure, delta_temperature, delta_pressure);
   return delta_pressure + delta_temperature * minus_dp_by_dt_factor;
 }
 

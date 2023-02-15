@@ -102,7 +102,7 @@ static const httpd_uri_t kite_config_get_html = {
 					<tr>\n\
 							<td><p>Height=<br><span id=\"height_value\"></span></p></td>\n\
 							<td><div class=\"slidecontainer\">\n\
-								  <input type=\"range\" min=\"-100\" max=\"500\" value=\"0\" class=\"slider\" id=\"height_slider\">\n\
+								  <input type=\"range\" min=\"-200\" max=\"500\" value=\"0\" class=\"slider\" id=\"height_slider\">\n\
 							</div></td>\n\
 					</tr>\n\
 					<tr>\n\
@@ -267,6 +267,8 @@ static const httpd_uri_t kite_config_get_html = {
 						\n\
 						document.getElementById(\"ResetConfig\").onclick = function() {\n\
 							for(let i = 0; i < 7; i++) configValues[i] = 0;\n\
+							configValues[6] = 0.000024;\n\
+							\n\
 							configValues[7] = 1;\n\
 							configValues[8] = 1;\n\
 							configValues[9] = 0;\n\
@@ -310,6 +312,31 @@ static const httpd_uri_t kite_config_get_html = {
 							\";\n\
 							jsFunctions[index] = function(){\n\
 								window[\"value\" + index] = document.getElementById(\"value\" + index);\n\
+							};\n\
+						}\n\
+						function addVariableConfig(name, index){\n\
+							UIstring += \"\\\n\
+								<tr>\\\n\
+									<td><p>\" + name + \"=<br><span id=\\\"value\" + index + \"\\\"></span></p></td>\\\n\
+									<td><button id=\\\"Down\" + index + \"Button\\\" class=\\\"button button1\\\">&#8681</button>\\\n\
+									<button id=\\\"Up\" + index + \"Button\\\" class=\\\"button button1\\\">&#8679</button></td>\\\n\
+									<td></td>\\\n\
+								</tr>\\\n\
+							\";\n\
+							jsFunctions[index] = function(){\n\
+								window[\"value\" + index] = document.getElementById(\"value\" + index);\n\
+								window[\"value\" + index].innerHTML = configValues[index];\n\
+								\n\
+								document.getElementById(\"Up\" + index + \"Button\").onclick = function() {\n\
+									configValues[index] += 0.000001;\n\
+									window[\"value\" + index].innerHTML = configValues[index].toFixed(0);\n\
+									uploadConfig();\n\
+								}\n\
+								document.getElementById(\"Down\" + index + \"Button\").onclick = function() {\n\
+									configValues[index] -= 0.000001;\n\
+									window[\"value\" + index].innerHTML = configValues[index].toFixed(0);\n\
+									uploadConfig();\n\
+								}\n\
 							};\n\
 						}\n\
 						function addServo(name, index){\n\
@@ -519,6 +546,7 @@ static const httpd_uri_t kite_config_get_html = {
 						UIstring += \"<h3>Actuator Tests and Config</h3>\";\n\
 						UIstring += tableBegin;\n\
 								\n\
+						addVariableConfig(\"BMP280 Calibration\", 6)\n\
 						addServo(\"Brake\", 10);\n\
 						addServo(\"Left Elevon\", 7);\n\
 						addServo(\"Right Elevon\", 8);\n\
@@ -575,7 +603,6 @@ static const httpd_uri_t kite_config_get_html = {
 						addFixedConfig(\"Gyro x\", 3)\n\
 						addFixedConfig(\"Gyro y\", 4)\n\
 						addFixedConfig(\"Gyro z\", 5)\n\
-						addFixedConfig(\"BMP280 Calibration\", 6)\n\
 						\n\
 						UIstring += tableEnd;\n\
 						\n\
