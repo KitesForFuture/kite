@@ -163,6 +163,7 @@ float getAngleErrorYAxis(float offset, float mat[9]){
 	return getAngleError(offset, controllable_axis, axis_we_wish_horizontal);
 }
 
+static float desired_dive_angle_smooth = 0;
 
 void landing_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension, int transition){
 	float* mat = sensor_data.rotation_matrix;
@@ -171,25 +172,26 @@ void landing_control(Autopilot* autopilot, ControlData* control_data_out, Sensor
 	float height = sensor_data.height-autopilot->landing.desired_height;
 	float height_error = clamp(height - line_length*0.2 /* 20 percent descent slope*/, -2, 10);
 	
-	float desired_dive_angle = -0.15*autopilot->landing.dive_angle_P*height_error;//-desired_line_angle - 2.0 * line_angle_error;
+	float desired_dive_angle = 0.15*autopilot->landing.dive_angle_P*height_error;//-desired_line_angle - 2.0 * line_angle_error;
+	desired_dive_angle_smooth = 0.8 * desired_dive_angle_smooth + 0.2 * desired_dive_angle;
 	
-	desired_dive_angle = clamp( desired_dive_angle, -PI/10, PI/6 );
+	desired_dive_angle_smooth = clamp( desired_dive_angle_smooth, -PI/10, PI/6 );
 	
 	if(transition){
-		desired_dive_angle = PI/6;
+		desired_dive_angle_smooth = -PI/6;
 	}
 	
-	float y_axis_offset = getAngleErrorYAxis(desired_dive_angle - PI/2, mat);
-	float y_axis_control = 3 - 3*15.0 * autopilot->landing.Y.P * y_axis_offset + 7 * 0.5 * 0.66 * autopilot->landing.Y.D * sensor_data.gyro[1];
+	float y_axis_offset = -getAngleErrorYAxis(-desired_dive_angle_smooth - PI/2, mat);
+	float y_axis_control = 3 - 3*15.0 * autopilot->landing.Y.P * y_axis_offset - 7 * 0.5 * 0.66 * autopilot->landing.Y.D * sensor_data.gyro[1];
 	
 	float x_axis_control = -100 * mat[3] * autopilot->landing.X.P;// - 0*50*autopilot->landing.X.D * sensor_data.gyro[0];
 	
-	autopilot->brake = clamp(autopilot->brake, 0, 45);
+	autopilot->brake = clamp(autopilot->brake, 0, 35);
 	
-	//sendData(DATA_MODE, height, desired_dive_angle);
-	sendDebuggingData(height, line_length, height_error, desired_dive_angle, y_axis_offset, y_axis_control);
-	
-	initControlData(control_data_out, 0, 0, autopilot->brake * 0.5 + y_axis_control-1*x_axis_control, autopilot->brake * 0.5 + y_axis_control+1*x_axis_control, -2*autopilot->brake, LINE_TENSION_LANDING); return;
+	//sendData(DATA_MODE, height, desired_dive_angle_smooth);
+	sendDebuggingData(height, line_length, height_error, desired_dive_angle_smooth, y_axis_offset, y_axis_control);
+	printf("height = %f\n", height);
+	initControlData(control_data_out, 0, 0, autopilot->brake - y_axis_control-1*x_axis_control, autopilot->brake - y_axis_control+1*x_axis_control, -autopilot->brake, LINE_TENSION_LANDING); return;
 }
 
 void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float timestep_in_s){
@@ -224,6 +226,8 @@ void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	
 	// ELEVATOR
 	float y_axis_control = autopilot->eight.elevator - 1 * autopilot->eight.Y.D * sensor_data.gyro[1];
+	
+	sendDebuggingData(sensor_data.height, z_axis_angle_from_zenith, target_angle_adjustment, slowly_changing_target_angle_local, z_axis_offset, z_axis_control);
 	initControlData(control_data_out, 0, 0, y_axis_control - 0.5*z_axis_control, y_axis_control + 0.5*z_axis_control, 0, LINE_TENSION_EIGHT); return;
 }
 
