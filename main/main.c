@@ -230,6 +230,9 @@ void main_task(void* arg)
 		//TODO: decide size of timestep_in_s in main.c and pass to stepAutopilot(), or use same method as used in updateRotationMatrix
 		ControlData control_data;
 		
+		//DEBUGGING
+		autopilot.RC_target_angle = getPWMInputMinus1to1normalized(0)*3.14*0.75; // can point towards ground at maximum 45 degree angle to either side. 0 means straight up.
+		
 		stepAutopilot(&autopilot, &control_data, sensorData, line_length, 3/*line tension*/);
 		
 		// DON'T LET SERVOS BREAK THE KITE

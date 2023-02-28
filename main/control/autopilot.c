@@ -68,6 +68,8 @@ void initAutopilot(Autopilot* autopilot, float* config_values){
 	//autopilot->smooth_reel_in_speed = 0.1;
 	
 	autopilot->timer = 0;
+	
+	autopilot->RC_target_angle = 0;
 }
 
 void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension){
@@ -194,6 +196,8 @@ void landing_control(Autopilot* autopilot, ControlData* control_data_out, Sensor
 	initControlData(control_data_out, 0, 0, autopilot->brake - y_axis_control-1*x_axis_control, autopilot->brake - y_axis_control+1*x_axis_control, -autopilot->brake, LINE_TENSION_LANDING); return;
 }
 
+
+
 void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float timestep_in_s){
 	//printf("sidewaystime = %f\n", autopilot->sideways_flying_time);
 	float* mat = sensor_data.rotation_matrix;
@@ -215,6 +219,9 @@ void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	setTargetValueActuator(&(autopilot->slowly_changing_target_angle), target_angle);
 	stepActuator(&(autopilot->slowly_changing_target_angle), timestep_in_s);
 	float slowly_changing_target_angle_local = getValueActuator(&(autopilot->slowly_changing_target_angle));
+	
+	// FOR DEBUGGING
+	slowly_changing_target_angle_local = autopilot->RC_target_angle;
 	
 	float z_axis_offset = getAngleErrorZAxis(0.0, mat);
 	z_axis_offset -= slowly_changing_target_angle_local;
