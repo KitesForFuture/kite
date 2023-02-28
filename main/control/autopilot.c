@@ -286,6 +286,13 @@ void hover_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	float x_axis_control = (normed_airflow > 0.0001 ? 1.0/(normed_airflow*normed_airflow) : 1.0) * autopilot->hover.X.D * sensor_data.gyro[0]*0.75;
 	x_axis_control *= 100;
 	
+	// FOR DEBUGGING
+	if(autopilot->RC_switch > 0.5){
+		x_axis_control += 45 * autopilot->RC_target_angle; // move ailerons directly
+	}else{
+		z_axis_control += 45 * autopilot->RC_target_angle; // differentiate propeller thrust
+	}
+	
 	// MIXING
 	
 	height_control = clamp(height_control, 0, 50);
