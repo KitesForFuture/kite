@@ -102,6 +102,7 @@ struct _Autopilot {
 	float smooth_reel_in_speed;
 	
 	float RC_target_angle;
+	float RC_switch;
 	
 	Time timer;
 };

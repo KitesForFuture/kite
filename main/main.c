@@ -231,7 +231,8 @@ void main_task(void* arg)
 		ControlData control_data;
 		
 		//DEBUGGING
-		autopilot.RC_target_angle = getPWMInputMinus1to1normalized(0)*3.14*0.75; // can point towards ground at maximum 45 degree angle to either side. 0 means straight up.
+		autopilot.RC_target_angle = getPWMInputMinus1to1normalized(0); // can point towards ground at maximum 45 degree angle to either side. 0 means straight up.
+		autopilot.RC_switch = getPWMInputMinus1to1normalized(4);
 		
 		stepAutopilot(&autopilot, &control_data, sensorData, line_length, 3/*line tension*/);
 		

@@ -70,6 +70,7 @@ void initAutopilot(Autopilot* autopilot, float* config_values){
 	autopilot->timer = 0;
 	
 	autopilot->RC_target_angle = 0;
+	autopilot->RC_switch = 0;
 }
 
 void stepAutopilot(Autopilot* autopilot, ControlData* control_data_out, SensorData sensor_data, float line_length, float line_tension){
@@ -221,12 +222,17 @@ void eight_control(Autopilot* autopilot, ControlData* control_data_out, SensorDa
 	float slowly_changing_target_angle_local = getValueActuator(&(autopilot->slowly_changing_target_angle));
 	
 	// FOR DEBUGGING
-	slowly_changing_target_angle_local = autopilot->RC_target_angle;
+	slowly_changing_target_angle_local = autopilot->RC_target_angle * 3.14 * 0.75;
 	
 	float z_axis_offset = getAngleErrorZAxis(0.0, mat);
 	z_axis_offset -= slowly_changing_target_angle_local;
 	float z_axis_control = - 0.56 * autopilot->eight.Z.P * z_axis_offset + 0.22 * autopilot->eight.Z.D * sensor_data.gyro[2];
 	z_axis_control *=100;
+	
+	// FOR DEBUGGING
+	if(autopilot->RC_switch > 0.5){
+		z_axis_control = 45 * autopilot->RC_target_angle;
+	}
 	
 	//sendData(DATA_MODE, angle_diff, target_angle);
 	//sendData(DATA_MODE, 3.14, z_axis_offset);
